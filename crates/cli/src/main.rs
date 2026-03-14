@@ -2,7 +2,10 @@ use std::fs;
 
 use anyhow::{bail, Context, Result};
 use clap::{Args, Parser, Subcommand};
-use pdflo_core::{ops::merge_pdfs, MergeRequest};
+use pdflo_core::{
+    ops::{extract_pages, merge_pdfs},
+    ExtractRequest, MergeRequest,
+};
 
 #[derive(Debug, Parser)]
 #[command(name = "pdflo")]
@@ -87,9 +90,21 @@ fn main() -> Result<()> {
             println!("merged {} files into {}", args.input.len(), args.output);
         }
         Commands::Extract(args) => {
+            let input_bytes = fs::read(&args.input)
+                .with_context(|| format!("failed to read input PDF: {}", args.input))?;
+
+            let request = ExtractRequest {
+                document: input_bytes,
+                page_ranges: args.pages.clone(),
+            };
+
+            let output_bytes = extract_pages(&request).context("extract operation failed")?;
+            fs::write(&args.output, output_bytes)
+                .with_context(|| format!("failed to write output PDF: {}", args.output))?;
+
             println!(
-                "[stub] extract -> input: {}, pages: {}, output: {}",
-                args.input, args.pages, args.output
+                "extracted pages {} from {} into {}",
+                args.pages, args.input, args.output
             );
         }
         Commands::Split(args) => {

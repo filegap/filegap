@@ -21,9 +21,9 @@ pub fn merge_pdfs(request: &MergeRequest) -> Result<Vec<u8>, CoreError> {
         max_id = doc.max_id + 1;
 
         for object_id in doc.get_pages().into_values() {
-            let page = doc
-                .get_object(object_id)
-                .map_err(|err| CoreError::Processing(format!("failed to read page object: {err}")))?;
+            let page = doc.get_object(object_id).map_err(|err| {
+                CoreError::Processing(format!("failed to read page object: {err}"))
+            })?;
             pages_map.insert(object_id, page.to_owned());
         }
 

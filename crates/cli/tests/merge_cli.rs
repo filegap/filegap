@@ -83,7 +83,8 @@ fn merge_command_creates_a_valid_output_pdf() {
         .success();
 
     let merged_bytes = fs::read(&output_path).expect("merged output should exist");
-    let merged_doc = Document::load_mem(&merged_bytes).expect("merged output should be a valid PDF");
+    let merged_doc =
+        Document::load_mem(&merged_bytes).expect("merged output should be a valid PDF");
     assert_eq!(merged_doc.get_pages().len(), 2);
 }
 

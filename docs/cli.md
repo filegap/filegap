@@ -13,5 +13,6 @@ Binary: `pdflo`
 
 ## Notes
 
-Current implementation is scaffold-only and prints operation stubs.
-Core integration and PDF execution logic will be wired in next steps.
+- `merge` and `extract` are wired to real core operations.
+- `split`, `reorder`, and `info` are still scaffold commands for now.
+- Page ranges follow `1,3,5-8` syntax and are 1-based.

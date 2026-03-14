@@ -1,0 +1,10 @@
+# Keep policy docs tracked, ignore local/manual fixtures by default.
+*
+!.gitignore
+!README.md
+!fixtures/
+!expected/
+
+# Keep empty directory trees versioned when needed.
+fixtures/.gitkeep
+expected/.gitkeep

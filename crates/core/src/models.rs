@@ -95,11 +95,9 @@ impl SplitRequest {
             SplitMode::EveryNPages(n) if n == 0 => Err(CoreError::InvalidInput(
                 "split size must be greater than zero".to_string(),
             )),
-            SplitMode::ByPageRanges(ref ranges) if ranges.trim().is_empty() => {
-                Err(CoreError::InvalidInput(
-                    "page ranges cannot be empty".to_string(),
-                ))
-            }
+            SplitMode::ByPageRanges(ref ranges) if ranges.trim().is_empty() => Err(
+                CoreError::InvalidInput("page ranges cannot be empty".to_string()),
+            ),
             _ => Ok(()),
         }
     }
@@ -107,9 +105,7 @@ impl SplitRequest {
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        CoreError, ExtractRequest, MergeRequest, ReorderRequest, SplitMode, SplitRequest,
-    };
+    use crate::{CoreError, ExtractRequest, MergeRequest, ReorderRequest, SplitMode, SplitRequest};
 
     #[test]
     fn merge_request_validate_requires_at_least_two_documents() {
