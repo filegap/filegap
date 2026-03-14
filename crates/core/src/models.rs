@@ -29,6 +29,24 @@ pub struct SplitRequest {
     pub mode: SplitMode,
 }
 
+#[derive(Debug, Clone)]
+pub struct InfoRequest {
+    pub document: Vec<u8>,
+}
+
+#[derive(Debug, Clone)]
+pub struct PdfInfo {
+    pub pdf_version: String,
+    pub page_count: u32,
+    pub is_encrypted: bool,
+    pub title: Option<String>,
+    pub author: Option<String>,
+    pub creator: Option<String>,
+    pub producer: Option<String>,
+    pub creation_date: Option<String>,
+    pub modification_date: Option<String>,
+}
+
 impl MergeRequest {
     pub fn validate(&self) -> Result<(), CoreError> {
         if self.documents.len() < 2 {
@@ -103,9 +121,23 @@ impl SplitRequest {
     }
 }
 
+impl InfoRequest {
+    pub fn validate(&self) -> Result<(), CoreError> {
+        if self.document.is_empty() {
+            return Err(CoreError::InvalidInput(
+                "input PDF cannot be empty".to_string(),
+            ));
+        }
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::{CoreError, ExtractRequest, MergeRequest, ReorderRequest, SplitMode, SplitRequest};
+    use crate::{
+        CoreError, ExtractRequest, InfoRequest, MergeRequest, ReorderRequest, SplitMode,
+        SplitRequest,
+    };
 
     #[test]
     fn merge_request_validate_requires_at_least_two_documents() {
@@ -182,5 +214,14 @@ mod tests {
             mode: SplitMode::EveryNPages(2),
         };
         request.validate().expect("validation should pass");
+    }
+
+    #[test]
+    fn info_request_validate_rejects_empty_pdf() {
+        let request = InfoRequest {
+            document: Vec::new(),
+        };
+        let err = request.validate().expect_err("validation should fail");
+        assert!(matches!(err, CoreError::InvalidInput(_)));
     }
 }

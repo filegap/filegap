@@ -13,10 +13,10 @@ Binary: `pdflo`
 
 ## Notes
 
-- `merge`, `extract`, `split`, and `reorder` are wired to real core operations.
-- `info` is still scaffold command for now.
+- `merge`, `extract`, `split`, `reorder`, and `info` are wired to real core operations.
 - Page ranges follow `1,3,5-8` syntax and are 1-based.
 - `split --ranges` interprets each comma-separated token as one output file
   (example: `1-2,5` produces two files).
 - `reorder -p` accepts explicit order and ranges
   (example: `3,1,2` or `4-6,1-3`).
+- `info` prints document summary (size, version, pages, encryption, metadata fields).

@@ -4,13 +4,16 @@ use std::path::Path;
 use anyhow::{bail, Context, Result};
 use clap::{Args, Parser, Subcommand};
 use pdflo_core::{
-    ops::{extract_pages, merge_pdfs, reorder_pages, split_pdf},
-    ExtractRequest, MergeRequest, ReorderRequest, SplitMode, SplitRequest,
+    ops::{extract_pages, inspect_pdf, merge_pdfs, reorder_pages, split_pdf},
+    ExtractRequest, InfoRequest, MergeRequest, ReorderRequest, SplitMode, SplitRequest,
 };
 
 #[derive(Debug, Parser)]
 #[command(name = "pdflo")]
 #[command(about = "Privacy-first PDF tools that run locally")]
+#[command(
+    after_help = "Examples:\n  pdflo merge -i a.pdf b.pdf -o merged.pdf\n  pdflo extract -i in.pdf -p 2-4 -o out.pdf\n  pdflo split -i in.pdf --every 2 -d ./out\n  pdflo reorder -i in.pdf -p 3,1,2 -o out.pdf\n  pdflo info -i in.pdf"
+)]
 struct Cli {
     #[command(subcommand)]
     command: Commands,
@@ -18,56 +21,100 @@ struct Cli {
 
 #[derive(Debug, Subcommand)]
 enum Commands {
+    #[command(about = "Merge multiple PDF files into one output PDF")]
     Merge(MergeArgs),
+    #[command(about = "Extract selected pages from a PDF into a new PDF")]
     Extract(ExtractArgs),
+    #[command(about = "Split a PDF into multiple output files")]
     Split(SplitArgs),
+    #[command(about = "Reorder pages in a PDF and save a new file")]
     Reorder(ReorderArgs),
+    #[command(about = "Show metadata and structure information for a PDF")]
     Info(InfoArgs),
 }
 
 #[derive(Debug, Args)]
 struct MergeArgs {
-    #[arg(short = 'i', long = "input", required = true, num_args = 2..)]
+    #[arg(short = 'i', long = "input", required = true, num_args = 2.., value_name = "PDF", help = "Input PDF files (at least 2)")]
     input: Vec<String>,
-    #[arg(short, long)]
+    #[arg(short, long, value_name = "PDF", help = "Output PDF file")]
     output: String,
 }
 
 #[derive(Debug, Args)]
 struct ExtractArgs {
-    #[arg(short = 'i', long = "input")]
+    #[arg(
+        short = 'i',
+        long = "input",
+        value_name = "PDF",
+        help = "Input PDF file"
+    )]
     input: String,
-    #[arg(short = 'p', long = "pages")]
+    #[arg(
+        short = 'p',
+        long = "pages",
+        value_name = "RANGE",
+        help = "Page selection, example: 1,3,5-8"
+    )]
     pages: String,
-    #[arg(short, long)]
+    #[arg(short, long, value_name = "PDF", help = "Output PDF file")]
     output: String,
 }
 
 #[derive(Debug, Args)]
 struct SplitArgs {
-    #[arg(short = 'i', long = "input")]
+    #[arg(
+        short = 'i',
+        long = "input",
+        value_name = "PDF",
+        help = "Input PDF file"
+    )]
     input: String,
-    #[arg(long = "every")]
+    #[arg(long = "every", value_name = "N", help = "Split every N pages")]
     every: Option<u32>,
-    #[arg(long = "ranges")]
+    #[arg(
+        long = "ranges",
+        value_name = "RANGES",
+        help = "Split by ranges, example: 1-2,5"
+    )]
     ranges: Option<String>,
-    #[arg(short = 'd', long = "out-dir")]
+    #[arg(
+        short = 'd',
+        long = "out-dir",
+        value_name = "DIR",
+        help = "Output directory for split files"
+    )]
     out_dir: String,
 }
 
 #[derive(Debug, Args)]
 struct ReorderArgs {
-    #[arg(short = 'i', long = "input")]
+    #[arg(
+        short = 'i',
+        long = "input",
+        value_name = "PDF",
+        help = "Input PDF file"
+    )]
     input: String,
-    #[arg(short = 'p', long = "pages")]
+    #[arg(
+        short = 'p',
+        long = "pages",
+        value_name = "ORDER",
+        help = "Page order, example: 3,1,2 or 4-6,1-3"
+    )]
     pages: String,
-    #[arg(short, long)]
+    #[arg(short, long, value_name = "PDF", help = "Output PDF file")]
     output: String,
 }
 
 #[derive(Debug, Args)]
 struct InfoArgs {
-    #[arg(short = 'i', long = "input")]
+    #[arg(
+        short = 'i',
+        long = "input",
+        value_name = "PDF",
+        help = "Input PDF file"
+    )]
     input: String,
 }
 
@@ -166,7 +213,42 @@ fn main() -> Result<()> {
             );
         }
         Commands::Info(args) => {
-            println!("[stub] info -> input: {}", args.input);
+            let input_bytes = fs::read(&args.input)
+                .with_context(|| format!("failed to read input PDF: {}", args.input))?;
+            let request = InfoRequest {
+                document: input_bytes,
+            };
+            let info = inspect_pdf(&request).context("info operation failed")?;
+            let size_bytes = fs::metadata(&args.input)
+                .with_context(|| format!("failed to read file metadata: {}", args.input))?
+                .len();
+
+            println!("File: {}", args.input);
+            println!("Size (bytes): {size_bytes}");
+            println!("PDF Version: {}", info.pdf_version);
+            println!("Pages: {}", info.page_count);
+            println!(
+                "Encrypted: {}",
+                if info.is_encrypted { "yes" } else { "no" }
+            );
+            println!("Title: {}", info.title.unwrap_or_else(|| "-".to_string()));
+            println!("Author: {}", info.author.unwrap_or_else(|| "-".to_string()));
+            println!(
+                "Creator: {}",
+                info.creator.unwrap_or_else(|| "-".to_string())
+            );
+            println!(
+                "Producer: {}",
+                info.producer.unwrap_or_else(|| "-".to_string())
+            );
+            println!(
+                "Creation Date: {}",
+                info.creation_date.unwrap_or_else(|| "-".to_string())
+            );
+            println!(
+                "Modification Date: {}",
+                info.modification_date.unwrap_or_else(|| "-".to_string())
+            );
         }
     }
 
