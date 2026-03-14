@@ -1,10 +1,11 @@
 use std::fs;
+use std::path::Path;
 
 use anyhow::{bail, Context, Result};
 use clap::{Args, Parser, Subcommand};
 use pdflo_core::{
-    ops::{extract_pages, merge_pdfs},
-    ExtractRequest, MergeRequest,
+    ops::{extract_pages, merge_pdfs, split_pdf},
+    ExtractRequest, MergeRequest, SplitMode, SplitRequest,
 };
 
 #[derive(Debug, Parser)]
@@ -115,10 +116,36 @@ fn main() -> Result<()> {
                 bail!("choose exactly one split mode: --every or --ranges");
             }
 
-            println!(
-                "[stub] split -> input: {}, every: {:?}, ranges: {:?}, out_dir: {}",
-                args.input, args.every, args.ranges, args.out_dir
-            );
+            let input_bytes = fs::read(&args.input)
+                .with_context(|| format!("failed to read input PDF: {}", args.input))?;
+            let mode = if let Some(n) = args.every {
+                SplitMode::EveryNPages(n)
+            } else {
+                SplitMode::ByPageRanges(args.ranges.clone().expect("ranges should be set"))
+            };
+            let request = SplitRequest {
+                document: input_bytes,
+                mode,
+            };
+
+            let outputs = split_pdf(&request).context("split operation failed")?;
+            fs::create_dir_all(&args.out_dir)
+                .with_context(|| format!("failed to create output directory: {}", args.out_dir))?;
+
+            let stem = Path::new(&args.input)
+                .file_stem()
+                .and_then(|value| value.to_str())
+                .unwrap_or("output");
+
+            for (index, output_bytes) in outputs.iter().enumerate() {
+                let output_path =
+                    Path::new(&args.out_dir).join(format!("{stem}_part_{:03}.pdf", index + 1));
+                fs::write(&output_path, output_bytes).with_context(|| {
+                    format!("failed to write split output: {}", output_path.display())
+                })?;
+            }
+
+            println!("split {} into {} file(s)", args.input, outputs.len());
         }
         Commands::Reorder(args) => {
             println!(
