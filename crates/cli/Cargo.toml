@@ -9,3 +9,8 @@ authors.workspace = true
 anyhow.workspace = true
 clap.workspace = true
 pdflo-core = { path = "../core" }
+
+[dev-dependencies]
+assert_cmd = "2"
+lopdf.workspace = true
+tempfile = "3"

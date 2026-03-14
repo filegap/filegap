@@ -1,5 +1,8 @@
-use anyhow::{bail, Result};
+use std::fs;
+
+use anyhow::{bail, Context, Result};
 use clap::{Args, Parser, Subcommand};
+use pdflo_core::{ops::merge_pdfs, MergeRequest};
 
 #[derive(Debug, Parser)]
 #[command(name = "pdflo")]
@@ -69,10 +72,19 @@ fn main() -> Result<()> {
 
     match cli.command {
         Commands::Merge(args) => {
-            println!(
-                "[stub] merge -> inputs: {:?}, output: {}",
-                args.input, args.output
-            );
+            let mut documents = Vec::with_capacity(args.input.len());
+            for input in &args.input {
+                let bytes = fs::read(input)
+                    .with_context(|| format!("failed to read input PDF: {input}"))?;
+                documents.push(bytes);
+            }
+
+            let request = MergeRequest { documents };
+            let output_bytes = merge_pdfs(&request).context("merge operation failed")?;
+            fs::write(&args.output, output_bytes)
+                .with_context(|| format!("failed to write output PDF: {}", args.output))?;
+
+            println!("merged {} files into {}", args.input.len(), args.output);
         }
         Commands::Extract(args) => {
             println!(
