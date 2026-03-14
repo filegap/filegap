@@ -9,6 +9,7 @@ authors.workspace = true
 anyhow.workspace = true
 clap.workspace = true
 pdflo-core = { path = "../core" }
+serde_json = "1"
 
 [dev-dependencies]
 assert_cmd = "2"

@@ -1,0 +1,78 @@
+:root {
+  font-family: 'IBM Plex Sans', 'Avenir Next', sans-serif;
+  color: #1f2937;
+  background: radial-gradient(circle at 20% 20%, #d9f6ff, #f6fbff 40%, #eef2ff 100%);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+.container {
+  width: min(760px, 92vw);
+  margin: 3rem auto;
+  display: grid;
+  gap: 1rem;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(2rem, 5vw, 2.8rem);
+}
+
+.subtitle {
+  margin: 0;
+  opacity: 0.8;
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(17, 24, 39, 0.08);
+  border-radius: 18px;
+  padding: 1rem;
+  display: grid;
+  gap: 0.8rem;
+  box-shadow: 0 8px 30px rgba(15, 23, 42, 0.08);
+}
+
+input[type='file'] {
+  padding: 0.5rem;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  background: #fff;
+}
+
+button {
+  justify-self: start;
+  border: 0;
+  border-radius: 10px;
+  padding: 0.65rem 1rem;
+  background: #0f766e;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #115e59;
+}
+
+ul {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.status,
+.note {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.note {
+  opacity: 0.8;
+}

@@ -20,3 +20,4 @@ Binary: `pdflo`
 - `reorder -p` accepts explicit order and ranges
   (example: `3,1,2` or `4-6,1-3`).
 - `info` prints document summary (size, version, pages, encryption, metadata fields).
+- `info --json` prints machine-readable output for scripting.

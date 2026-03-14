@@ -78,3 +78,24 @@ fn info_command_prints_expected_fields() {
         .stdout(predicates::str::contains("PDF Version: 1.5"))
         .stdout(predicates::str::contains("Title: info-test"));
 }
+
+#[test]
+fn info_command_json_outputs_valid_payload() {
+    let dir = tempdir().expect("tempdir should be created");
+    let input_path = dir.path().join("input.pdf");
+    fs::write(&input_path, build_single_page_pdf_bytes()).expect("write input.pdf");
+
+    Command::cargo_bin("pdflo-cli")
+        .expect("binary should build")
+        .args([
+            "info",
+            "-i",
+            input_path.to_str().expect("valid utf-8 path"),
+            "--json",
+        ])
+        .assert()
+        .success()
+        .stdout(predicates::str::contains("\"pages\": 1"))
+        .stdout(predicates::str::contains("\"pdf_version\": \"1.5\""))
+        .stdout(predicates::str::contains("\"title\": \"info-test\""));
+}

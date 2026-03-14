@@ -7,6 +7,7 @@ use pdflo_core::{
     ops::{extract_pages, inspect_pdf, merge_pdfs, reorder_pages, split_pdf},
     ExtractRequest, InfoRequest, MergeRequest, ReorderRequest, SplitMode, SplitRequest,
 };
+use serde_json::json;
 
 #[derive(Debug, Parser)]
 #[command(name = "pdflo")]
@@ -116,6 +117,8 @@ struct InfoArgs {
         help = "Input PDF file"
     )]
     input: String,
+    #[arg(long = "json", help = "Print output as JSON")]
+    json: bool,
 }
 
 fn main() -> Result<()> {
@@ -223,32 +226,53 @@ fn main() -> Result<()> {
                 .with_context(|| format!("failed to read file metadata: {}", args.input))?
                 .len();
 
-            println!("File: {}", args.input);
-            println!("Size (bytes): {size_bytes}");
-            println!("PDF Version: {}", info.pdf_version);
-            println!("Pages: {}", info.page_count);
-            println!(
-                "Encrypted: {}",
-                if info.is_encrypted { "yes" } else { "no" }
-            );
-            println!("Title: {}", info.title.unwrap_or_else(|| "-".to_string()));
-            println!("Author: {}", info.author.unwrap_or_else(|| "-".to_string()));
-            println!(
-                "Creator: {}",
-                info.creator.unwrap_or_else(|| "-".to_string())
-            );
-            println!(
-                "Producer: {}",
-                info.producer.unwrap_or_else(|| "-".to_string())
-            );
-            println!(
-                "Creation Date: {}",
-                info.creation_date.unwrap_or_else(|| "-".to_string())
-            );
-            println!(
-                "Modification Date: {}",
-                info.modification_date.unwrap_or_else(|| "-".to_string())
-            );
+            if args.json {
+                let payload = json!({
+                    "file": args.input,
+                    "size_bytes": size_bytes,
+                    "pdf_version": info.pdf_version,
+                    "pages": info.page_count,
+                    "encrypted": info.is_encrypted,
+                    "title": info.title,
+                    "author": info.author,
+                    "creator": info.creator,
+                    "producer": info.producer,
+                    "creation_date": info.creation_date,
+                    "modification_date": info.modification_date
+                });
+                println!(
+                    "{}",
+                    serde_json::to_string_pretty(&payload)
+                        .context("failed to serialize info JSON output")?
+                );
+            } else {
+                println!("File: {}", args.input);
+                println!("Size (bytes): {size_bytes}");
+                println!("PDF Version: {}", info.pdf_version);
+                println!("Pages: {}", info.page_count);
+                println!(
+                    "Encrypted: {}",
+                    if info.is_encrypted { "yes" } else { "no" }
+                );
+                println!("Title: {}", info.title.unwrap_or_else(|| "-".to_string()));
+                println!("Author: {}", info.author.unwrap_or_else(|| "-".to_string()));
+                println!(
+                    "Creator: {}",
+                    info.creator.unwrap_or_else(|| "-".to_string())
+                );
+                println!(
+                    "Producer: {}",
+                    info.producer.unwrap_or_else(|| "-".to_string())
+                );
+                println!(
+                    "Creation Date: {}",
+                    info.creation_date.unwrap_or_else(|| "-".to_string())
+                );
+                println!(
+                    "Modification Date: {}",
+                    info.modification_date.unwrap_or_else(|| "-".to_string())
+                );
+            }
         }
     }
 

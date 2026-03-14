@@ -13,6 +13,20 @@
 - `src/workers/pdf.worker.ts`: heavy processing worker
 - `src/adapters/pdfEngine.ts`: operation interface implementation
 
+## Current Scaffold (v0.1)
+
+- Framework: React + Vite + TypeScript
+- Worker-backed local merge flow
+- No backend/API dependency for file processing
+
+Run locally:
+
+```bash
+cd apps/web
+npm install
+npm run dev
+```
+
 ## Basic flow
 
 1. User drops files

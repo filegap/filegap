@@ -3,15 +3,16 @@
 ## v0.1
 
 - Rust workspace bootstrap
-- Core operation contracts and validation
-- CLI command skeleton (`merge`, `extract`, `split`, `reorder`, `info`)
-- Web app architecture scaffold
+- Core operations implemented (`merge`, `extract`, `split`, `reorder`)
+- CLI commands implemented (`merge`, `extract`, `split`, `reorder`, `info`)
+- Automated tests for core + CLI integration
+- Web app scaffold (React + Vite + Worker local merge flow)
 
 ## v0.2
 
-- Implement PDF operations backed by `lopdf`
-- Add fixtures and golden output tests
-- Introduce browser worker flow
+- Add richer info/reporting (`--json` extensions, page-level insights)
+- Add fixtures and golden output tests for edge-case PDFs
+- Expand web operations beyond merge (extract/split/reorder)
 - Start desktop integration with Tauri
 
 ## Future

@@ -20,6 +20,7 @@ MVP operations:
 - Extract selected pages
 - Split a PDF
 - Reorder pages
+- Inspect PDF metadata and structure (`info`)
 
 ## Repository Structure
 
@@ -71,6 +72,29 @@ Run CLI:
 cargo run -p pdflo-cli -- --help
 ```
 
+Examples:
+
+```bash
+cargo run -p pdflo-cli -- merge -i a.pdf b.pdf -o merged.pdf
+cargo run -p pdflo-cli -- extract -i in.pdf -p 2-4 -o out.pdf
+cargo run -p pdflo-cli -- split -i in.pdf --every 2 -d ./out
+cargo run -p pdflo-cli -- reorder -i in.pdf -p 3,1,2 -o reordered.pdf
+cargo run -p pdflo-cli -- info -i in.pdf
+cargo run -p pdflo-cli -- info -i in.pdf --json
+```
+
+## Quick Start (Web Scaffold)
+
+The web app scaffold is in `apps/web` and runs fully local in the browser.
+
+```bash
+cd apps/web
+npm install
+npm run dev
+```
+
+Current web scaffold includes local merge flow via Web Worker.
+
 ## Status
 
-This repository is in active bootstrap stage for v0.1.
+`v0.1` feature-complete on CLI (`merge`, `extract`, `split`, `reorder`, `info`) with automated tests.
