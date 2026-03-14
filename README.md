@@ -40,6 +40,18 @@ pdflo/
 - No remote PDF processing in the web flow
 - Browser processing via `ArrayBuffer` / `Blob`
 - Clear operation boundaries between UI and core logic
+- Web app architecture is backend-free for PDF operations
+
+## Web Guardrails (Non-Negotiable)
+
+For the web channel, PDF processing must remain strictly client-side.
+
+- No API routes for PDF manipulation
+- No file upload endpoint for processing
+- No server-side persistence of user PDFs
+- No telemetry that includes file content or extracted text
+
+Any proposal that introduces server-side PDF processing is out of scope for this project.
 
 ## Quick Start (Rust)
 

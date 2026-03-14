@@ -8,7 +8,7 @@ Keep PDF domain logic independent from presentation layers.
 
 1. `crates/core`: typed operations and validation for PDF workflows.
 2. `crates/cli`: command parsing + filesystem I/O adapter.
-3. `apps/web`: browser UI, local-only processing path (planned).
+3. `apps/web`: browser UI, local-only processing path with no backend PDF service (planned).
 4. `apps/desktop`: tauri wrapper for desktop distribution (planned).
 
 ## Core Operation Contracts
@@ -32,3 +32,9 @@ All contracts use bytes (`Vec<u8>`) at boundaries, keeping I/O out of `core`.
 
 All adapters must keep processing local to the user's environment.
 No server upload path is allowed in the default architecture.
+
+## Runtime Boundaries
+
+- `apps/web` must execute PDF operations in-browser (main thread + worker), never on a server.
+- `apps/desktop` can call local Rust commands, but must not proxy files to remote services.
+- `crates/core` remains pure processing logic and never performs network I/O.
