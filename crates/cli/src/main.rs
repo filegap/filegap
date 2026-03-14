@@ -4,8 +4,8 @@ use std::path::Path;
 use anyhow::{bail, Context, Result};
 use clap::{Args, Parser, Subcommand};
 use pdflo_core::{
-    ops::{extract_pages, merge_pdfs, split_pdf},
-    ExtractRequest, MergeRequest, SplitMode, SplitRequest,
+    ops::{extract_pages, merge_pdfs, reorder_pages, split_pdf},
+    ExtractRequest, MergeRequest, ReorderRequest, SplitMode, SplitRequest,
 };
 
 #[derive(Debug, Parser)]
@@ -148,9 +148,21 @@ fn main() -> Result<()> {
             println!("split {} into {} file(s)", args.input, outputs.len());
         }
         Commands::Reorder(args) => {
+            let input_bytes = fs::read(&args.input)
+                .with_context(|| format!("failed to read input PDF: {}", args.input))?;
+            let page_order = parse_page_order(&args.pages)?;
+            let request = ReorderRequest {
+                document: input_bytes,
+                page_order,
+            };
+
+            let output_bytes = reorder_pages(&request).context("reorder operation failed")?;
+            fs::write(&args.output, output_bytes)
+                .with_context(|| format!("failed to write output PDF: {}", args.output))?;
+
             println!(
-                "[stub] reorder -> input: {}, pages: {}, output: {}",
-                args.input, args.pages, args.output
+                "reordered pages {} from {} into {}",
+                args.pages, args.input, args.output
             );
         }
         Commands::Info(args) => {
@@ -159,4 +171,39 @@ fn main() -> Result<()> {
     }
 
     Ok(())
+}
+
+fn parse_page_order(input: &str) -> Result<Vec<u32>> {
+    let mut pages = Vec::new();
+    for token in input
+        .split(',')
+        .map(str::trim)
+        .filter(|token| !token.is_empty())
+    {
+        if let Some((start, end)) = token.split_once('-') {
+            let start = start
+                .trim()
+                .parse::<u32>()
+                .with_context(|| format!("invalid page number in range: `{token}`"))?;
+            let end = end
+                .trim()
+                .parse::<u32>()
+                .with_context(|| format!("invalid page number in range: `{token}`"))?;
+            if start > end {
+                bail!("invalid range `{token}`: start cannot be greater than end");
+            }
+            pages.extend(start..=end);
+        } else {
+            let page = token
+                .parse::<u32>()
+                .with_context(|| format!("invalid page number `{token}`"))?;
+            pages.push(page);
+        }
+    }
+
+    if pages.is_empty() {
+        bail!("page order cannot be empty (example: 3,1,2)");
+    }
+
+    Ok(pages)
 }
