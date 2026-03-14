@@ -21,6 +21,8 @@
 - Prima di ogni commit deve essere eseguita una review di sicurezza.
 - La review deve avere esito positivo e senza criticita aperte.
 - In presenza di criticita, il commit va bloccato finche non risolte o esplicitamente approvate.
+- Prima di ogni commit devono essere eseguiti i test automatici pertinenti.
+- Il commit e consentito solo con test in stato verde (pass).
 
 ## Checklist Pre-Commit
 1. Scope chiaro: il commit include una sola modifica logica e mantiene un diff minimo.
@@ -28,11 +30,12 @@
 3. Nessun artefatto non voluto: escludere log, file temporanei, output di build e dati personali.
 4. Security review positiva: nessuna criticita aperta prima del commit.
 5. Build/validazione locale: eseguire almeno i controlli tecnici del perimetro modificato.
-6. Test: validare i test esistenti oppure documentare chiaramente il gap.
-7. Documentazione aggiornata: allineare `README.md` e `docs/*` quando cambia il comportamento.
-8. Messaggio commit conforme: usare formato Conventional Commits.
-9. Branch policy rispettata: usare branch coerenti con `dev/main` e prassi git-flow.
-10. Review finale del diff staged: controllo conclusivo prima del commit.
+6. Test obbligatori: eseguire sempre i test automatici pertinenti prima del commit.
+7. Test in stato verde: non committare con test falliti.
+8. Documentazione aggiornata: allineare `README.md` e `docs/*` quando cambia il comportamento.
+9. Messaggio commit conforme: usare formato Conventional Commits.
+10. Branch policy rispettata: usare branch coerenti con `dev/main` e prassi git-flow.
+11. Review finale del diff staged: controllo conclusivo prima del commit.
 
 ## Strategia Branching
 - Branch principali: `main` e `dev`.
