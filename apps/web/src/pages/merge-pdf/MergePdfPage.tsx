@@ -271,6 +271,12 @@ export function MergePdfPage() {
       return;
     }
 
+    if (response.type !== 'merge') {
+      setStatus({ tone: 'error', message: 'Invalid worker response type for merge.' });
+      setIsProcessing(false);
+      return;
+    }
+
     setMergedOutput(response.payload.output);
     setShowDownloadGate(false);
     setIsProcessing(false);
@@ -317,7 +323,7 @@ export function MergePdfPage() {
     >
       <Card>
         <div className='space-y-6'>
-          <DropZone onFilesSelected={handleFilesSelected} multiple />
+          <DropZone onFilesSelected={handleFilesSelected} multiple disabled={isProcessing} />
           <div className='inline-flex items-center gap-2 rounded-lg border border-brand-highlight/30 bg-brand-highlight/10 px-3 py-2'>
             <span className='text-brand-highlight' aria-hidden='true'>
               <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor' className='h-4 w-4'>

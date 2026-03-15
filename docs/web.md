@@ -16,11 +16,33 @@
 ## Current Scaffold (v0.1)
 
 - Framework: React + Vite + TypeScript
-- Worker-backed local merge flow
-- Merge queue supports incremental add, remove, and reorder (up/down)
+- Worker-backed local merge and split flows
+- Merge queue supports incremental add, remove, and drag-and-drop reorder
+- Split parser supports range input including single pages (for example `1-3,4,5-10`) with preview-ready architecture
 - No backend/API dependency for file processing
-- First public route implemented: `/merge-pdf`
+- Public routes implemented: `/merge-pdf`, `/split-pdf`
 - Home route intentionally deferred
+
+## Implemented Tool Behaviors
+
+### `/merge-pdf`
+
+- Multiple file queue with add/remove/reorder (drag and drop)
+- Per-file metadata: filename, size, page count
+- Worker-first processing with main-thread fallback
+- Result state with `Download PDF` and `New merge`
+- Dropzone disabled while merge is processing
+
+### `/split-pdf`
+
+- Single source PDF flow with `Uploaded files` section
+- Range input parser supports both ranges and single pages:
+  - Example: `1-3,4,5-10`
+- Live range validation and parsed segment preview chips
+- Worker-first processing with main-thread fallback
+- Output list with per-file download and `Download all`
+- Result state with `New split` to reset and start again
+- Dropzone disabled while split is processing
 
 Run locally:
 

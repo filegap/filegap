@@ -3,9 +3,10 @@ import { useRef, useState } from 'react';
 type DropZoneProps = {
   onFilesSelected: (files: File[]) => void;
   multiple?: boolean;
+  disabled?: boolean;
 };
 
-export function DropZone({ onFilesSelected, multiple = true }: DropZoneProps) {
+export function DropZone({ onFilesSelected, multiple = true, disabled = false }: DropZoneProps) {
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -21,28 +22,46 @@ export function DropZone({ onFilesSelected, multiple = true }: DropZoneProps) {
     <div
       role='button'
       tabIndex={0}
-      onClick={() => fileInputRef.current?.click()}
+      onClick={() => {
+        if (!disabled) {
+          fileInputRef.current?.click();
+        }
+      }}
       onKeyDown={(event) => {
+        if (disabled) {
+          return;
+        }
         if (event.key === 'Enter' || event.key === ' ') {
           event.preventDefault();
           fileInputRef.current?.click();
         }
       }}
       onDragOver={(event) => {
+        if (disabled) {
+          return;
+        }
         event.preventDefault();
         setDragActive(true);
       }}
       onDragLeave={(event) => {
+        if (disabled) {
+          return;
+        }
         event.preventDefault();
         setDragActive(false);
       }}
       onDrop={(event) => {
+        if (disabled) {
+          return;
+        }
         event.preventDefault();
         setDragActive(false);
         applyFiles(event.dataTransfer.files);
       }}
       className={`flex min-h-[220px] cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed px-6 py-10 text-center transition-all duration-200 ${
-        dragActive
+        disabled
+          ? 'cursor-not-allowed border-ui-border bg-ui-bg opacity-70'
+          : dragActive
           ? 'border-brand-primary bg-brand-primary/12 shadow-[0_0_0_4px_rgba(255,46,139,0.10)]'
           : 'border-ui-border bg-ui-bg hover:border-brand-primary/70 hover:bg-brand-primary/5'
       }`}
@@ -63,6 +82,7 @@ export function DropZone({ onFilesSelected, multiple = true }: DropZoneProps) {
         className='hidden'
         accept='application/pdf'
         multiple={multiple}
+        disabled={disabled}
         onChange={(event) => {
           applyFiles(event.target.files);
           // Allow selecting the same file again in a subsequent pick.

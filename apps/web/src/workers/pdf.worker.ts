@@ -1,4 +1,4 @@
-import { mergePdfBuffers } from '../adapters/pdfEngine';
+import { mergePdfBuffers, splitPdfByRanges } from '../adapters/pdfEngine';
 import { logDebug, logError, logInfo, logWarn } from '../lib/logging/logger';
 import type { WorkerRequest, WorkerResponse } from '../types';
 
@@ -14,6 +14,21 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
         ok: true,
         type: 'merge',
         payload: { output },
+      };
+      (self as unknown as Worker).postMessage(response);
+      return;
+    }
+
+    if (event.data.type === 'split') {
+      logDebug('Worker split request received.', {
+        ranges: event.data.payload.ranges.length,
+      });
+      const outputs = await splitPdfByRanges(event.data.payload.file, event.data.payload.ranges);
+      logInfo('Worker split completed.');
+      const response: WorkerResponse = {
+        ok: true,
+        type: 'split',
+        payload: { outputs },
       };
       (self as unknown as Worker).postMessage(response);
       return;
