@@ -23,6 +23,9 @@
 - In presenza di criticita, il commit va bloccato finche non risolte o esplicitamente approvate.
 - Prima di ogni commit devono essere eseguiti i test automatici pertinenti.
 - Il commit e consentito solo con test in stato verde (pass).
+- Se il commit tocca `apps/web`, i gate minimi obbligatori sono:
+  - `npm run build` in `apps/web`
+  - `npm run test` in `apps/web`
 
 ## Checklist Pre-Commit
 1. Scope chiaro: il commit include una sola modifica logica e mantiene un diff minimo.
@@ -32,10 +35,11 @@
 5. Build/validazione locale: eseguire almeno i controlli tecnici del perimetro modificato.
 6. Test obbligatori: eseguire sempre i test automatici pertinenti prima del commit.
 7. Test in stato verde: non committare con test falliti.
-8. Documentazione aggiornata: allineare `README.md` e `docs/*` quando cambia il comportamento.
-9. Messaggio commit conforme: usare formato Conventional Commits.
-10. Branch policy rispettata: usare branch coerenti con `dev/main` e prassi git-flow.
-11. Review finale del diff staged: controllo conclusivo prima del commit.
+8. Se ci sono modifiche frontend in `apps/web`, eseguire sempre `npm run build` e `npm run test` in `apps/web`.
+9. Documentazione aggiornata: allineare `README.md` e `docs/*` quando cambia il comportamento.
+10. Messaggio commit conforme: usare formato Conventional Commits.
+11. Branch policy rispettata: usare branch coerenti con `dev/main` e prassi git-flow.
+12. Review finale del diff staged: controllo conclusivo prima del commit.
 
 ## Strategia Branching
 - Branch principali: `main` e `dev`.

@@ -13,3 +13,4 @@ apps/web/dist/
 
 # Logs
 *.log
+*.tsbuildinfo

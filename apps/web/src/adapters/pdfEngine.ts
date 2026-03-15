@@ -1,6 +1,6 @@
 import { PDFDocument } from 'pdf-lib';
 
-export async function mergePdfBuffers(buffers: ArrayBuffer[]): Promise<ArrayBuffer> {
+export async function mergePdfBuffers(buffers: ArrayBuffer[]): Promise<Uint8Array> {
   if (buffers.length < 2) {
     throw new Error('merge requires at least 2 input files');
   }
@@ -14,5 +14,5 @@ export async function mergePdfBuffers(buffers: ArrayBuffer[]): Promise<ArrayBuff
   }
 
   const output = await merged.save();
-  return output.buffer;
+  return output;
 }

@@ -9,7 +9,7 @@ export type WorkerSuccessResponse = {
   ok: true;
   type: 'merge';
   payload: {
-    output: ArrayBuffer;
+    output: Uint8Array;
   };
 };
 

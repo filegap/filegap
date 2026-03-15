@@ -126,6 +126,36 @@ Each route must include:
 - Keep selected files when possible.
 - Allow retry without full page reload.
 
+## Client Logging Policy (Always On)
+
+Console logs are part of the product operation and must always be enabled.
+They are not test-only diagnostics.
+
+Required levels:
+
+1. `debug`:
+- Technical execution details for developers.
+- Example: worker events, buffer sizes, operation timings.
+
+2. `info`:
+- User-friendly operational milestones.
+- Example: files selected, merge started, merge completed.
+
+3. `warn`:
+- User-recoverable problems.
+- Example: invalid input before processing.
+
+4. `error`:
+- Failures with concise technical reason.
+- Example: worker processing failed.
+
+Tone and content rules:
+
+1. `debug` can be more technical.
+2. `info`/`warn`/`error` should remain understandable by non-technical users.
+3. Never log PDF content, extracted text, or sensitive metadata.
+4. Prefer safe metrics (file count, total bytes, operation state).
+
 ## Performance Rules
 
 1. Keep worker payloads minimal.
