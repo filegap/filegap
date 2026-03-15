@@ -17,11 +17,11 @@
 
 - Framework: React + Vite + TypeScript
 - Worker-backed local merge and split flows
-- Worker-backed local merge, split, and extract flows
+- Worker-backed local merge, split, extract, and reorder flows
 - Merge queue supports incremental add, remove, and drag-and-drop reorder
 - Split parser supports range input including single pages (for example `1-3,4,5-10`) with preview-ready architecture
 - No backend/API dependency for file processing
-- Public routes implemented: `/merge-pdf`, `/split-pdf`, `/extract-pages`
+- Public routes implemented: `/merge-pdf`, `/split-pdf`, `/extract-pages`, `/reorder-pdf`
 - Home route intentionally deferred
 
 ## Implemented Tool Behaviors
@@ -54,6 +54,16 @@
 - Single output result with `Download PDF`
 - Result state with `New extract` to reset and start again
 - Dropzone disabled while extract is processing
+
+### `/reorder-pdf`
+
+- Single source PDF flow with `Uploaded files` section
+- Page-order parser supports singles and ranges (for example `3,1,2,4-6`)
+- Validation requires full page order with no duplicates
+- Worker-first processing with main-thread fallback
+- Single output result with `Download PDF`
+- Result state with `New reorder` to reset and start again
+- Dropzone disabled while reorder is processing
 
 Run locally:
 

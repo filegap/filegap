@@ -111,3 +111,68 @@ export async function extractPdfByRanges(
 
   return outputDoc.save();
 }
+
+export function parsePageOrder(input: string, maxPage: number): number[] {
+  const cleaned = input.trim();
+  if (!cleaned) {
+    throw new Error('Enter page order, for example: 1,3,2,4-6');
+  }
+  if (maxPage < 1) {
+    throw new Error('Invalid page count.');
+  }
+
+  const tokens = cleaned.split(',').map((part) => part.trim());
+  const order: number[] = [];
+
+  for (const token of tokens) {
+    const singleMatch = /^(\d+)$/.exec(token);
+    const rangeMatch = /^(\d+)\s*-\s*(\d+)$/.exec(token);
+    if (!singleMatch && !rangeMatch) {
+      throw new Error(`Invalid token "${token}". Use 1,3,2,4-6 format.`);
+    }
+
+    if (singleMatch) {
+      const page = Number.parseInt(singleMatch[1], 10);
+      if (page < 1 || page > maxPage) {
+        throw new Error(`Page "${page}" is out of bounds (1-${maxPage}).`);
+      }
+      order.push(page);
+      continue;
+    }
+
+    const start = Number.parseInt(rangeMatch![1], 10);
+    const end = Number.parseInt(rangeMatch![2], 10);
+    if (start < 1 || end < 1 || start > end || end > maxPage) {
+      throw new Error(`Invalid range "${token}".`);
+    }
+    for (let page = start; page <= end; page += 1) {
+      order.push(page);
+    }
+  }
+
+  const seen = new Set<number>();
+  for (const page of order) {
+    if (seen.has(page)) {
+      throw new Error('Page order cannot contain duplicates.');
+    }
+    seen.add(page);
+  }
+  if (order.length !== maxPage) {
+    throw new Error(`Page order must include all pages exactly once (1-${maxPage}).`);
+  }
+
+  return order;
+}
+
+export async function reorderPdfPages(source: ArrayBuffer, pageOrder: number[]): Promise<Uint8Array> {
+  if (pageOrder.length === 0) {
+    throw new Error('At least one page is required for reorder.');
+  }
+
+  const sourceDoc = await PDFDocument.load(source);
+  const outputDoc = await PDFDocument.create();
+  const pageIndexes = pageOrder.map((page) => page - 1);
+  const copied = await outputDoc.copyPages(sourceDoc, pageIndexes);
+  copied.forEach((page) => outputDoc.addPage(page));
+  return outputDoc.save();
+}

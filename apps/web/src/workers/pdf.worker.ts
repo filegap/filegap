@@ -1,4 +1,9 @@
-import { extractPdfByRanges, mergePdfBuffers, splitPdfByRanges } from '../adapters/pdfEngine';
+import {
+  extractPdfByRanges,
+  mergePdfBuffers,
+  reorderPdfPages,
+  splitPdfByRanges,
+} from '../adapters/pdfEngine';
 import { logDebug, logError, logInfo, logWarn } from '../lib/logging/logger';
 import type { WorkerRequest, WorkerResponse } from '../types';
 
@@ -43,6 +48,21 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
       const response: WorkerResponse = {
         ok: true,
         type: 'extract',
+        payload: { output },
+      };
+      (self as unknown as Worker).postMessage(response);
+      return;
+    }
+
+    if (event.data.type === 'reorder') {
+      logDebug('Worker reorder request received.', {
+        pageOrderLength: event.data.payload.pageOrder.length,
+      });
+      const output = await reorderPdfPages(event.data.payload.file, event.data.payload.pageOrder);
+      logInfo('Worker reorder completed.');
+      const response: WorkerResponse = {
+        ok: true,
+        type: 'reorder',
         payload: { output },
       };
       (self as unknown as Worker).postMessage(response);
