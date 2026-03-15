@@ -63,7 +63,11 @@ export function DropZone({ onFilesSelected, multiple = true }: DropZoneProps) {
         className='hidden'
         accept='application/pdf'
         multiple={multiple}
-        onChange={(event) => applyFiles(event.target.files)}
+        onChange={(event) => {
+          applyFiles(event.target.files);
+          // Allow selecting the same file again in a subsequent pick.
+          event.currentTarget.value = '';
+        }}
       />
     </div>
   );

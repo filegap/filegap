@@ -17,6 +17,7 @@
 
 - Framework: React + Vite + TypeScript
 - Worker-backed local merge flow
+- Merge queue supports incremental add, remove, and reorder (up/down)
 - No backend/API dependency for file processing
 - First public route implemented: `/merge-pdf`
 - Home route intentionally deferred

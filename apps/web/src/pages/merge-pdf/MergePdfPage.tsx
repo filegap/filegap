@@ -35,6 +35,8 @@ export function MergePdfPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [mergedOutput, setMergedOutput] = useState<Uint8Array | null>(null);
   const [showDownloadGate, setShowDownloadGate] = useState(false);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   const worker = useMemo(
     () => new Worker(new URL('../../workers/pdf.worker.ts', import.meta.url), { type: 'module' }),
@@ -42,11 +44,59 @@ export function MergePdfPage() {
   );
 
   function handleFilesSelected(nextFiles: File[]): void {
-    setFiles(nextFiles);
-    logInfo('File PDF selezionati.', { selectedFiles: nextFiles.length });
-    logDebug('Dettagli tecnici selezione file.', {
-      selectedFiles: nextFiles.length,
-      totalBytes: nextFiles.reduce((sum, file) => sum + file.size, 0),
+    setFiles((currentFiles) => {
+      const mergedFiles = [...currentFiles, ...nextFiles];
+
+      if (mergedOutput) {
+        setMergedOutput(null);
+        setShowDownloadGate(false);
+        setStatus('Ready');
+      }
+
+      logInfo('PDF files selected.', {
+        selectedFiles: nextFiles.length,
+        totalInQueue: mergedFiles.length,
+      });
+      logDebug('File selection technical details.', {
+        selectedFiles: nextFiles.length,
+        totalBytes: mergedFiles.reduce((sum, file) => sum + file.size, 0),
+      });
+
+      return mergedFiles;
+    });
+  }
+
+  function removeFile(indexToRemove: number): void {
+    setFiles((currentFiles) => {
+      const next = currentFiles.filter((_, index) => index !== indexToRemove);
+      if (mergedOutput) {
+        setMergedOutput(null);
+        setShowDownloadGate(false);
+        setStatus('Ready');
+      }
+      logInfo('File removed from merge queue.', { indexToRemove, totalInQueue: next.length });
+      return next;
+    });
+  }
+
+  function moveFile(fromIndex: number, toIndex: number): void {
+    setFiles((currentFiles) => {
+      if (toIndex < 0 || toIndex >= currentFiles.length) {
+        return currentFiles;
+      }
+
+      const next = [...currentFiles];
+      const [item] = next.splice(fromIndex, 1);
+      next.splice(toIndex, 0, item);
+      if (mergedOutput) {
+        setMergedOutput(null);
+        setShowDownloadGate(false);
+        setStatus('Ready');
+      } else {
+        setStatus('File order updated.');
+      }
+      logInfo('Merge queue order updated.', { fromIndex, toIndex });
+      return next;
     });
   }
 
@@ -57,7 +107,7 @@ export function MergePdfPage() {
   async function handleMerge(): Promise<void> {
     if (files.length < 2) {
       setStatus('Select at least 2 PDF files to merge.');
-      logWarn('Serve selezionare almeno 2 file PDF prima del merge.', {
+      logWarn('At least 2 PDF files are required before merge.', {
         selectedFiles: files.length,
       });
       return;
@@ -65,16 +115,16 @@ export function MergePdfPage() {
 
     setIsProcessing(true);
     setStatus('Processing locally in your browser...');
-    logInfo('Avvio merge locale nel browser.', { selectedFiles: files.length });
+    logInfo('Starting local merge in browser.', { selectedFiles: files.length });
 
     const buffers = await Promise.all(files.map((file) => fileToArrayBuffer(file)));
-    logDebug('Buffer PDF pronti per il worker.', {
+    logDebug('PDF buffers prepared for worker.', {
       selectedFiles: files.length,
       totalBytes: files.reduce((sum, file) => sum + file.size, 0),
     });
     const response = await new Promise<WorkerResponse>((resolve) => {
       const timeoutId = setTimeout(() => {
-        logError('Timeout worker merge: nessuna risposta entro 15s.', {
+        logError('Worker merge timeout: no response in 15s.', {
           selectedFiles: files.length,
         });
         resolve({
@@ -97,7 +147,7 @@ export function MergePdfPage() {
 
       worker.onerror = (event: ErrorEvent) => {
         cleanup();
-        logError('Worker error durante merge.', {
+        logError('Worker error during merge.', {
           message: event.message,
           filename: event.filename,
           lineno: event.lineno,
@@ -111,7 +161,7 @@ export function MergePdfPage() {
 
       worker.onmessageerror = () => {
         cleanup();
-        logError('Worker message error: payload non deserializzabile.');
+        logError('Worker message error: payload not deserializable.');
         resolve({
           ok: false,
           error: 'worker message error',
@@ -125,22 +175,22 @@ export function MergePdfPage() {
     });
 
     if (!response.ok) {
-      logWarn('Worker non disponibile, fallback su main thread.', {
+      logWarn('Worker unavailable, falling back to main thread.', {
         reason: response.error,
       });
       try {
         const output = await mergePdfBuffers(buffers);
         setMergedOutput(output);
         setShowDownloadGate(false);
-        setStatus('Merge completato.');
-        logInfo('Merge completato con fallback main-thread.', {
+        setStatus('Merge completed.');
+        logInfo('Merge completed using main-thread fallback.', {
           outputFile: 'merged.pdf',
           selectedFiles: files.length,
         });
       } catch (error) {
         const reason = error instanceof Error ? error.message : 'unknown merge error';
         setStatus(`Error: ${reason}`);
-        logError('Merge fallito anche in fallback main-thread.', { reason });
+        logError('Merge failed in main-thread fallback.', { reason });
       } finally {
         setIsProcessing(false);
       }
@@ -149,9 +199,9 @@ export function MergePdfPage() {
 
     setMergedOutput(response.payload.output);
     setShowDownloadGate(false);
-    setStatus('Merge completato.');
+    setStatus('Merge completed.');
     setIsProcessing(false);
-    logInfo('Merge completato con successo.', {
+    logInfo('Merge completed successfully.', {
       outputFile: 'merged.pdf',
       selectedFiles: files.length,
     });
@@ -162,12 +212,12 @@ export function MergePdfPage() {
     setMergedOutput(null);
     setShowDownloadGate(false);
     setStatus('Ready');
-    logInfo('Nuovo merge avviato.');
+    logInfo('New merge started.');
   }
 
   function handleDownloadCta(): void {
     setShowDownloadGate(true);
-    logInfo('Apertura modale pre-download.');
+    logInfo('Pre-download modal opened.');
   }
 
   function handleConfirmDownload(): void {
@@ -176,7 +226,7 @@ export function MergePdfPage() {
     }
     saveBlob('merged.pdf', mergedOutput);
     setShowDownloadGate(false);
-    logInfo('Download file merged.pdf avviato.');
+    logInfo('merged.pdf download started.');
   }
 
   return (
@@ -193,13 +243,94 @@ export function MergePdfPage() {
             {files.length === 0 ? (
               <p className='text-sm text-ui-muted'>No files selected yet.</p>
             ) : (
-              <ul className='space-y-2 text-sm text-ui-text'>
-                {files.map((file) => (
-                  <li key={file.name} className='rounded-lg border border-ui-border px-3 py-2'>
-                    {file.name}
+              <>
+                <p className='text-xs font-medium uppercase tracking-wide text-ui-muted'>
+                  Drag files to reorder
+                </p>
+                <ul className='space-y-2 text-sm text-ui-text'>
+                {files.map((file, index) => (
+                  <li
+                    key={`${file.name}-${file.size}-${file.lastModified}-${index}`}
+                    draggable
+                    data-testid='merge-file-item'
+                    onDragStart={(event) => {
+                      setDraggedIndex(index);
+                      setDragOverIndex(null);
+                      event.dataTransfer.effectAllowed = 'move';
+                    }}
+                    onDragOver={(event) => {
+                      event.preventDefault();
+                      event.dataTransfer.dropEffect = 'move';
+                      setDragOverIndex(index);
+                    }}
+                    onDragLeave={() => {
+                      setDragOverIndex((current) => (current === index ? null : current));
+                    }}
+                    onDrop={(event) => {
+                      event.preventDefault();
+                      if (draggedIndex === null || draggedIndex === index) {
+                        setDraggedIndex(null);
+                        setDragOverIndex(null);
+                        return;
+                      }
+                      moveFile(draggedIndex, index);
+                      setDraggedIndex(null);
+                      setDragOverIndex(null);
+                    }}
+                    onDragEnd={() => {
+                      setDraggedIndex(null);
+                      setDragOverIndex(null);
+                    }}
+                    className={`rounded-lg border px-3 py-2 ${
+                      draggedIndex === index
+                        ? 'border-brand-primary bg-brand-primary/5 opacity-70'
+                        : dragOverIndex === index
+                          ? 'border-brand-highlight bg-brand-highlight/10'
+                          : 'border-ui-border'
+                    }`}
+                  >
+                    <div className='flex flex-wrap items-center justify-between gap-3'>
+                      <div className='min-w-0'>
+                        <p
+                          data-testid='merge-file-item-name'
+                          className='truncate font-medium text-ui-text'
+                        >
+                          {index + 1}. {file.name}
+                        </p>
+                        <p className='text-xs text-ui-muted'>{Math.ceil(file.size / 1024)} KB</p>
+                        {dragOverIndex === index ? (
+                          <p className='text-xs font-semibold text-brand-highlight'>Drop here</p>
+                        ) : null}
+                      </div>
+                      <div className='flex items-center gap-2'>
+                        <button
+                          type='button'
+                          onClick={() => removeFile(index)}
+                          aria-label={`Remove ${file.name}`}
+                          title='Remove file'
+                          className='rounded-lg border border-ui-border p-2 text-ui-text transition hover:bg-ui-bg'
+                        >
+                          <svg
+                            xmlns='http://www.w3.org/2000/svg'
+                            viewBox='0 0 24 24'
+                            fill='none'
+                            stroke='currentColor'
+                            strokeWidth='2'
+                            className='h-4 w-4'
+                            aria-hidden='true'
+                          >
+                            <path d='M3 6h18' />
+                            <path d='M8 6V4h8v2' />
+                            <path d='M19 6l-1 14H6L5 6' />
+                            <path d='M10 11v6M14 11v6' />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
                   </li>
                 ))}
-              </ul>
+                </ul>
+              </>
             )}
           </div>
 
@@ -214,18 +345,18 @@ export function MergePdfPage() {
 
           {mergedOutput ? (
             <div className='rounded-xl border border-brand-primary/30 bg-brand-primary/5 p-4'>
-              <p className='font-heading text-lg font-semibold text-ui-text'>Merge completato</p>
+              <p className='font-heading text-lg font-semibold text-ui-text'>Merge completed</p>
               <p className='mt-1 text-sm text-ui-muted'>
-                Il file finale e pronto. Continua con il download oppure avvia un nuovo merge.
+                Your output is ready. Continue to download or start a new merge.
               </p>
               <div className='mt-4 flex flex-wrap gap-3'>
-                <Button onClick={handleDownloadCta}>Scarica PDF</Button>
+                <Button onClick={handleDownloadCta}>Download PDF</Button>
                 <button
                   type='button'
                   onClick={startNewMerge}
                   className='rounded-xl border border-ui-border px-4 py-3 text-sm font-semibold text-ui-text transition hover:bg-ui-bg'
                 >
-                  Nuovo merge
+                  New merge
                 </button>
               </div>
             </div>
@@ -256,19 +387,19 @@ export function MergePdfPage() {
       {showDownloadGate && mergedOutput ? (
         <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4'>
           <div className='w-full max-w-md rounded-2xl border border-ui-border bg-ui-surface p-6 shadow-xl'>
-            <p className='font-heading text-2xl font-semibold text-ui-text'>Merge completato</p>
+            <p className='font-heading text-2xl font-semibold text-ui-text'>Merge completed</p>
             <p className='mt-2 text-sm leading-relaxed text-ui-muted'>
-              PDFlo funziona localmente nel tuo browser. Se ti e utile, aiutaci a farlo conoscere:
-              condividilo con chi cerca strumenti PDF davvero privati.
+              PDFlo runs entirely in your browser. If it helps, support the project and share it
+              with people who need truly private PDF tools.
             </p>
             <div className='mt-5 flex flex-wrap gap-3'>
-              <Button onClick={handleConfirmDownload}>Continua al download</Button>
+              <Button onClick={handleConfirmDownload}>Continue to download</Button>
               <button
                 type='button'
                 onClick={() => setShowDownloadGate(false)}
                 className='rounded-xl border border-ui-border px-4 py-3 text-sm font-semibold text-ui-text transition hover:bg-ui-bg'
               >
-                Chiudi
+                Close
               </button>
             </div>
           </div>

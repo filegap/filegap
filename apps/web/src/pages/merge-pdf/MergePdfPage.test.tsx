@@ -10,7 +10,7 @@ vi.mock('../../adapters/pdfEngine', () => ({
 }));
 
 describe('MergePdfPage', () => {
-  it('renderizza il layout base della rotta merge', () => {
+  it('renders the base layout for merge route', () => {
     render(<MergePdfPage />);
 
     expect(
@@ -21,7 +21,7 @@ describe('MergePdfPage', () => {
     expect(screen.getByRole('button', { name: 'Merge PDF' })).toBeInTheDocument();
   });
 
-  it('mostra validazione se si tenta merge con meno di 2 file', async () => {
+  it('shows validation if merge starts with less than 2 files', async () => {
     const user = userEvent.setup();
     render(<MergePdfPage />);
 
@@ -30,7 +30,7 @@ describe('MergePdfPage', () => {
     expect(screen.getByText('Select at least 2 PDF files to merge.')).toBeInTheDocument();
   });
 
-  it('mostra feedback completato e CTA download dopo merge riuscito', async () => {
+  it('shows completed feedback and download CTA after successful merge', async () => {
     const user = userEvent.setup();
     vi.mocked(mergePdfBuffers).mockResolvedValue(new Uint8Array([1, 2, 3]));
 
@@ -44,15 +44,67 @@ describe('MergePdfPage', () => {
     await user.click(screen.getByRole('button', { name: 'Merge PDF' }));
 
     await waitFor(() => {
-      expect(screen.getByText('Merge completato')).toBeInTheDocument();
+      expect(screen.getByText('Merge completed')).toBeInTheDocument();
     });
 
     expect(screen.queryByRole('button', { name: 'Merge PDF' })).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Nuovo merge' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Scarica PDF' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'New merge' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Download PDF' })).toBeInTheDocument();
   });
 
-  it('apre la modale al click su Scarica PDF e conferma il download', async () => {
+  it('adds files to queue with subsequent selections', () => {
+    render(<MergePdfPage />);
+
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const fileA = new File([new Uint8Array([1])], 'a.pdf', { type: 'application/pdf' });
+    const fileB = new File([new Uint8Array([2])], 'b.pdf', { type: 'application/pdf' });
+
+    fireEvent.change(input, { target: { files: [fileA] } });
+    fireEvent.change(input, { target: { files: [fileB] } });
+
+    expect(screen.getByText(/1\. a\.pdf/i)).toBeInTheDocument();
+    expect(screen.getByText(/2\. b\.pdf/i)).toBeInTheDocument();
+  });
+
+  it('removes a file from the queue', async () => {
+    const user = userEvent.setup();
+    render(<MergePdfPage />);
+
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const fileA = new File([new Uint8Array([1])], 'a.pdf', { type: 'application/pdf' });
+    const fileB = new File([new Uint8Array([2])], 'b.pdf', { type: 'application/pdf' });
+    fireEvent.change(input, { target: { files: [fileA, fileB] } });
+
+    await user.click(screen.getByRole('button', { name: 'Remove a.pdf' }));
+
+    expect(screen.queryByText(/a\.pdf/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/1\. b\.pdf/i)).toBeInTheDocument();
+  });
+
+  it('reorders files with drag and drop', () => {
+    render(<MergePdfPage />);
+
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const fileA = new File([new Uint8Array([1])], 'a.pdf', { type: 'application/pdf' });
+    const fileB = new File([new Uint8Array([2])], 'b.pdf', { type: 'application/pdf' });
+    fireEvent.change(input, { target: { files: [fileA, fileB] } });
+    expect(screen.getByText('Drag files to reorder')).toBeInTheDocument();
+
+    const fileItems = screen.getAllByTestId('merge-file-item');
+    fireEvent.dragStart(fileItems[0], { dataTransfer: {} });
+    fireEvent.dragOver(fileItems[1], { dataTransfer: {} });
+    fireEvent.drop(fileItems[1], { dataTransfer: {} });
+    fireEvent.dragEnd(fileItems[0], { dataTransfer: {} });
+
+    const names = screen
+      .getAllByTestId('merge-file-item-name')
+      .map((node) => node.textContent?.trim());
+    expect(names[0]).toContain('b.pdf');
+    expect(names[1]).toContain('a.pdf');
+    expect(screen.getByText('File order updated.')).toBeInTheDocument();
+  });
+
+  it('opens modal on Download PDF click and confirms download', async () => {
     const user = userEvent.setup();
     vi.mocked(mergePdfBuffers).mockResolvedValue(new Uint8Array([1, 2, 3]));
     const createObjectURLSpy = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:test');
@@ -68,13 +120,13 @@ describe('MergePdfPage', () => {
     await user.click(screen.getByRole('button', { name: 'Merge PDF' }));
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Scarica PDF' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Download PDF' })).toBeInTheDocument();
     });
 
-    await user.click(screen.getByRole('button', { name: 'Scarica PDF' }));
-    expect(screen.getByRole('button', { name: 'Continua al download' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Download PDF' }));
+    expect(screen.getByRole('button', { name: 'Continue to download' })).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'Continua al download' }));
+    await user.click(screen.getByRole('button', { name: 'Continue to download' }));
     expect(createObjectURLSpy).toHaveBeenCalledTimes(1);
     expect(revokeObjectURLSpy).toHaveBeenCalledTimes(1);
 
