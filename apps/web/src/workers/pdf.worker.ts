@@ -5,11 +5,11 @@ import type { WorkerRequest, WorkerResponse } from '../types';
 self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
   try {
     if (event.data.type === 'merge') {
-      logDebug('Worker merge request ricevuta.', {
+      logDebug('Worker merge request received.', {
         fileCount: event.data.payload.files.length,
       });
       const output = await mergePdfBuffers(event.data.payload.files);
-      logInfo('Worker merge completato.');
+      logInfo('Worker merge completed.');
       const response: WorkerResponse = {
         ok: true,
         type: 'merge',
@@ -23,10 +23,10 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
       ok: false,
       error: 'unsupported operation',
     };
-    logWarn('Worker operation non supportata.');
+    logWarn('Worker operation not supported.');
     (self as unknown as Worker).postMessage(unknownResponse);
   } catch (error) {
-    logError('Errore nel worker durante il merge.', {
+    logError('Worker merge error.', {
       reason: error instanceof Error ? error.message : 'unknown worker error',
     });
     const response: WorkerResponse = {

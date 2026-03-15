@@ -11,8 +11,8 @@ export function ToolLayout({ title, description, children }: ToolLayoutProps) {
   return (
     <PageContainer>
       <header className='mb-8 space-y-3'>
-        <p className='inline-flex rounded-full border border-brand-primary/30 bg-brand-primary/10 px-3 py-1 text-sm font-semibold text-brand-primary'>
-          PDFlo · Privacy-first
+        <p className='inline-flex rounded-full border border-brand-primary/20 bg-brand-primary/5 px-3 py-1 text-xs font-medium uppercase tracking-wide text-brand-primary/80'>
+          Privacy-first PDF tools
         </p>
         <h1 className='font-heading text-4xl font-bold leading-tight text-ui-text md:text-5xl'>
           {title}

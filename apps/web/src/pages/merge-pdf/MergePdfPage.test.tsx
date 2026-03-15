@@ -27,7 +27,7 @@ describe('MergePdfPage', () => {
 
     await user.click(screen.getByRole('button', { name: 'Merge PDF' }));
 
-    expect(screen.getByText('Select at least 2 PDF files to merge.')).toBeInTheDocument();
+    expect(screen.getByText('Add PDF files to start.')).toBeInTheDocument();
   });
 
   it('shows completed feedback and download CTA after successful merge', async () => {
@@ -62,8 +62,9 @@ describe('MergePdfPage', () => {
     fireEvent.change(input, { target: { files: [fileA] } });
     fireEvent.change(input, { target: { files: [fileB] } });
 
-    expect(screen.getByText(/1\. a\.pdf/i)).toBeInTheDocument();
-    expect(screen.getByText(/2\. b\.pdf/i)).toBeInTheDocument();
+    expect(screen.getByText('a.pdf')).toBeInTheDocument();
+    expect(screen.getByText('b.pdf')).toBeInTheDocument();
+    expect(screen.getAllByText(/KB ·/i).length).toBeGreaterThan(0);
   });
 
   it('removes a file from the queue', async () => {
@@ -78,7 +79,7 @@ describe('MergePdfPage', () => {
     await user.click(screen.getByRole('button', { name: 'Remove a.pdf' }));
 
     expect(screen.queryByText(/a\.pdf/i)).not.toBeInTheDocument();
-    expect(screen.getByText(/1\. b\.pdf/i)).toBeInTheDocument();
+    expect(screen.getByText('b.pdf')).toBeInTheDocument();
   });
 
   it('reorders files with drag and drop', () => {
@@ -88,11 +89,12 @@ describe('MergePdfPage', () => {
     const fileA = new File([new Uint8Array([1])], 'a.pdf', { type: 'application/pdf' });
     const fileB = new File([new Uint8Array([2])], 'b.pdf', { type: 'application/pdf' });
     fireEvent.change(input, { target: { files: [fileA, fileB] } });
-    expect(screen.getByText('Drag files to reorder')).toBeInTheDocument();
+    expect(screen.getByText('Drag and drop rows to reorder')).toBeInTheDocument();
 
     const fileItems = screen.getAllByTestId('merge-file-item');
     fireEvent.dragStart(fileItems[0], { dataTransfer: {} });
     fireEvent.dragOver(fileItems[1], { dataTransfer: {} });
+    expect(screen.getByText('Drop here')).toBeInTheDocument();
     fireEvent.drop(fileItems[1], { dataTransfer: {} });
     fireEvent.dragEnd(fileItems[0], { dataTransfer: {} });
 

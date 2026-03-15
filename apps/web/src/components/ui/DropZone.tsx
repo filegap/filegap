@@ -48,13 +48,13 @@ export function DropZone({ onFilesSelected, multiple = true }: DropZoneProps) {
       }`}
     >
       <p className='font-heading text-2xl font-semibold text-ui-text md:text-3xl'>
-        Drag & Drop PDF Files
+        Drag & drop PDF files
       </p>
       <p className='mt-2 max-w-xl text-sm text-ui-muted'>
-        Files are processed locally in your browser. No uploads.
+        Or select files from your device. Files stay in your browser.
       </p>
       <p className='mt-4 rounded-lg bg-brand-accent px-3 py-1 text-xs font-semibold text-ui-text'>
-        Click to browse files
+        Select PDF files
       </p>
 
       <input
