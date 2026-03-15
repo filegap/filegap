@@ -41,10 +41,10 @@ export function DropZone({ onFilesSelected, multiple = true }: DropZoneProps) {
         setDragActive(false);
         applyFiles(event.dataTransfer.files);
       }}
-      className={`flex min-h-[220px] cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed px-6 py-10 text-center transition ${
+      className={`flex min-h-[220px] cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed px-6 py-10 text-center transition-all duration-200 ${
         dragActive
-          ? 'border-brand-primary bg-brand-primary/10'
-          : 'border-ui-border bg-ui-bg hover:border-brand-primary/60 hover:bg-brand-primary/5'
+          ? 'border-brand-primary bg-brand-primary/12 shadow-[0_0_0_4px_rgba(255,46,139,0.10)]'
+          : 'border-ui-border bg-ui-bg hover:border-brand-primary/70 hover:bg-brand-primary/5'
       }`}
     >
       <p className='font-heading text-2xl font-semibold text-ui-text md:text-3xl'>

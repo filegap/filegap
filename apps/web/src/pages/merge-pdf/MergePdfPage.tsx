@@ -313,10 +313,21 @@ export function MergePdfPage() {
     <ToolLayout
       title='Merge PDF'
       description='Merge multiple PDF files into a single document directly in your browser. No uploads, no server processing.'
+      heroVariant='brand'
     >
       <Card>
         <div className='space-y-6'>
           <DropZone onFilesSelected={handleFilesSelected} multiple />
+          <div className='inline-flex items-center gap-2 rounded-lg border border-brand-highlight/30 bg-brand-highlight/10 px-3 py-2'>
+            <span className='text-brand-highlight' aria-hidden='true'>
+              <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor' className='h-4 w-4'>
+                <path d='M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5Zm-3 8V7a3 3 0 0 1 6 0v3H9Z' />
+              </svg>
+            </span>
+            <p className='text-xs font-medium text-brand-highlight'>
+              Local processing only. Your PDF files never leave your device.
+            </p>
+          </div>
 
           <div className='space-y-3'>
             <div className='flex items-center justify-between gap-3'>
@@ -370,13 +381,13 @@ export function MergePdfPage() {
                         ? 'border-brand-primary bg-brand-primary/5 opacity-70'
                         : dragOverIndex === index
                           ? 'border-brand-highlight bg-brand-highlight/10'
-                          : 'border-ui-border'
+                          : 'border-ui-border hover:border-brand-primary/35'
                     }`}
                   >
                     <div className='flex items-center justify-between gap-3'>
                       <div className='flex min-w-0 items-center gap-3'>
                         <span
-                          className='cursor-grab rounded-md border border-ui-border bg-ui-bg p-2 text-ui-muted'
+                          className='cursor-grab rounded-md border border-ui-border bg-ui-bg p-2 text-brand-highlight/75'
                           aria-hidden='true'
                           title='Drag to reorder'
                         >
@@ -444,9 +455,9 @@ export function MergePdfPage() {
           </div>
 
           {mergedOutput ? (
-            <div className='rounded-2xl border border-brand-highlight/30 bg-gradient-to-r from-brand-primary/10 to-brand-highlight/10 p-5'>
+            <div className='rounded-2xl border border-brand-primary/40 bg-brand-primary/10 p-5 shadow-[0_10px_24px_rgba(255,46,139,0.16)]'>
               <p className='font-heading text-lg font-semibold text-ui-text'>Merge completed</p>
-              <p className='mt-1 text-sm text-ui-muted'>
+              <p className='mt-1 text-sm text-ui-text/85'>
                 Your merged PDF is ready. Download it now or start a new merge.
               </p>
               <div className='mt-4 flex flex-wrap gap-3'>
