@@ -88,3 +88,26 @@ export async function splitPdfByRanges(
 
   return outputs;
 }
+
+export async function extractPdfByRanges(
+  source: ArrayBuffer,
+  ranges: SplitRangeSegment[]
+): Promise<Uint8Array> {
+  if (ranges.length === 0) {
+    throw new Error('At least one extract range is required.');
+  }
+
+  const sourceDoc = await PDFDocument.load(source);
+  const outputDoc = await PDFDocument.create();
+
+  for (const range of ranges) {
+    const pageIndexes = Array.from(
+      { length: range.end - range.start + 1 },
+      (_, index) => range.start - 1 + index
+    );
+    const copied = await outputDoc.copyPages(sourceDoc, pageIndexes);
+    copied.forEach((page) => outputDoc.addPage(page));
+  }
+
+  return outputDoc.save();
+}

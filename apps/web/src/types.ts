@@ -15,7 +15,15 @@ export type SplitRequest = {
   };
 };
 
-export type WorkerRequest = MergeRequest | SplitRequest;
+export type ExtractRequest = {
+  type: 'extract';
+  payload: {
+    file: ArrayBuffer;
+    ranges: SplitRangeSegment[];
+  };
+};
+
+export type WorkerRequest = MergeRequest | SplitRequest | ExtractRequest;
 
 export type MergeSuccessResponse = {
   ok: true;
@@ -33,7 +41,18 @@ export type SplitSuccessResponse = {
   };
 };
 
-export type WorkerSuccessResponse = MergeSuccessResponse | SplitSuccessResponse;
+export type ExtractSuccessResponse = {
+  ok: true;
+  type: 'extract';
+  payload: {
+    output: Uint8Array;
+  };
+};
+
+export type WorkerSuccessResponse =
+  | MergeSuccessResponse
+  | SplitSuccessResponse
+  | ExtractSuccessResponse;
 
 export type WorkerErrorResponse = {
   ok: false;

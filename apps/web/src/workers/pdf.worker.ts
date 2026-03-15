@@ -1,4 +1,4 @@
-import { mergePdfBuffers, splitPdfByRanges } from '../adapters/pdfEngine';
+import { extractPdfByRanges, mergePdfBuffers, splitPdfByRanges } from '../adapters/pdfEngine';
 import { logDebug, logError, logInfo, logWarn } from '../lib/logging/logger';
 import type { WorkerRequest, WorkerResponse } from '../types';
 
@@ -29,6 +29,21 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
         ok: true,
         type: 'split',
         payload: { outputs },
+      };
+      (self as unknown as Worker).postMessage(response);
+      return;
+    }
+
+    if (event.data.type === 'extract') {
+      logDebug('Worker extract request received.', {
+        ranges: event.data.payload.ranges.length,
+      });
+      const output = await extractPdfByRanges(event.data.payload.file, event.data.payload.ranges);
+      logInfo('Worker extract completed.');
+      const response: WorkerResponse = {
+        ok: true,
+        type: 'extract',
+        payload: { output },
       };
       (self as unknown as Worker).postMessage(response);
       return;
