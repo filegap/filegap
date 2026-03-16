@@ -12,6 +12,7 @@
 - `src/features/pdf/`: operation state + UI flow
 - `src/workers/pdf.worker.ts`: heavy processing worker
 - `src/adapters/pdfEngine.ts`: operation interface implementation
+- `src/components/layout/AppHeader.tsx`: sticky tool navigation shell
 
 ## Current Scaffold (v0.1)
 
@@ -23,6 +24,10 @@
 - No backend/API dependency for file processing
 - Public routes implemented: `/merge-pdf`, `/split-pdf`, `/extract-pages`, `/reorder-pdf`
 - Home route intentionally deferred
+- Shared tool layout is app-like and compact:
+  - sticky top header with tool links
+  - title/subtitle directly in page flow (no hero card)
+  - tool card appears immediately after heading
 
 ## Implemented Tool Behaviors
 
