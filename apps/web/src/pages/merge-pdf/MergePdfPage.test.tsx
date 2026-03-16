@@ -64,7 +64,7 @@ describe('MergePdfPage', () => {
 
     expect(screen.getByText('a.pdf')).toBeInTheDocument();
     expect(screen.getByText('b.pdf')).toBeInTheDocument();
-    expect(screen.getAllByText(/KB ·/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/KB/i).length).toBeGreaterThan(0);
   });
 
   it('removes a file from the queue', async () => {
@@ -79,7 +79,10 @@ describe('MergePdfPage', () => {
     await user.click(screen.getByRole('button', { name: 'Remove a.pdf' }));
 
     expect(screen.queryByText(/a\.pdf/i)).not.toBeInTheDocument();
-    expect(screen.getByText('b.pdf')).toBeInTheDocument();
+    const names = screen
+      .getAllByTestId('uploaded-file-name')
+      .map((node) => node.textContent?.trim());
+    expect(names).toContain('b.pdf');
   });
 
   it('reorders files with drag and drop', () => {
@@ -89,17 +92,16 @@ describe('MergePdfPage', () => {
     const fileA = new File([new Uint8Array([1])], 'a.pdf', { type: 'application/pdf' });
     const fileB = new File([new Uint8Array([2])], 'b.pdf', { type: 'application/pdf' });
     fireEvent.change(input, { target: { files: [fileA, fileB] } });
-    expect(screen.getByText('Drag and drop rows to reorder')).toBeInTheDocument();
+    expect(screen.getByText('Drag rows to reorder')).toBeInTheDocument();
 
-    const fileItems = screen.getAllByTestId('merge-file-item');
+    const fileItems = screen.getAllByTestId('uploaded-file-row');
     fireEvent.dragStart(fileItems[0], { dataTransfer: {} });
     fireEvent.dragOver(fileItems[1], { dataTransfer: {} });
-    expect(screen.getByText('Drop here')).toBeInTheDocument();
     fireEvent.drop(fileItems[1], { dataTransfer: {} });
     fireEvent.dragEnd(fileItems[0], { dataTransfer: {} });
 
     const names = screen
-      .getAllByTestId('merge-file-item-name')
+      .getAllByTestId('uploaded-file-name')
       .map((node) => node.textContent?.trim());
     expect(names[0]).toContain('b.pdf');
     expect(names[1]).toContain('a.pdf');

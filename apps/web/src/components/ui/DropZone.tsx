@@ -4,11 +4,28 @@ type DropZoneProps = {
   onFilesSelected: (files: File[]) => void;
   multiple?: boolean;
   disabled?: boolean;
+  loadedFileName?: string | null;
 };
 
-export function DropZone({ onFilesSelected, multiple = true, disabled = false }: DropZoneProps) {
+export function DropZone({
+  onFilesSelected,
+  multiple = true,
+  disabled = false,
+  loadedFileName = null,
+}: DropZoneProps) {
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const hasLoadedFile = Boolean(loadedFileName);
+
+  const headingText = dragActive ? 'Release to add files' : 'Drag & drop PDF files';
+  const supportText = dragActive
+    ? 'Drop now to add files directly in your browser.'
+    : 'Or select files from your device. Files stay in your browser.';
+  const ctaText = hasLoadedFile
+    ? multiple
+      ? 'Add more PDF files'
+      : 'Replace PDF file'
+    : 'Select PDF files';
 
   function applyFiles(fileList: FileList | null): void {
     if (!fileList) {
@@ -63,17 +80,13 @@ export function DropZone({ onFilesSelected, multiple = true, disabled = false }:
           ? 'cursor-not-allowed border-ui-border bg-ui-bg opacity-70'
           : dragActive
           ? 'border-brand-primary bg-brand-primary/8 shadow-[0_0_0_3px_rgba(255,46,139,0.10)]'
-          : 'border-ui-border bg-ui-surface hover:border-brand-primary/60 hover:bg-brand-primary/4'
+          : 'border-ui-border bg-ui-surface hover:border-brand-primary/70 hover:bg-brand-primary/10'
       }`}
     >
-      <p className='font-heading text-2xl font-semibold text-ui-text md:text-3xl'>
-        Drag & drop PDF files
-      </p>
-      <p className='mt-2 max-w-xl text-sm text-ui-muted'>
-        Or select files from your device. Files stay in your browser.
-      </p>
+      <p className='font-heading text-2xl font-semibold text-ui-text md:text-3xl'>{headingText}</p>
+      <p className='mt-2 max-w-xl text-sm text-ui-muted'>{supportText}</p>
       <p className='mt-5 rounded-lg border border-brand-primary/30 bg-brand-primary/10 px-4 py-2.5 text-xs font-semibold text-brand-primary'>
-        Select PDF files
+        {ctaText}
       </p>
 
       <input

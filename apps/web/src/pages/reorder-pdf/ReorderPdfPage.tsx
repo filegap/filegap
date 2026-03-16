@@ -274,6 +274,7 @@ export function ReorderPdfPage() {
             onFilesSelected={(files) => void handleSourceSelected(files)}
             multiple={false}
             disabled={isProcessing}
+            loadedFileName={sourceFile?.name ?? null}
           />
 
           <TrustNotice />

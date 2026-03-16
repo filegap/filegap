@@ -7,6 +7,7 @@ import { DropZone } from '../../components/ui/DropZone';
 import { Button } from '../../components/ui/Button';
 import { PreDownloadModal } from '../../components/ui/PreDownloadModal';
 import { TrustNotice } from '../../components/ui/TrustNotice';
+import { UploadedFilesTable } from '../../components/ui/UploadedFilesTable';
 import { ToolLayout } from '../../components/layout/ToolLayout';
 import { logDebug, logError, logInfo, logWarn } from '../../lib/logging/logger';
 import { parseSplitRanges, splitPdfByRanges, type SplitRangeSegment } from '../../adapters/pdfEngine';
@@ -283,7 +284,31 @@ export function SplitPdfPage() {
     logInfo('New split started.');
   }
 
+  function removeSourceFile(): void {
+    setSourceFile(null);
+    setPageCount(null);
+    setRangeInput('');
+    setOutputs([]);
+    setShowDownloadGate(false);
+    setStatus({
+      tone: 'neutral',
+      message: 'Select one PDF file to start.',
+    });
+    logInfo('Split source file removed.');
+  }
+
   const statusClassName = status.tone === 'error' ? 'text-sm text-red-600' : 'text-sm text-ui-muted';
+  const uploadedFiles = sourceFile
+    ? [
+        {
+          id: 'source',
+          filename: sourceFile.name,
+          sizeBytes: sourceFile.size,
+          pages: pageCount,
+          pagesStatus: pageCount ? 'ready' : 'error',
+        } as const,
+      ]
+    : [];
 
   return (
     <ToolLayout
@@ -297,23 +322,15 @@ export function SplitPdfPage() {
             onFilesSelected={(files) => void handleSourceSelected(files)}
             multiple={false}
             disabled={isProcessing}
+            loadedFileName={sourceFile?.name ?? null}
           />
           <TrustNotice />
 
-          <div className='space-y-2'>
-            <h2 className='font-heading text-2xl font-semibold text-ui-text'>Uploaded files</h2>
-            {!sourceFile ? (
-              <p className='text-sm text-ui-muted'>No files selected yet.</p>
-            ) : (
-              <div className='rounded-xl border border-ui-border bg-ui-surface px-4 py-3'>
-                <p className='text-sm font-medium text-ui-text'>{sourceFile.name}</p>
-                <p className='text-xs text-ui-muted'>
-                  {Math.max(1, Math.round(sourceFile.size / 1024))} KB
-                  {pageCount ? ` · ${pageCount} pages` : ''}
-                </p>
-              </div>
-            )}
-          </div>
+          <UploadedFilesTable
+            files={uploadedFiles}
+            reorderable={false}
+            onRemove={() => removeSourceFile()}
+          />
 
           <div className='space-y-2'>
             <h2 className='font-heading text-2xl font-semibold text-ui-text'>Split setup</h2>

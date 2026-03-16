@@ -7,6 +7,7 @@ import { DropZone } from '../../components/ui/DropZone';
 import { Button } from '../../components/ui/Button';
 import { PreDownloadModal } from '../../components/ui/PreDownloadModal';
 import { TrustNotice } from '../../components/ui/TrustNotice';
+import { UploadedFilesTable } from '../../components/ui/UploadedFilesTable';
 import { ToolLayout } from '../../components/layout/ToolLayout';
 import { logDebug, logError, logInfo, logWarn } from '../../lib/logging/logger';
 import { mergePdfBuffers } from '../../adapters/pdfEngine';
@@ -76,31 +77,30 @@ function getIdleOrReadyStatus(fileCount: number): StatusState {
   return { tone: 'info', message: 'Ready to merge locally.' };
 }
 
-function formatFileMeta(file: MergeQueueFile): string {
-  const sizeKb = Math.max(1, Math.round(file.file.size / 1024));
-  if (file.pageCountStatus === 'loading') {
-    return `${sizeKb} KB · Reading pages...`;
-  }
-  if (file.pageCountStatus === 'error' || file.pageCount === null) {
-    return `${sizeKb} KB · Page count unavailable`;
-  }
-  const pagesLabel = file.pageCount === 1 ? 'page' : 'pages';
-  return `${sizeKb} KB · ${file.pageCount} ${pagesLabel}`;
-}
-
 export function MergePdfPage() {
   const [files, setFiles] = useState<MergeQueueFile[]>([]);
   const [status, setStatus] = useState<StatusState>(getIdleOrReadyStatus(0));
   const [isProcessing, setIsProcessing] = useState(false);
   const [mergedOutput, setMergedOutput] = useState<Uint8Array | null>(null);
   const [showDownloadGate, setShowDownloadGate] = useState(false);
-  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
-  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   const worker = useMemo(
     () => new Worker(new URL('../../workers/pdf.worker.ts', import.meta.url), { type: 'module' }),
     []
   );
+  const dropZoneLoadedName =
+    files.length === 0
+      ? null
+      : files.length === 1
+        ? files[0].file.name
+        : `${files[0].file.name} + ${files.length - 1} more`;
+  const uploadedFiles = files.map((file) => ({
+    id: file.id,
+    filename: file.file.name,
+    sizeBytes: file.file.size,
+    pages: file.pageCount,
+    pagesStatus: file.pageCountStatus,
+  }));
 
   function handleFilesSelected(nextFiles: File[]): void {
     const queuedFiles = nextFiles.map(createQueueFile);
@@ -320,124 +320,26 @@ export function MergePdfPage() {
     >
       <Card>
         <div className='space-y-6'>
-          <DropZone onFilesSelected={handleFilesSelected} multiple disabled={isProcessing} />
+          <DropZone
+            onFilesSelected={handleFilesSelected}
+            multiple
+            disabled={isProcessing}
+            loadedFileName={dropZoneLoadedName}
+          />
           <TrustNotice />
 
-          <div className='space-y-3'>
-            <div className='flex items-center justify-between gap-3'>
-              <h2 className='font-heading text-2xl font-semibold text-ui-text'>Uploaded files</h2>
-              {files.length > 0 ? (
-                <p className='text-xs font-medium uppercase tracking-wide text-ui-muted'>
-                  Drag and drop rows to reorder
-                </p>
-              ) : null}
-            </div>
-
-            {files.length === 0 ? (
-              <p className='text-sm text-ui-muted'>No files selected yet.</p>
-            ) : (
-              <ul className='space-y-2'>
-                {files.map((file, index) => (
-                  <li
-                    key={file.id}
-                    draggable
-                    data-testid='merge-file-item'
-                    onDragStart={(event) => {
-                      setDraggedIndex(index);
-                      setDragOverIndex(null);
-                      event.dataTransfer.effectAllowed = 'move';
-                    }}
-                    onDragOver={(event) => {
-                      event.preventDefault();
-                      event.dataTransfer.dropEffect = 'move';
-                      setDragOverIndex(index);
-                    }}
-                    onDragLeave={() => {
-                      setDragOverIndex((current) => (current === index ? null : current));
-                    }}
-                    onDrop={(event) => {
-                      event.preventDefault();
-                      if (draggedIndex === null || draggedIndex === index) {
-                        setDraggedIndex(null);
-                        setDragOverIndex(null);
-                        return;
-                      }
-                      moveFile(draggedIndex, index);
-                      setDraggedIndex(null);
-                      setDragOverIndex(null);
-                    }}
-                    onDragEnd={() => {
-                      setDraggedIndex(null);
-                      setDragOverIndex(null);
-                    }}
-                    className={`rounded-xl border bg-ui-surface p-3 transition ${
-                      draggedIndex === index
-                        ? 'border-brand-primary bg-brand-primary/5 opacity-70'
-                        : dragOverIndex === index
-                          ? 'border-brand-primary/60 bg-brand-primary/10'
-                          : 'border-ui-border hover:border-brand-primary/35'
-                    }`}
-                  >
-                    <div className='flex items-center justify-between gap-3'>
-                      <div className='flex min-w-0 items-center gap-3'>
-                        <span
-                          className='cursor-grab rounded-md border border-ui-border bg-ui-bg p-2 text-brand-primary/80'
-                          aria-hidden='true'
-                          title='Drag to reorder'
-                        >
-                          <svg
-                            xmlns='http://www.w3.org/2000/svg'
-                            viewBox='0 0 24 24'
-                            fill='currentColor'
-                            className='h-4 w-4'
-                          >
-                            <circle cx='8' cy='6' r='1.5' />
-                            <circle cx='8' cy='12' r='1.5' />
-                            <circle cx='8' cy='18' r='1.5' />
-                            <circle cx='16' cy='6' r='1.5' />
-                            <circle cx='16' cy='12' r='1.5' />
-                            <circle cx='16' cy='18' r='1.5' />
-                          </svg>
-                        </span>
-                        <div className='min-w-0'>
-                          <p data-testid='merge-file-item-name' className='truncate font-medium text-ui-text'>
-                            {file.file.name}
-                          </p>
-                          <p className='text-xs text-ui-muted'>{formatFileMeta(file)}</p>
-                          {dragOverIndex === index ? (
-                            <p className='text-xs font-semibold text-brand-primary'>Drop here</p>
-                          ) : null}
-                        </div>
-                      </div>
-
-                      <button
-                        type='button'
-                        onClick={() => removeFile(index)}
-                        aria-label={`Remove ${file.file.name}`}
-                        title='Remove file'
-                        className='rounded-lg border border-ui-border p-2 text-ui-text transition hover:bg-ui-bg'
-                      >
-                        <svg
-                          xmlns='http://www.w3.org/2000/svg'
-                          viewBox='0 0 24 24'
-                          fill='none'
-                          stroke='currentColor'
-                          strokeWidth='2'
-                          className='h-4 w-4'
-                          aria-hidden='true'
-                        >
-                          <path d='M3 6h18' />
-                          <path d='M8 6V4h8v2' />
-                          <path d='M19 6l-1 14H6L5 6' />
-                          <path d='M10 11v6M14 11v6' />
-                        </svg>
-                      </button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
+          <UploadedFilesTable
+            files={uploadedFiles}
+            reorderable
+            onRemove={(id) => {
+              const index = files.findIndex((file) => file.id === id);
+              if (index < 0) {
+                return;
+              }
+              removeFile(index);
+            }}
+            onReorder={moveFile}
+          />
 
           <div className='flex flex-wrap items-center gap-4'>
             {!mergedOutput ? (
