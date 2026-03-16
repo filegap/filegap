@@ -72,7 +72,7 @@ export function DropZone({ onFilesSelected, multiple = true, disabled = false }:
       <p className='mt-2 max-w-xl text-sm text-ui-muted'>
         Or select files from your device. Files stay in your browser.
       </p>
-      <p className='mt-5 rounded-lg border border-brand-primary/30 bg-brand-primary/10 px-3 py-1 text-xs font-semibold text-brand-primary'>
+      <p className='mt-5 rounded-lg border border-brand-primary/30 bg-brand-primary/10 px-4 py-2.5 text-xs font-semibold text-brand-primary'>
         Select PDF files
       </p>
 
