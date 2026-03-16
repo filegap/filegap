@@ -1,5 +1,6 @@
-import { Navigate, createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter } from 'react-router-dom';
 import { ExtractPagesPage } from '../pages/extract-pages/ExtractPagesPage';
+import { HomePage } from '../pages/home/HomePage';
 import { MergePdfPage } from '../pages/merge-pdf/MergePdfPage';
 import { NotFoundPage } from '../pages/not-found/NotFoundPage';
 import { PrivacyPage } from '../pages/privacy/PrivacyPage';
@@ -34,7 +35,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/',
-    element: <Navigate to='/merge-pdf' replace />,
+    element: <HomePage />,
   },
   {
     path: '*',

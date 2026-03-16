@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { FileText, GripVertical, Trash2 } from 'lucide-react';
 
 type UploadedFile = {
   id: string;
@@ -109,34 +110,11 @@ export function UploadedFilesTable({ files, reorderable, onRemove, onReorder }: 
                 <div className='flex min-w-0 items-center gap-2'>
                   {reorderable ? (
                     <span className='cursor-grab rounded-md border border-ui-border bg-ui-bg p-1.5 text-brand-primary/80'>
-                      <svg
-                        xmlns='http://www.w3.org/2000/svg'
-                        viewBox='0 0 24 24'
-                        fill='currentColor'
-                        className='h-4 w-4'
-                        aria-hidden='true'
-                      >
-                        <circle cx='8' cy='6' r='1.5' />
-                        <circle cx='8' cy='12' r='1.5' />
-                        <circle cx='8' cy='18' r='1.5' />
-                        <circle cx='16' cy='6' r='1.5' />
-                        <circle cx='16' cy='12' r='1.5' />
-                        <circle cx='16' cy='18' r='1.5' />
-                      </svg>
+                      <GripVertical className='h-4 w-4' aria-hidden='true' />
                     </span>
                   ) : null}
                   <span className='text-ui-muted' aria-hidden='true'>
-                    <svg
-                      xmlns='http://www.w3.org/2000/svg'
-                      viewBox='0 0 24 24'
-                      fill='none'
-                      stroke='currentColor'
-                      strokeWidth='1.8'
-                      className='h-4 w-4'
-                    >
-                      <path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z' />
-                      <path d='M14 2v6h6' />
-                    </svg>
+                    <FileText className='h-4 w-4' />
                   </span>
                   <p data-testid='uploaded-file-name' className='truncate text-sm font-medium text-ui-text'>
                     {file.filename}
@@ -152,20 +130,7 @@ export function UploadedFilesTable({ files, reorderable, onRemove, onReorder }: 
                     title='Remove file'
                     className='inline-flex h-8 w-8 items-center justify-center rounded-md border border-ui-border text-ui-text transition hover:bg-ui-bg'
                   >
-                    <svg
-                      xmlns='http://www.w3.org/2000/svg'
-                      viewBox='0 0 24 24'
-                      fill='none'
-                      stroke='currentColor'
-                      strokeWidth='2'
-                      className='h-4 w-4'
-                      aria-hidden='true'
-                    >
-                      <path d='M3 6h18' />
-                      <path d='M8 6V4h8v2' />
-                      <path d='M19 6l-1 14H6L5 6' />
-                      <path d='M10 11v6M14 11v6' />
-                    </svg>
+                    <Trash2 className='h-4 w-4' aria-hidden='true' />
                   </button>
                 </div>
               </li>

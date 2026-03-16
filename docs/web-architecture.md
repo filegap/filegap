@@ -35,6 +35,7 @@ Core rule:
 - TypeScript
 - Vite
 - TailwindCSS
+- `lucide-react` for all UI icons
 - `pdf-lib` for PDF operations in browser
 
 ## Recommended Project Structure

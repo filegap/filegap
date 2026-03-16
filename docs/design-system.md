@@ -121,6 +121,14 @@ Avoid:
 1. Continuous animations near primary actions
 2. Long transitions that block task completion
 
+## Iconography
+
+Use a single icon system across the web app:
+
+1. Use `lucide-react` for all UI icons.
+2. Avoid custom inline SVG icons in components/pages.
+3. Keep icon stroke, sizing, and style consistent via Tailwind utility classes.
+
 ## Accessibility Baseline
 
 1. Color contrast target: WCAG AA minimum.

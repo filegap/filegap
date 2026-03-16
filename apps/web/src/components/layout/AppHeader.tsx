@@ -9,7 +9,7 @@ export function AppHeader() {
   return (
     <header className='sticky top-0 z-40 border-b border-ui-border bg-ui-surface/95 backdrop-blur'>
       <div className='mx-auto flex h-[72px] w-[min(1080px,94vw)] items-center justify-between gap-8'>
-        <a href='/merge-pdf' className='inline-flex min-w-[190px] flex-col justify-center leading-tight text-ui-text'>
+        <a href='/' className='inline-flex min-w-[190px] flex-col justify-center leading-tight text-ui-text'>
           <span className='inline-flex items-center gap-2 font-heading text-2xl tracking-tight'>
             <span className='inline-block h-3 w-3 rounded-full bg-brand-primary' />
             PDFlo

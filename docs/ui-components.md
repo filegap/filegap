@@ -165,3 +165,4 @@ Tool-specific additions:
 2. Heavy logic belongs in feature hooks/services.
 3. All file processing calls go through worker bridge.
 4. No component may perform network PDF operations.
+5. Icons must come from `lucide-react` (do not use inline SVG icons).
