@@ -8,8 +8,9 @@ export default {
         brand: {
           primary: '#FF2E8B',
           'primary-dark': '#E62079',
-          accent: '#FFD93D',
-          highlight: '#5A54FF',
+          trust: '#2563EB',
+          'trust-soft': '#EFF6FF',
+          'trust-border': '#BFDBFE',
         },
         ui: {
           bg: '#F7F7F8',

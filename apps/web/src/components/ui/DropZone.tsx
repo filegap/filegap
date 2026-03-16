@@ -58,12 +58,12 @@ export function DropZone({ onFilesSelected, multiple = true, disabled = false }:
         setDragActive(false);
         applyFiles(event.dataTransfer.files);
       }}
-      className={`flex min-h-[220px] cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed px-6 py-10 text-center transition-all duration-200 ${
+      className={`flex min-h-[220px] cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed px-7 py-11 text-center transition-all duration-200 ${
         disabled
           ? 'cursor-not-allowed border-ui-border bg-ui-bg opacity-70'
           : dragActive
-          ? 'border-brand-primary bg-brand-primary/12 shadow-[0_0_0_4px_rgba(255,46,139,0.10)]'
-          : 'border-ui-border bg-ui-bg hover:border-brand-primary/70 hover:bg-brand-primary/5'
+          ? 'border-brand-primary bg-brand-primary/8 shadow-[0_0_0_3px_rgba(255,46,139,0.10)]'
+          : 'border-ui-border bg-ui-surface hover:border-brand-primary/60 hover:bg-brand-primary/4'
       }`}
     >
       <p className='font-heading text-2xl font-semibold text-ui-text md:text-3xl'>
@@ -72,7 +72,7 @@ export function DropZone({ onFilesSelected, multiple = true, disabled = false }:
       <p className='mt-2 max-w-xl text-sm text-ui-muted'>
         Or select files from your device. Files stay in your browser.
       </p>
-      <p className='mt-4 rounded-lg bg-brand-accent px-3 py-1 text-xs font-semibold text-ui-text'>
+      <p className='mt-5 rounded-lg border border-brand-primary/30 bg-brand-primary/10 px-3 py-1 text-xs font-semibold text-brand-primary'>
         Select PDF files
       </p>
 

@@ -1,5 +1,6 @@
 import type { PropsWithChildren } from 'react';
 
+import { AppFooter } from './AppFooter';
 import { AppHeader } from './AppHeader';
 import { PageContainer } from './PageContainer';
 
@@ -26,6 +27,7 @@ export function ToolLayout({
 
         <section className='space-y-10'>{children}</section>
       </PageContainer>
+      <AppFooter />
     </>
   );
 }

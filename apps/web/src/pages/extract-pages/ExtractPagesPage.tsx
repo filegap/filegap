@@ -5,6 +5,7 @@ import { PDFDocument } from 'pdf-lib';
 import { Card } from '../../components/ui/Card';
 import { DropZone } from '../../components/ui/DropZone';
 import { Button } from '../../components/ui/Button';
+import { TrustNotice } from '../../components/ui/TrustNotice';
 import { ToolLayout } from '../../components/layout/ToolLayout';
 import { logDebug, logError, logInfo, logWarn } from '../../lib/logging/logger';
 import { extractPdfByRanges, parseSplitRanges, type SplitRangeSegment } from '../../adapters/pdfEngine';
@@ -261,16 +262,7 @@ export function ExtractPagesPage() {
             disabled={isProcessing}
           />
 
-          <div className='inline-flex items-center gap-2 rounded-lg border border-brand-highlight/30 bg-brand-highlight/10 px-3 py-2'>
-            <span className='text-brand-highlight' aria-hidden='true'>
-              <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor' className='h-4 w-4'>
-                <path d='M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5Zm-3 8V7a3 3 0 0 1 6 0v3H9Z' />
-              </svg>
-            </span>
-            <p className='text-xs font-medium text-brand-highlight'>
-              Local processing only. Your PDF files never leave your device.
-            </p>
-          </div>
+          <TrustNotice />
 
           <div className='space-y-2'>
             <h2 className='font-heading text-2xl font-semibold text-ui-text'>Uploaded files</h2>
@@ -326,7 +318,7 @@ export function ExtractPagesPage() {
           </div>
 
           {output ? (
-            <div className='space-y-3 rounded-2xl border border-brand-primary/35 bg-brand-primary/10 p-5 shadow-[0_10px_24px_rgba(255,46,139,0.16)]'>
+            <div className='space-y-3 rounded-2xl border border-brand-primary/35 bg-brand-primary/10 p-5'>
               <div className='flex flex-wrap items-center justify-between gap-3'>
                 <div>
                   <p className='font-heading text-lg font-semibold text-ui-text'>Extract completed</p>
