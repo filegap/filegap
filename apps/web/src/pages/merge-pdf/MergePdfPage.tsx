@@ -5,6 +5,7 @@ import { PDFDocument } from 'pdf-lib';
 import { Card } from '../../components/ui/Card';
 import { DropZone } from '../../components/ui/DropZone';
 import { Button } from '../../components/ui/Button';
+import { PreDownloadModal } from '../../components/ui/PreDownloadModal';
 import { TrustNotice } from '../../components/ui/TrustNotice';
 import { ToolLayout } from '../../components/layout/ToolLayout';
 import { logDebug, logError, logInfo, logWarn } from '../../lib/logging/logger';
@@ -488,27 +489,14 @@ export function MergePdfPage() {
         </Card>
       </section>
 
-      {showDownloadGate && mergedOutput ? (
-        <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4'>
-          <div className='w-full max-w-md rounded-2xl border border-ui-border bg-ui-surface p-6 shadow-xl'>
-            <p className='font-heading text-2xl font-semibold text-ui-text'>Merge completed</p>
-            <p className='mt-2 text-sm leading-relaxed text-ui-muted'>
-              PDFlo runs entirely in your browser. If it helps, support the project and share it
-              with people who need truly private PDF tools.
-            </p>
-            <div className='mt-5 flex flex-wrap gap-3'>
-              <Button onClick={handleConfirmDownload}>Continue to download</Button>
-              <button
-                type='button'
-                onClick={() => setShowDownloadGate(false)}
-                className='rounded-xl border border-ui-border px-4 py-3 text-sm font-semibold text-ui-text transition hover:bg-ui-bg'
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      <PreDownloadModal
+        open={showDownloadGate && Boolean(mergedOutput)}
+        title='Merge completed'
+        description='PDFlo runs entirely in your browser. If it helps, support the project and share it with people who need truly private PDF tools.'
+        confirmLabel='Continue to download'
+        onConfirm={handleConfirmDownload}
+        onClose={() => setShowDownloadGate(false)}
+      />
     </ToolLayout>
   );
 }

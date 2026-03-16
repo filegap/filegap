@@ -5,6 +5,7 @@ import { PDFDocument } from 'pdf-lib';
 import { Card } from '../../components/ui/Card';
 import { DropZone } from '../../components/ui/DropZone';
 import { Button } from '../../components/ui/Button';
+import { PreDownloadModal } from '../../components/ui/PreDownloadModal';
 import { TrustNotice } from '../../components/ui/TrustNotice';
 import { ToolLayout } from '../../components/layout/ToolLayout';
 import { logDebug, logError, logInfo, logWarn } from '../../lib/logging/logger';
@@ -67,6 +68,7 @@ export function ReorderPdfPage() {
   const [orderInput, setOrderInput] = useState('');
   const [output, setOutput] = useState<ReorderOutput | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showDownloadGate, setShowDownloadGate] = useState(false);
   const [status, setStatus] = useState<StatusState>({
     tone: 'neutral',
     message: 'Select one PDF file to start.',
@@ -103,6 +105,7 @@ export function ReorderPdfPage() {
 
     setSourceFile(file);
     setOutput(null);
+    setShowDownloadGate(false);
     setOrderInput('');
     setStatus({ tone: 'info', message: 'Reading PDF metadata...' });
 
@@ -224,6 +227,7 @@ export function ReorderPdfPage() {
       bytes: reordered,
       orderLabel: pageOrder.join(','),
     });
+    setShowDownloadGate(false);
     setIsProcessing(false);
     setStatus({ tone: 'info', message: 'Reorder completed. Your PDF is ready to download.' });
     logInfo('Reorder completed successfully.');
@@ -234,11 +238,26 @@ export function ReorderPdfPage() {
     setPageCount(null);
     setOrderInput('');
     setOutput(null);
+    setShowDownloadGate(false);
     setStatus({
       tone: 'neutral',
       message: 'Select one PDF file to start.',
     });
     logInfo('New reorder started.');
+  }
+
+  function handleDownloadCta(): void {
+    setShowDownloadGate(true);
+    logInfo('Pre-download modal opened for reorder.');
+  }
+
+  function handleConfirmDownload(): void {
+    if (!output) {
+      return;
+    }
+    saveBlob(output.filename, output.bytes);
+    setShowDownloadGate(false);
+    logInfo('Reorder download started.');
   }
 
   const statusClassName = status.tone === 'error' ? 'text-sm text-red-600' : 'text-sm text-ui-muted';
@@ -307,25 +326,25 @@ export function ReorderPdfPage() {
 
           {output ? (
             <div className='space-y-3 rounded-2xl border border-brand-primary/35 bg-brand-primary/10 p-5'>
-              <div className='flex flex-wrap items-center justify-between gap-3'>
+              <div>
                 <div>
                   <p className='font-heading text-lg font-semibold text-ui-text'>Reorder completed</p>
                   <p className='text-sm text-ui-text/85'>Your reordered PDF is ready to download.</p>
-                </div>
-                <div className='flex flex-wrap gap-3'>
-                  <Button onClick={() => saveBlob(output.filename, output.bytes)}>Download PDF</Button>
-                  <button
-                    type='button'
-                    onClick={startNewReorder}
-                    className='rounded-xl border border-ui-border bg-ui-surface px-4 py-3 text-sm font-semibold text-ui-text transition hover:bg-ui-bg'
-                  >
-                    New reorder
-                  </button>
                 </div>
               </div>
               <div className='rounded-xl border border-ui-border bg-ui-surface px-3 py-2'>
                 <p className='text-sm font-medium text-ui-text'>{output.filename}</p>
                 <p className='text-xs text-ui-muted'>Order {output.orderLabel}</p>
+              </div>
+              <div className='mt-4 flex flex-wrap gap-3'>
+                <Button onClick={handleDownloadCta}>Download PDF</Button>
+                <button
+                  type='button'
+                  onClick={startNewReorder}
+                  className='rounded-xl border border-ui-border bg-ui-surface px-4 py-3 text-sm font-semibold text-ui-text transition hover:bg-ui-bg'
+                >
+                  New reorder
+                </button>
               </div>
             </div>
           ) : null}
@@ -351,6 +370,15 @@ export function ReorderPdfPage() {
           </ul>
         </Card>
       </section>
+
+      <PreDownloadModal
+        open={showDownloadGate && Boolean(output)}
+        title='Reorder completed'
+        description='PDFlo runs entirely in your browser. If it helps, support the project and share it with people who need truly private PDF tools.'
+        confirmLabel='Continue to download'
+        onConfirm={handleConfirmDownload}
+        onClose={() => setShowDownloadGate(false)}
+      />
     </ToolLayout>
   );
 }

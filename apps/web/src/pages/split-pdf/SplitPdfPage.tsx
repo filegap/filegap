@@ -5,6 +5,7 @@ import { PDFDocument } from 'pdf-lib';
 import { Card } from '../../components/ui/Card';
 import { DropZone } from '../../components/ui/DropZone';
 import { Button } from '../../components/ui/Button';
+import { PreDownloadModal } from '../../components/ui/PreDownloadModal';
 import { TrustNotice } from '../../components/ui/TrustNotice';
 import { ToolLayout } from '../../components/layout/ToolLayout';
 import { logDebug, logError, logInfo, logWarn } from '../../lib/logging/logger';
@@ -75,6 +76,7 @@ export function SplitPdfPage() {
   const [rangeInput, setRangeInput] = useState('');
   const [outputs, setOutputs] = useState<SplitOutput[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showDownloadGate, setShowDownloadGate] = useState(false);
   const [status, setStatus] = useState<StatusState>({
     tone: 'neutral',
     message: 'Select one PDF file to start.',
@@ -111,6 +113,7 @@ export function SplitPdfPage() {
 
     setSourceFile(file);
     setOutputs([]);
+    setShowDownloadGate(false);
     setRangeInput('');
     setStatus({ tone: 'info', message: 'Reading PDF metadata...' });
 
@@ -238,6 +241,7 @@ export function SplitPdfPage() {
       rangeLabel: formatRangeLabel(ranges[index]),
     }));
     setOutputs(nextOutputs);
+    setShowDownloadGate(false);
     setIsProcessing(false);
     setStatus({
       tone: 'info',
@@ -256,11 +260,22 @@ export function SplitPdfPage() {
     logInfo('Split download-all triggered.', { outputs: outputs.length });
   }
 
+  function handleDownloadCta(): void {
+    setShowDownloadGate(true);
+    logInfo('Pre-download modal opened for split.');
+  }
+
+  function handleConfirmDownload(): void {
+    handleDownloadAll();
+    setShowDownloadGate(false);
+  }
+
   function startNewSplit(): void {
     setSourceFile(null);
     setPageCount(null);
     setRangeInput('');
     setOutputs([]);
+    setShowDownloadGate(false);
     setStatus({
       tone: 'neutral',
       message: 'Select one PDF file to start.',
@@ -340,20 +355,10 @@ export function SplitPdfPage() {
 
           {outputs.length > 0 ? (
             <div className='space-y-3 rounded-2xl border border-brand-primary/35 bg-brand-primary/10 p-5'>
-              <div className='flex flex-wrap items-center justify-between gap-3'>
+              <div>
                 <div>
                   <p className='font-heading text-lg font-semibold text-ui-text'>Split completed</p>
                   <p className='text-sm text-ui-text/85'>Your output files are ready to download.</p>
-                </div>
-                <div className='flex flex-wrap gap-3'>
-                  <Button onClick={handleDownloadAll}>Download all</Button>
-                  <button
-                    type='button'
-                    onClick={startNewSplit}
-                    className='rounded-xl border border-ui-border bg-ui-surface px-4 py-3 text-sm font-semibold text-ui-text transition hover:bg-ui-bg'
-                  >
-                    New split
-                  </button>
                 </div>
               </div>
               <ul className='space-y-2'>
@@ -376,6 +381,16 @@ export function SplitPdfPage() {
                   </li>
                 ))}
               </ul>
+              <div className='mt-4 flex flex-wrap gap-3'>
+                <Button onClick={handleDownloadCta}>Download all</Button>
+                <button
+                  type='button'
+                  onClick={startNewSplit}
+                  className='rounded-xl border border-ui-border bg-ui-surface px-4 py-3 text-sm font-semibold text-ui-text transition hover:bg-ui-bg'
+                >
+                  New split
+                </button>
+              </div>
             </div>
           ) : null}
         </div>
@@ -400,6 +415,15 @@ export function SplitPdfPage() {
           </ul>
         </Card>
       </section>
+
+      <PreDownloadModal
+        open={showDownloadGate && outputs.length > 0}
+        title='Split completed'
+        description='PDFlo runs entirely in your browser. If it helps, support the project and share it with people who need truly private PDF tools.'
+        confirmLabel='Continue to download'
+        onConfirm={handleConfirmDownload}
+        onClose={() => setShowDownloadGate(false)}
+      />
     </ToolLayout>
   );
 }
