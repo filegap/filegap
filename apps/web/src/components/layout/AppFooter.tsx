@@ -10,10 +10,10 @@ export function AppFooter() {
           </div>
 
           <nav className='flex items-center gap-4 text-xs font-medium text-ui-muted'>
-            <a href='#' className='hover:text-ui-text'>
+            <a href='/privacy' className='hover:text-ui-text'>
               Privacy
             </a>
-            <a href='#' className='hover:text-ui-text'>
+            <a href='/terms' className='hover:text-ui-text'>
               Terms
             </a>
             <a href='https://github.com/' target='_blank' rel='noreferrer' className='hover:text-ui-text'>
