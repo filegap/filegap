@@ -39,25 +39,27 @@ export function ToolLandingSections({
 }: ToolLandingSectionsProps) {
   return (
     <>
-      <section className='mt-10 rounded-xl border border-ui-border bg-ui-surface p-6'>
-        <h2 className='font-heading text-2xl font-semibold text-ui-text'>{howItWorksTitle}</h2>
-        <ol className='mt-5 list-decimal space-y-2.5 pl-5 text-sm leading-relaxed text-ui-muted'>
-          {howItWorksSteps.map((step) => (
-            <li key={step}>{step}</li>
-          ))}
-        </ol>
-      </section>
+      <section className='mt-10 grid gap-6 md:grid-cols-2'>
+        <div className='rounded-xl border border-ui-border bg-ui-surface p-6'>
+          <h2 className='font-heading text-2xl font-semibold text-ui-text'>{howItWorksTitle}</h2>
+          <ol className='mt-5 list-decimal space-y-2.5 pl-5 text-sm leading-relaxed text-ui-muted'>
+            {howItWorksSteps.map((step) => (
+              <li key={step}>{step}</li>
+            ))}
+          </ol>
+        </div>
 
-      <section className='mt-10 rounded-xl border border-ui-border bg-ui-surface p-6'>
-        <h2 className='font-heading text-2xl font-semibold text-ui-text'>{whyTitle}</h2>
-        <ul className='mt-5 space-y-5'>
-          {whyItems.map((item) => (
-            <li key={item.title}>
-              <h3 className='text-base font-semibold text-ui-text'>{item.title}</h3>
-              <p className='mt-1.5 text-sm leading-relaxed text-ui-muted'>{item.text}</p>
-            </li>
-          ))}
-        </ul>
+        <div className='rounded-xl border border-ui-border bg-ui-surface p-6'>
+          <h2 className='font-heading text-2xl font-semibold text-ui-text'>{whyTitle}</h2>
+          <ul className='mt-5 space-y-5'>
+            {whyItems.map((item) => (
+              <li key={item.title}>
+                <h3 className='text-base font-semibold text-ui-text'>{item.title}</h3>
+                <p className='mt-1.5 text-sm leading-relaxed text-ui-muted'>{item.text}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
       </section>
 
       <section className='mt-10 rounded-xl border border-ui-border bg-ui-surface p-6'>
