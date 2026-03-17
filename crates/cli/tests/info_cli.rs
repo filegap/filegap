@@ -71,7 +71,7 @@ fn info_command_prints_expected_fields() {
 
     Command::cargo_bin("filegap")
         .expect("binary should build")
-        .args(["info", "-i", input_path.to_str().expect("valid utf-8 path")])
+        .args(["info", input_path.to_str().expect("valid utf-8 path")])
         .assert()
         .success()
         .stdout(predicates::str::contains("Pages: 1"))
@@ -89,7 +89,6 @@ fn info_command_json_outputs_valid_payload() {
         .expect("binary should build")
         .args([
             "info",
-            "-i",
             input_path.to_str().expect("valid utf-8 path"),
             "--json",
         ])

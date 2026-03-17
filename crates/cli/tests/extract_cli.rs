@@ -69,7 +69,25 @@ fn build_multi_page_pdf_bytes(page_count: u32) -> Vec<u8> {
 }
 
 #[test]
-fn extract_command_creates_a_valid_output_pdf() {
+fn extract_command_reads_stdin_and_writes_stdout() {
+    let input = build_multi_page_pdf_bytes(4);
+
+    let output = Command::cargo_bin("filegap")
+        .expect("binary should build")
+        .args(["extract", "--pages", "2-3"])
+        .write_stdin(input)
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    let output_doc = Document::load_mem(&output).expect("output should be a valid pdf");
+    assert_eq!(output_doc.get_pages().len(), 2);
+}
+
+#[test]
+fn extract_command_creates_a_valid_output_pdf_file() {
     let dir = tempdir().expect("tempdir should be created");
     let input_path = dir.path().join("input.pdf");
     let output_path = dir.path().join("output.pdf");
@@ -80,9 +98,8 @@ fn extract_command_creates_a_valid_output_pdf() {
         .expect("binary should build")
         .args([
             "extract",
-            "-i",
             input_path.to_str().expect("valid utf-8 path"),
-            "-p",
+            "--pages",
             "2-3",
             "-o",
             output_path.to_str().expect("valid utf-8 path"),
@@ -99,7 +116,6 @@ fn extract_command_creates_a_valid_output_pdf() {
 fn extract_command_fails_for_out_of_bounds_pages() {
     let dir = tempdir().expect("tempdir should be created");
     let input_path = dir.path().join("input.pdf");
-    let output_path = dir.path().join("output.pdf");
 
     fs::write(&input_path, build_multi_page_pdf_bytes(2)).expect("write input.pdf");
 
@@ -107,13 +123,11 @@ fn extract_command_fails_for_out_of_bounds_pages() {
         .expect("binary should build")
         .args([
             "extract",
-            "-i",
             input_path.to_str().expect("valid utf-8 path"),
-            "-p",
+            "--pages",
             "3",
-            "-o",
-            output_path.to_str().expect("valid utf-8 path"),
         ])
         .assert()
-        .failure();
+        .failure()
+        .code(3);
 }

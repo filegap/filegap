@@ -69,69 +69,75 @@ fn build_multi_page_pdf_bytes(page_count: u32) -> Vec<u8> {
 }
 
 #[test]
-fn split_every_command_creates_multiple_output_files() {
-    let dir = tempdir().expect("tempdir should be created");
-    let input_path = dir.path().join("input.pdf");
-    let out_dir = dir.path().join("out_every");
-    fs::write(&input_path, build_multi_page_pdf_bytes(5)).expect("write input.pdf");
+fn split_single_range_outputs_pdf_to_stdout() {
+    let input = build_multi_page_pdf_bytes(5);
 
-    Command::cargo_bin("filegap")
+    let output = Command::cargo_bin("filegap")
         .expect("binary should build")
-        .args([
-            "split",
-            "-i",
-            input_path.to_str().expect("valid utf-8 path"),
-            "--every",
-            "2",
-            "-d",
-            out_dir.to_str().expect("valid utf-8 path"),
-        ])
+        .args(["split", "--pages", "1-3"])
+        .write_stdin(input)
         .assert()
-        .success();
+        .success()
+        .get_output()
+        .stdout
+        .clone();
 
-    let part1 = out_dir.join("input_part_001.pdf");
-    let part2 = out_dir.join("input_part_002.pdf");
-    let part3 = out_dir.join("input_part_003.pdf");
-    assert!(part1.exists());
-    assert!(part2.exists());
-    assert!(part3.exists());
-
-    let doc1 = Document::load_mem(&fs::read(&part1).expect("read part1")).expect("valid part1");
-    let doc2 = Document::load_mem(&fs::read(&part2).expect("read part2")).expect("valid part2");
-    let doc3 = Document::load_mem(&fs::read(&part3).expect("read part3")).expect("valid part3");
-    assert_eq!(doc1.get_pages().len(), 2);
-    assert_eq!(doc2.get_pages().len(), 2);
-    assert_eq!(doc3.get_pages().len(), 1);
+    let output_doc = Document::load_mem(&output).expect("output should be valid PDF");
+    assert_eq!(output_doc.get_pages().len(), 3);
 }
 
 #[test]
-fn split_ranges_command_creates_expected_outputs() {
+fn split_multi_range_requires_pattern_or_zip() {
+    let input = build_multi_page_pdf_bytes(5);
+
+    Command::cargo_bin("filegap")
+        .expect("binary should build")
+        .args(["split", "--pages", "1-2,5"])
+        .write_stdin(input)
+        .assert()
+        .failure()
+        .code(2);
+}
+
+#[test]
+fn split_multi_range_writes_files_with_pattern() {
     let dir = tempdir().expect("tempdir should be created");
     let input_path = dir.path().join("input.pdf");
-    let out_dir = dir.path().join("out_ranges");
-    fs::write(&input_path, build_multi_page_pdf_bytes(5)).expect("write input.pdf");
+    fs::write(&input_path, build_multi_page_pdf_bytes(5)).expect("write input");
+
+    let pattern = dir.path().join("part-%d.pdf");
 
     Command::cargo_bin("filegap")
         .expect("binary should build")
         .args([
             "split",
-            "-i",
             input_path.to_str().expect("valid utf-8 path"),
-            "--ranges",
+            "--pages",
             "1-2,5",
-            "-d",
-            out_dir.to_str().expect("valid utf-8 path"),
+            "--output-pattern",
+            pattern.to_str().expect("valid utf-8 path"),
         ])
         .assert()
         .success();
 
-    let part1 = out_dir.join("input_part_001.pdf");
-    let part2 = out_dir.join("input_part_002.pdf");
-    assert!(part1.exists());
-    assert!(part2.exists());
+    let first = dir.path().join("part-1.pdf");
+    let second = dir.path().join("part-2.pdf");
+    assert!(first.exists());
+    assert!(second.exists());
+}
 
-    let doc1 = Document::load_mem(&fs::read(&part1).expect("read part1")).expect("valid part1");
-    let doc2 = Document::load_mem(&fs::read(&part2).expect("read part2")).expect("valid part2");
-    assert_eq!(doc1.get_pages().len(), 2);
-    assert_eq!(doc2.get_pages().len(), 1);
+#[test]
+fn split_zip_outputs_zip_archive_to_stdout() {
+    let input = build_multi_page_pdf_bytes(5);
+    let output = Command::cargo_bin("filegap")
+        .expect("binary should build")
+        .args(["split", "--pages", "1-2,5", "--format", "zip"])
+        .write_stdin(input)
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    assert!(output.starts_with(b"PK"));
 }

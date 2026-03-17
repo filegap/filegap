@@ -60,50 +60,84 @@ fn build_single_page_pdf_bytes(label: &str) -> Vec<u8> {
 }
 
 #[test]
-fn merge_command_creates_a_valid_output_pdf() {
+fn merge_command_writes_to_stdout_by_default() {
     let dir = tempdir().expect("tempdir should be created");
     let a_path = dir.path().join("a.pdf");
     let b_path = dir.path().join("b.pdf");
-    let output_path = dir.path().join("merged.pdf");
 
     fs::write(&a_path, build_single_page_pdf_bytes("doc-a")).expect("write a.pdf");
     fs::write(&b_path, build_single_page_pdf_bytes("doc-b")).expect("write b.pdf");
 
-    Command::cargo_bin("filegap")
+    let output = Command::cargo_bin("filegap")
         .expect("binary should build")
         .args([
             "merge",
-            "-i",
             a_path.to_str().expect("valid utf-8 path"),
             b_path.to_str().expect("valid utf-8 path"),
-            "-o",
-            output_path.to_str().expect("valid utf-8 path"),
         ])
         .assert()
-        .success();
+        .success()
+        .get_output()
+        .stdout
+        .clone();
 
-    let merged_bytes = fs::read(&output_path).expect("merged output should exist");
-    let merged_doc =
-        Document::load_mem(&merged_bytes).expect("merged output should be a valid PDF");
+    let merged_doc = Document::load_mem(&output).expect("merged output should be a valid PDF");
     assert_eq!(merged_doc.get_pages().len(), 2);
 }
 
 #[test]
-fn merge_command_fails_with_single_input_file() {
+fn merge_command_supports_file_and_stdin_mix() {
     let dir = tempdir().expect("tempdir should be created");
-    let a_path = dir.path().join("a.pdf");
-    let output_path = dir.path().join("merged.pdf");
-    fs::write(&a_path, build_single_page_pdf_bytes("doc-a")).expect("write a.pdf");
+    let file_path = dir.path().join("a.pdf");
+    let file_doc = build_single_page_pdf_bytes("doc-a");
+    let stdin_doc = build_single_page_pdf_bytes("doc-b");
+    fs::write(&file_path, file_doc).expect("write file");
+
+    let output = Command::cargo_bin("filegap")
+        .expect("binary should build")
+        .args(["merge", file_path.to_str().expect("valid utf-8 path"), "-"])
+        .write_stdin(stdin_doc)
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    let merged_doc = Document::load_mem(&output).expect("merged output should be valid");
+    assert_eq!(merged_doc.get_pages().len(), 2);
+}
+
+#[test]
+fn merge_command_supports_concatenated_stdin_stream() {
+    let first = build_single_page_pdf_bytes("doc-a");
+    let second = build_single_page_pdf_bytes("doc-b");
+    let mut stream = Vec::new();
+    stream.extend(first);
+    stream.extend(second);
+
+    let output = Command::cargo_bin("filegap")
+        .expect("binary should build")
+        .args(["merge"])
+        .write_stdin(stream)
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    let merged_doc = Document::load_mem(&output).expect("merged output should be valid");
+    assert_eq!(merged_doc.get_pages().len(), 2);
+}
+
+#[test]
+fn merge_command_returns_invalid_input_exit_code_for_single_pdf() {
+    let single = build_single_page_pdf_bytes("single");
 
     Command::cargo_bin("filegap")
         .expect("binary should build")
-        .args([
-            "merge",
-            "-i",
-            a_path.to_str().expect("valid utf-8 path"),
-            "-o",
-            output_path.to_str().expect("valid utf-8 path"),
-        ])
+        .args(["merge"])
+        .write_stdin(single)
         .assert()
-        .failure();
+        .failure()
+        .code(2);
 }

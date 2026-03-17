@@ -70,18 +70,28 @@ cargo build
 Run CLI:
 
 ```bash
-cargo run -p filegap-cli -- --help
+cargo run -p filegap-cli --bin filegap -- --help
 ```
 
-Examples:
+Pipe-first examples:
 
 ```bash
-cargo run -p filegap-cli -- merge -i a.pdf b.pdf -o merged.pdf
-cargo run -p filegap-cli -- extract -i in.pdf -p 2-4 -o out.pdf
-cargo run -p filegap-cli -- split -i in.pdf --every 2 -d ./out
-cargo run -p filegap-cli -- reorder -i in.pdf -p 3,1,2 -o reordered.pdf
-cargo run -p filegap-cli -- info -i in.pdf
-cargo run -p filegap-cli -- info -i in.pdf --json
+cargo run -p filegap-cli --bin filegap -- merge a.pdf b.pdf > merged.pdf
+cat input.pdf | cargo run -p filegap-cli --bin filegap -- extract --pages 2-4 > out.pdf
+cat input.pdf | cargo run -p filegap-cli --bin filegap -- reorder --pages 3,1,2 > reordered.pdf
+cargo run -p filegap-cli --bin filegap -- split input.pdf --pages 1-3 > part.pdf
+cargo run -p filegap-cli --bin filegap -- split input.pdf --pages 1-2,5 --format zip > parts.zip
+cargo run -p filegap-cli --bin filegap -- info input.pdf
+cargo run -p filegap-cli --bin filegap -- info input.pdf --json
+```
+
+Chaining example:
+
+```bash
+cat input.pdf \
+| cargo run -p filegap-cli --bin filegap -- extract --pages 1-5 \
+| cargo run -p filegap-cli --bin filegap -- reorder --pages 5,4,3,2,1 \
+> final.pdf
 ```
 
 ## Quick Start (Web Scaffold)

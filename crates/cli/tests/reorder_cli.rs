@@ -69,28 +69,26 @@ fn build_multi_page_pdf_bytes(page_count: u32) -> Vec<u8> {
 }
 
 #[test]
-fn reorder_command_creates_a_valid_reordered_pdf() {
+fn reorder_command_creates_a_valid_reordered_pdf_on_stdout() {
     let dir = tempdir().expect("tempdir should be created");
     let input_path = dir.path().join("input.pdf");
-    let output_path = dir.path().join("output.pdf");
 
     fs::write(&input_path, build_multi_page_pdf_bytes(3)).expect("write input.pdf");
 
-    Command::cargo_bin("filegap")
+    let output_bytes = Command::cargo_bin("filegap")
         .expect("binary should build")
         .args([
             "reorder",
-            "-i",
             input_path.to_str().expect("valid utf-8 path"),
-            "-p",
+            "--pages",
             "3,1,2",
-            "-o",
-            output_path.to_str().expect("valid utf-8 path"),
         ])
         .assert()
-        .success();
+        .success()
+        .get_output()
+        .stdout
+        .clone();
 
-    let output_bytes = fs::read(&output_path).expect("output should exist");
     let output_doc = Document::load_mem(&output_bytes).expect("output should be a valid pdf");
     assert_eq!(output_doc.get_pages().len(), 3);
     let first_page_text = output_doc
@@ -103,21 +101,48 @@ fn reorder_command_creates_a_valid_reordered_pdf() {
 fn reorder_command_fails_when_page_order_is_incomplete() {
     let dir = tempdir().expect("tempdir should be created");
     let input_path = dir.path().join("input.pdf");
-    let output_path = dir.path().join("output.pdf");
-
     fs::write(&input_path, build_multi_page_pdf_bytes(3)).expect("write input.pdf");
 
     Command::cargo_bin("filegap")
         .expect("binary should build")
         .args([
             "reorder",
-            "-i",
             input_path.to_str().expect("valid utf-8 path"),
-            "-p",
+            "--pages",
             "1,2",
-            "-o",
-            output_path.to_str().expect("valid utf-8 path"),
         ])
         .assert()
-        .failure();
+        .failure()
+        .code(3);
+}
+
+#[test]
+fn extract_then_reorder_pipeline_works_with_stdin_stdout() {
+    let input = build_multi_page_pdf_bytes(5);
+    let extracted = Command::cargo_bin("filegap")
+        .expect("binary should build")
+        .args(["extract", "--pages", "1-5"])
+        .write_stdin(input)
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    let reordered = Command::cargo_bin("filegap")
+        .expect("binary should build")
+        .args(["reorder", "--pages", "5,4,3,2,1"])
+        .write_stdin(extracted)
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    let output_doc = Document::load_mem(&reordered).expect("output should be valid pdf");
+    assert_eq!(output_doc.get_pages().len(), 5);
+    let first_page_text = output_doc
+        .extract_text(&[1])
+        .expect("first page text extraction should succeed");
+    assert!(first_page_text.contains("page-5"));
 }
