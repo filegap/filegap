@@ -42,6 +42,7 @@ filegap/
 - Browser processing via `ArrayBuffer` / `Blob`
 - Clear operation boundaries between UI and core logic
 - Web app architecture is backend-free for PDF operations
+- No network requests during PDF processing across web, CLI, and desktop app
 
 ## Web Guardrails (Non-Negotiable)
 

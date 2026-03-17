@@ -12,6 +12,15 @@
   - dump, log o PDF di test con dati personali non anonimizzati
 - Se c'e dubbio su un file, fermarsi e chiedere conferma prima di procedere.
 
+## Privacy Invariants (Obbligatori)
+- Durante il processamento PDF non sono consentite richieste di rete in nessun canale:
+  - web
+  - CLI
+  - desktop app
+- I file utente non devono essere caricati, persistiti o ispezionati lato server.
+- Qualsiasi proposta che introduca processing server-side dei PDF e fuori scope.
+- Se una modifica mette a rischio uno di questi invarianti, il lavoro va bloccato e va richiesta conferma esplicita.
+
 ## Standard Commit
 - Tutti i commit devono rispettare Conventional Commits:
   - riferimento: https://www.conventionalcommits.org/en/v1.0.0/

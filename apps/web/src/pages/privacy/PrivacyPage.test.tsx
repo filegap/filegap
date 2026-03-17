@@ -7,7 +7,10 @@ describe('PrivacyPage', () => {
   it('renders privacy title and key local-processing statement', () => {
     render(<PrivacyPage />);
 
-    expect(screen.getByRole('heading', { level: 1, name: 'Privacy Policy' })).toBeInTheDocument();
-    expect(screen.getByText(/process PDF files locally in your browser/i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Privacy & Security' })).toBeInTheDocument();
+    expect(screen.getByText(/your files never leave your device\. period\./i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: 'Instant proof' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: 'Technical details' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: 'In short' })).toBeInTheDocument();
   });
 });
