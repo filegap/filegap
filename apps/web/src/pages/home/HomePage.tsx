@@ -9,26 +9,31 @@ import { HomeToolCard } from './HomeToolCard';
 const TOOLS = [
   {
     name: 'Merge PDF',
-    description: 'Combine multiple PDF files into one document.',
+    description:
+      'Combine multiple PDF files into one document — fast, private, and directly in your browser.',
     href: '/merge-pdf',
+    ctaLabel: 'Merge PDFs',
     icon: <Files />,
   },
   {
     name: 'Split PDF',
-    description: 'Split one PDF into multiple files.',
+    description: 'Split one PDF into smaller PDF files without uploading it anywhere.',
     href: '/split-pdf',
+    ctaLabel: 'Split PDF',
     icon: <Split />,
   },
   {
     name: 'Extract Pages',
-    description: 'Extract selected pages from a PDF.',
+    description: 'Extract specific pages from a PDF and save only the pages you need.',
     href: '/extract-pages',
+    ctaLabel: 'Extract pages',
     icon: <Scissors />,
   },
   {
     name: 'Reorder PDF',
-    description: 'Reorder pages within a PDF.',
+    description: 'Rearrange PDF pages visually and export a new file in seconds.',
     href: '/reorder-pdf',
+    ctaLabel: 'Reorder pages',
     icon: <ArrowUpDown />,
   },
 ];
@@ -36,69 +41,160 @@ const TOOLS = [
 const WHY_ITEMS = [
   {
     icon: <ShieldCheck className='h-6 w-6' />,
-    title: 'Local processing only',
-    description: 'Your PDF files never leave your device.',
+    title: '100% local processing',
+    description:
+      'Your PDF files are processed directly in your browser. They are never uploaded to any server.',
   },
   {
     icon: <Zap className='h-6 w-6' />,
-    title: 'Fast',
-    description: 'Everything runs directly in your browser.',
+    title: 'No accounts, no tracking',
+    description:
+      'Use all tools instantly without signing up. We don’t track you, and we don’t store your data.',
   },
   {
     icon: <Leaf className='h-6 w-6' />,
-    title: 'Lightweight',
-    description: 'No accounts, no tracking, no uploads.',
+    title: 'Fast and lightweight',
+    description:
+      'No uploads, no waiting. Everything runs locally for maximum speed and responsiveness.',
+  },
+];
+
+const FAQ_ITEMS = [
+  {
+    question: 'Is Filegap really private?',
+    answer:
+      'Yes. All PDF processing happens locally in your browser. Your files are never uploaded to any server.',
+  },
+  {
+    question: 'Are my files uploaded anywhere?',
+    answer:
+      'No. Your files stay on your device and are processed locally using your browser.',
+  },
+  {
+    question: 'Do I need to create an account?',
+    answer: 'No. You can use all tools instantly without signing up.',
+  },
+  {
+    question: 'Is Filegap free to use?',
+    answer: 'Yes. All core PDF tools are free to use with no hidden limits.',
+  },
+  {
+    question: 'Does Filegap work offline?',
+    answer:
+      'Yes, in most cases. Once loaded, the tools can run locally without needing a constant internet connection.',
   },
 ];
 
 export function HomePage() {
   usePageMetadata({
-    title: 'Private PDF tools that run locally | Filegap',
+    title: 'Free PDF tools — private, fast, and local | Filegap',
     description:
-      'Private PDF tools that run locally. All processing runs in your browser. No uploads. Your files never leave your device.',
+      'Merge, split, and edit PDF files directly in your browser. No uploads. No accounts. Private local processing with files that never leave your device.',
   });
 
   return (
     <>
       <AppHeader />
       <PageContainer>
-        <section className='mx-auto max-w-3xl space-y-4 text-center'>
+        <section className='mx-auto max-w-3xl space-y-6 text-center md:space-y-7'>
           <h1 className='font-heading text-4xl font-bold leading-tight text-ui-text md:text-5xl'>
-            Private PDF tools that run locally.
+            Free PDF tools — private, fast, and local
           </h1>
-          <p className='text-sm leading-relaxed text-ui-muted md:text-base'>
-            All processing runs locally in your browser. No uploads. Your files never leave your
-            device.
+          <p className='mx-auto max-w-2xl text-base leading-relaxed text-ui-muted'>
+            Merge, split, and edit PDF files directly in your browser. No uploads. No accounts.
+            Your files never leave your device.
           </p>
+          <div className='space-y-3'>
+            <a
+              href='/merge-pdf'
+              className='inline-flex items-center justify-center rounded-xl bg-brand-primary px-6 py-3 text-sm font-semibold text-white transition hover:bg-brand-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/40 focus-visible:ring-offset-2'
+            >
+              Merge PDFs instantly
+            </a>
+            <p className='text-sm text-ui-muted'>Or choose a tool below</p>
+            <p className='text-xs text-ui-muted'>Works in Chrome, Edge, Safari</p>
+          </div>
         </section>
 
-        <section data-testid='home-tool-grid' className='mt-10 grid gap-4 md:grid-cols-2'>
+        <section data-testid='home-tool-grid' className='mt-12 grid gap-4 md:mt-14 md:grid-cols-2'>
           {TOOLS.map((tool) => (
             <HomeToolCard
               key={tool.href}
               name={tool.name}
               description={tool.description}
               href={tool.href}
+              ctaLabel={tool.ctaLabel}
               icon={tool.icon}
             />
           ))}
         </section>
 
-        <section className='mt-10 rounded-xl border border-ui-border bg-ui-surface p-5'>
+        <section className='mt-10 rounded-xl border border-ui-border bg-ui-surface p-6'>
           <h2 className='font-heading text-2xl font-semibold text-ui-text'>Why Filegap</h2>
-          <ul className='mt-4 space-y-3'>
+          <ul className='mt-5 space-y-4'>
             {WHY_ITEMS.map((item) => (
-              <li key={item.title} className='flex items-start gap-3 py-1'>
+              <li key={item.title} className='flex items-start gap-3 py-1.5'>
                 <span className='mt-0.5 text-brand-primary' aria-hidden='true'>
                   {item.icon}
                 </span>
                 <div>
                   <p className='text-sm font-semibold text-ui-text'>{item.title}</p>
-                  <p className='mt-1 text-sm text-ui-muted'>{item.description}</p>
+                  <p className='mt-1.5 text-sm leading-relaxed text-ui-muted'>{item.description}</p>
                 </div>
               </li>
             ))}
           </ul>
+        </section>
+
+        <section className='mt-10 rounded-xl border border-ui-border bg-ui-surface p-6'>
+          <h2 className='font-heading text-2xl font-semibold text-ui-text'>Frequently asked questions</h2>
+          <ul className='mt-5 space-y-6'>
+            {FAQ_ITEMS.map((item) => (
+              <li key={item.question}>
+                <h3 className='text-base font-semibold text-ui-text'>{item.question}</h3>
+                <p className='mt-2 text-sm leading-relaxed text-ui-muted'>{item.answer}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section className='mt-10 rounded-xl border border-ui-border bg-ui-surface p-6'>
+          <h2 className='font-heading text-2xl font-semibold text-ui-text'>Simple and private PDF tools</h2>
+          <div className='mt-5 max-w-3xl space-y-4 text-sm leading-relaxed text-ui-muted'>
+            <p>
+              Filegap provides a set of simple and private PDF tools that run entirely in your
+              browser. You can easily <a className='text-ui-text underline' href='/merge-pdf'>merge PDF files</a>,{' '}
+              <a className='text-ui-text underline' href='/split-pdf'>split PDF documents</a>,{' '}
+              <a className='text-ui-text underline' href='/extract-pages'>extract pages</a>, or{' '}
+              <a className='text-ui-text underline' href='/reorder-pdf'>reorder pages</a> without
+              uploading anything online.
+            </p>
+            <p>
+              Unlike most PDF tools, Filegap does not send your files to a server. All processing
+              happens locally on your device, making it a safer choice if you need to handle
+              sensitive documents.
+            </p>
+            <p>
+              Whether you need to combine PDF files into one document, split large PDFs into
+              smaller files, or extract only specific pages, Filegap lets you do it quickly and
+              securely — directly in your browser, with no signup required.
+            </p>
+          </div>
+        </section>
+
+        <section className='mt-12 space-y-4 pb-2 text-center md:space-y-5'>
+          <h2 className='font-heading text-3xl font-semibold leading-tight text-ui-text md:text-4xl'>
+            Ready to edit your PDFs privately?
+          </h2>
+          <p className='mx-auto max-w-2xl text-base leading-relaxed text-ui-muted'>
+            Start using Filegap directly in your browser — no uploads, no signup.
+          </p>
+          <a
+            href='/merge-pdf'
+            className='inline-flex items-center justify-center rounded-xl bg-brand-primary px-6 py-3 text-sm font-semibold text-white transition hover:bg-brand-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/40 focus-visible:ring-offset-2'
+          >
+            Merge PDFs instantly
+          </a>
         </section>
       </PageContainer>
       <AppFooter />
