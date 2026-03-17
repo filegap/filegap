@@ -32,7 +32,7 @@ describe('ExtractPagesPage', () => {
     ).toBeInTheDocument();
     expect(screen.getByText('Free • No signup • Works in your browser')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Extract pages' })).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('1-3,5,7-9')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('e.g. 1-3, 5, 7-9')).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2, name: 'Uploaded files' })).toBeInTheDocument();
     expect(screen.getByText('No files selected yet.')).toBeInTheDocument();
     expect(
@@ -44,7 +44,11 @@ describe('ExtractPagesPage', () => {
     expect(screen.getByRole('heading', { level: 2, name: 'Frequently asked questions' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2, name: 'Extract PDF pages quickly and securely' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2, name: 'Ready to extract your pages?' })).toBeInTheDocument();
-    const extractCtas = screen.getAllByRole('link', { name: 'Extract pages instantly' });
+    expect(screen.getByText('Can I extract PDF pages without uploading the file?')).toBeInTheDocument();
+    expect(screen.getByText('Can I keep only certain pages from a PDF?')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'split PDF files' })).toHaveAttribute('href', '/split-pdf');
+    expect(screen.getByRole('link', { name: 'reorder PDF pages' })).toHaveAttribute('href', '/reorder-pdf');
+    const extractCtas = screen.getAllByRole('link', { name: 'Extract pages now' });
     expect(extractCtas[extractCtas.length - 1]).toHaveAttribute('href', '#extract-pdf-tool');
   });
 
@@ -71,7 +75,7 @@ describe('ExtractPagesPage', () => {
       expect(screen.getByText(/PDF ready/i)).toBeInTheDocument();
     });
 
-    await user.type(screen.getByPlaceholderText('1-3,5,7-9'), '1-2,4');
+    await user.type(screen.getByPlaceholderText('e.g. 1-3, 5, 7-9'), '1-2,4');
     await user.click(screen.getByRole('button', { name: 'Extract pages' }));
 
     await waitFor(() => {

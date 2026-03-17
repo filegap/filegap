@@ -67,8 +67,8 @@ const REORDER_PAGE_CONTENT = {
   howItWorksTitle: 'How to reorder PDF pages',
   howItWorksSteps: [
     'Upload one PDF file from your device.',
-    'Enter the exact page order you want (for example: 3,1,2,4).',
-    'Click “Reorder PDF” and download the updated file instantly.',
+    'Enter the full page order you want, for example 3, 1, 2, 4, so every page appears exactly once.',
+    'Click “Reorder PDF” and download your reordered PDF instantly.',
   ],
   whyTitle: 'Why use this Reorder PDF tool',
   whyItems: [
@@ -97,6 +97,16 @@ const REORDER_PAGE_CONTENT = {
       answer: 'Yes. Processing happens locally in your browser. Your files are never uploaded.',
     },
     {
+      question: 'Can I reorder PDF pages without uploading my file?',
+      answer:
+        'Yes. Filegap processes your PDF locally in your browser, so your file is never uploaded to a server.',
+    },
+    {
+      question: 'Can I change the page order in a PDF?',
+      answer:
+        'Yes. Enter the new page order, and Filegap will generate a reordered PDF file for you.',
+    },
+    {
       question: 'Can I reorder PDF pages for free?',
       answer: 'Yes. You can reorder PDF pages for free with no signup required.',
     },
@@ -107,13 +117,13 @@ const REORDER_PAGE_CONTENT = {
   ],
   seoTitle: 'Reorder PDF pages quickly and securely',
   seoParagraphs: [
-    'Filegap lets you reorder PDF pages online without uploading documents to a server. Since everything runs locally in your browser, it is a safer option for sensitive files.',
-    'You can define a custom page order, generate a new PDF in seconds, and download it instantly.',
+    'Filegap lets you reorder PDF pages online without uploading documents to a server. Everything runs locally in your browser without installing software, making it a safer option for sensitive files.',
+    'You can change the page order, fix document sequence issues, and generate a new PDF in seconds.',
     'Whether you need to fix a document sequence for work, school, or personal files, Filegap provides a fast, private, and free way to reorder PDF pages directly on your device.',
   ],
   finalCtaTitle: 'Ready to reorder your PDF?',
   finalCtaText: 'Start reordering PDF pages now — no uploads, no signup.',
-  finalCtaLabel: 'Reorder PDF instantly',
+  finalCtaLabel: 'Reorder PDF pages now',
   finalCtaHref: '#reorder-pdf-tool',
 };
 
@@ -320,10 +330,10 @@ export function ReorderPdfPage() {
   return (
     <ToolLayout
       title='Reorder PDF pages online — fast, private, and local'
-      description='Rearrange PDF pages directly in your browser. No uploads. No accounts. Your files never leave your device.'
+      description='Reorder PDF pages directly in your browser. No uploads. No accounts. Your files never leave your device.'
       trustLine='Free • No signup • Works in your browser'
-      metaTitle='Reorder PDF pages online - private, local, free | Filegap'
-      metaDescription='Reorder PDF pages online directly in your browser. No uploads, no accounts, and fully local processing.'
+      metaTitle='Reorder PDF Pages Online — Private, Local & Free | Filegap'
+      metaDescription='Reorder PDF pages online for free with private local processing. Change page order directly in your browser with no uploads and no signup.'
       heroVariant='brand'
     >
       <Card id='reorder-pdf-tool'>
@@ -355,13 +365,13 @@ export function ReorderPdfPage() {
           <div className='space-y-2'>
             <h2 className='font-heading text-2xl font-semibold text-ui-text'>Page order</h2>
             <p className='text-sm text-ui-muted'>
-              Enter all pages exactly once. Example: 3,1,2,4-6.
+              Enter the full page order exactly once. Example: 3, 1, 2, 4-6.
             </p>
             <input
               type='text'
               value={orderInput}
               onChange={(event) => setOrderInput(event.target.value)}
-              placeholder='3,1,2,4-6'
+              placeholder='e.g. 3, 1, 2, 4-6'
               className='w-full rounded-xl border border-ui-border bg-ui-surface px-4 py-3 text-sm text-ui-text outline-none transition focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20'
             />
             {parsedOrder.pageOrder ? (
@@ -410,7 +420,16 @@ export function ReorderPdfPage() {
         </div>
       </Card>
 
-      <ToolLandingSections {...REORDER_PAGE_CONTENT} />
+      <ToolLandingSections
+        {...REORDER_PAGE_CONTENT}
+        seoSupplement={
+          <p>
+            You can also <a className='text-ui-text underline' href='/extract-pages'>extract pages</a>{' '}
+            or <a className='text-ui-text underline' href='/split-pdf'>split PDF files</a>{' '}
+            using other Filegap tools.
+          </p>
+        }
+      />
 
       <PreDownloadModal
         open={showDownloadGate && Boolean(output)}

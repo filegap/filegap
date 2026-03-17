@@ -76,8 +76,8 @@ const SPLIT_PAGE_CONTENT = {
   howItWorksTitle: 'How to split PDF files',
   howItWorksSteps: [
     'Upload one PDF file from your device.',
-    'Enter the page ranges you want to split into separate files.',
-    'Click “Split PDF” and download each output instantly.',
+    'Enter page ranges such as 1-3 or 4-7 to create separate PDF files.',
+    'Click “Split PDF” and download your separate PDF files instantly.',
   ],
   whyTitle: 'Why use this Split PDF tool',
   whyItems: [
@@ -106,6 +106,11 @@ const SPLIT_PAGE_CONTENT = {
       answer: 'Yes. All processing happens locally in your browser. Your files are never uploaded.',
     },
     {
+      question: 'Can I split a PDF without uploading it?',
+      answer:
+        'Yes. Filegap processes your PDF locally in your browser, so your file is never uploaded to a server.',
+    },
+    {
       question: 'Can I split PDF files for free?',
       answer: 'Yes. You can split PDF files for free with no signup required.',
     },
@@ -116,13 +121,13 @@ const SPLIT_PAGE_CONTENT = {
   ],
   seoTitle: 'Split PDF files quickly and securely',
   seoParagraphs: [
-    'Filegap helps you split PDF files online without sending them to a server. Everything runs locally in your browser, which makes it a safer option for sensitive documents.',
+    'Filegap helps you split PDF files online without sending them to a server. Everything runs locally in your browser without installing software, which makes it a safer option for sensitive documents.',
     'You can define custom ranges, generate multiple output files, and download them immediately after processing.',
     'Whether you need to split PDFs for work, study, or personal tasks, Filegap gives you a fast, private, and free tool directly in your browser.',
   ],
   finalCtaTitle: 'Ready to split your PDF?',
   finalCtaText: 'Start splitting your PDF files now — no uploads, no signup.',
-  finalCtaLabel: 'Split PDF instantly',
+  finalCtaLabel: 'Split your PDF now',
   finalCtaHref: '#split-pdf-tool',
 };
 
@@ -368,10 +373,10 @@ export function SplitPdfPage() {
   return (
     <ToolLayout
       title='Split PDF files online — fast, private, and local'
-      description='Split one PDF into multiple files directly in your browser. No uploads. No accounts. Your files never leave your device.'
+      description='Split PDF files into multiple documents directly in your browser. No uploads. No accounts. Your files never leave your device.'
       trustLine='Free • No signup • Works in your browser'
-      metaTitle='Split PDF online - private, local, free | Filegap'
-      metaDescription='Split PDF files online directly in your browser. No uploads, no accounts, and fully local processing.'
+      metaTitle='Split PDF Files Online — Private, Local & Free | Filegap'
+      metaDescription='Split PDF files online for free with private local processing. Create separate PDF files directly in your browser with no uploads and no signup.'
       heroVariant='brand'
     >
       <Card id='split-pdf-tool'>
@@ -393,13 +398,13 @@ export function SplitPdfPage() {
           <div className='space-y-2'>
             <h2 className='font-heading text-2xl font-semibold text-ui-text'>Split setup</h2>
             <p className='text-sm text-ui-muted'>
-              Enter non-overlapping ranges to generate output parts. Example: 1-3,4,5-10.
+              Enter non-overlapping page ranges to create separate PDF files. Example: 1-3, 4, 5-10.
             </p>
             <input
               type='text'
               value={rangeInput}
               onChange={(event) => setRangeInput(event.target.value)}
-              placeholder='1-3,4-7,8-10'
+              placeholder='e.g. 1-3, 4, 5-10'
               className='w-full rounded-xl border border-ui-border bg-ui-surface px-4 py-3 text-sm text-ui-text outline-none transition focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20'
             />
             {parsedRanges.ranges ? (
@@ -471,7 +476,16 @@ export function SplitPdfPage() {
         </div>
       </Card>
 
-      <ToolLandingSections {...SPLIT_PAGE_CONTENT} />
+      <ToolLandingSections
+        {...SPLIT_PAGE_CONTENT}
+        seoSupplement={
+          <p>
+            You can also <a className='text-ui-text underline' href='/merge-pdf'>merge PDF files</a>{' '}
+            or <a className='text-ui-text underline' href='/extract-pages'>extract specific pages</a>{' '}
+            using other Filegap tools.
+          </p>
+        }
+      />
 
       <PreDownloadModal
         open={showDownloadGate && outputs.length > 0}

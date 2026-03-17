@@ -72,8 +72,8 @@ const EXTRACT_PAGE_CONTENT = {
   howItWorksTitle: 'How to extract pages from a PDF',
   howItWorksSteps: [
     'Upload one PDF file from your device.',
-    'Enter the page ranges you want to keep.',
-    'Click “Extract pages” and download the new PDF instantly.',
+    'Enter page ranges such as 1-3 or 5-7 to keep only the pages you need.',
+    'Click “Extract pages” and download your new PDF instantly.',
   ],
   whyTitle: 'Why use this Extract Pages tool',
   whyItems: [
@@ -102,6 +102,16 @@ const EXTRACT_PAGE_CONTENT = {
       answer: 'Yes. Filegap processes files locally in your browser and never uploads them.',
     },
     {
+      question: 'Can I extract PDF pages without uploading the file?',
+      answer:
+        'Yes. Filegap processes your PDF locally in your browser, so your file is never uploaded to a server.',
+    },
+    {
+      question: 'Can I keep only certain pages from a PDF?',
+      answer:
+        'Yes. Enter the page ranges you want to keep, and Filegap will create a new PDF containing only those pages.',
+    },
+    {
       question: 'Can I extract PDF pages for free?',
       answer: 'Yes. You can use the Extract Pages tool for free without creating an account.',
     },
@@ -112,13 +122,13 @@ const EXTRACT_PAGE_CONTENT = {
   ],
   seoTitle: 'Extract PDF pages quickly and securely',
   seoParagraphs: [
-    'Filegap lets you extract pages from PDF files online without uploading documents to a server. Processing runs fully in your browser, which is better for private or sensitive files.',
-    'You can select exact page ranges, generate a clean output PDF, and download it right away.',
+    'Filegap lets you extract pages from PDF files online without uploading documents to a server. Everything runs fully in your browser without installing software, which makes it a better option for private or sensitive files.',
+    'You can select exact page ranges, generate a clean output PDF, and keep only the pages you need before downloading the file.',
     'Whether you need specific pages for work, school, or personal use, Filegap offers a fast, private, and free way to extract PDF pages directly on your device.',
   ],
   finalCtaTitle: 'Ready to extract your pages?',
   finalCtaText: 'Start extracting PDF pages now — no uploads, no signup.',
-  finalCtaLabel: 'Extract pages instantly',
+  finalCtaLabel: 'Extract pages now',
   finalCtaHref: '#extract-pdf-tool',
 };
 
@@ -350,10 +360,10 @@ export function ExtractPagesPage() {
   return (
     <ToolLayout
       title='Extract PDF pages online — fast, private, and local'
-      description='Extract selected PDF pages directly in your browser. No uploads. No accounts. Your files never leave your device.'
+      description='Extract pages from PDF files directly in your browser. No uploads. No accounts. Your files never leave your device.'
       trustLine='Free • No signup • Works in your browser'
-      metaTitle='Extract PDF pages online - private, local, free | Filegap'
-      metaDescription='Extract PDF pages online directly in your browser. No uploads, no accounts, and fully local processing.'
+      metaTitle='Extract PDF Pages Online — Private, Local & Free | Filegap'
+      metaDescription='Extract PDF pages online for free with private local processing. Keep only the pages you need directly in your browser with no uploads and no signup.'
       heroVariant='brand'
     >
       <Card id='extract-pdf-tool'>
@@ -376,13 +386,13 @@ export function ExtractPagesPage() {
           <div className='space-y-2'>
             <h2 className='font-heading text-2xl font-semibold text-ui-text'>Page selection</h2>
             <p className='text-sm text-ui-muted'>
-              Enter non-overlapping page ranges to keep. Example: 1-3,5,7-9.
+              Enter non-overlapping page ranges to keep in the new PDF. Example: 1-3, 5, 7-9.
             </p>
             <input
               type='text'
               value={rangeInput}
               onChange={(event) => setRangeInput(event.target.value)}
-              placeholder='1-3,5,7-9'
+              placeholder='e.g. 1-3, 5, 7-9'
               className='w-full rounded-xl border border-ui-border bg-ui-surface px-4 py-3 text-sm text-ui-text outline-none transition focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20'
             />
             {parsedRanges.ranges ? (
@@ -438,7 +448,16 @@ export function ExtractPagesPage() {
         </div>
       </Card>
 
-      <ToolLandingSections {...EXTRACT_PAGE_CONTENT} />
+      <ToolLandingSections
+        {...EXTRACT_PAGE_CONTENT}
+        seoSupplement={
+          <p>
+            You can also <a className='text-ui-text underline' href='/split-pdf'>split PDF files</a>{' '}
+            or <a className='text-ui-text underline' href='/reorder-pdf'>reorder PDF pages</a>{' '}
+            using other Filegap tools.
+          </p>
+        }
+      />
 
       <PreDownloadModal
         open={showDownloadGate && Boolean(output)}

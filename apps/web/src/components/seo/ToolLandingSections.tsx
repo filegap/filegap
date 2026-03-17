@@ -17,6 +17,7 @@ type ToolLandingSectionsProps = {
   faqItems: FaqItem[];
   seoTitle: string;
   seoParagraphs: string[];
+  seoSupplement?: ReactNode;
   finalCtaTitle: string;
   finalCtaText: string;
   finalCtaLabel: string;
@@ -32,6 +33,7 @@ export function ToolLandingSections({
   faqItems,
   seoTitle,
   seoParagraphs,
+  seoSupplement,
   finalCtaTitle,
   finalCtaText,
   finalCtaLabel,
@@ -80,6 +82,7 @@ export function ToolLandingSections({
           {seoParagraphs.map((paragraph) => (
             <p key={paragraph}>{paragraph}</p>
           ))}
+          {seoSupplement}
         </div>
       </section>
 
@@ -98,3 +101,4 @@ export function ToolLandingSections({
     </>
   );
 }
+import type { ReactNode } from 'react';

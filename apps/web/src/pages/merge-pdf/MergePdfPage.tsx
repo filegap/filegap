@@ -82,8 +82,8 @@ const MERGE_PAGE_CONTENT = {
   howItWorksTitle: 'How to merge PDF files',
   howItWorksSteps: [
     'Upload or drag and drop your PDF files.',
-    'Arrange them in the desired order.',
-    'Click “Merge PDF” and download your file instantly.',
+    'Reorder them the way you want.',
+    'Click “Merge PDF” and download your combined file.',
   ],
   whyTitle: 'Why use this Merge PDF tool',
   whyItems: [
@@ -118,6 +118,11 @@ const MERGE_PAGE_CONTENT = {
     {
       question: 'Is there a file size limit?',
       answer: 'Limits depend on your device performance since all processing happens locally.',
+    },
+    {
+      question: 'Can I merge PDF files without uploading them?',
+      answer:
+        'Yes. Filegap processes your files locally in your browser, so they are never uploaded to a server.',
     },
   ],
   seoTitle: 'Merge PDF files quickly and securely',
@@ -372,8 +377,8 @@ export function MergePdfPage() {
       title='Merge PDF files online — fast, private, and local'
       description='Combine multiple PDF files into one document directly in your browser. No uploads. No accounts. Your files never leave your device.'
       trustLine='Free • No signup • Works in your browser'
-      metaTitle='Merge PDF online - private, local, free | Filegap'
-      metaDescription='Merge PDF files online directly in your browser. Combine PDF files fast with no uploads, no accounts, and fully local processing.'
+      metaTitle='Merge PDF Files Online — Private, Local & Free | Filegap'
+      metaDescription='Merge PDF files online for free with private local processing. Combine PDFs directly in your browser with no uploads and no signup.'
       heroVariant='brand'
     >
       <Card id='merge-pdf-tool'>

@@ -7,7 +7,7 @@ export function TrustNotice() {
         <Lock className='h-4 w-4' />
       </span>
       <p className='text-xs font-medium text-brand-trust'>
-        Local processing only. Your PDF files never leave your device.
+        Private processing in your browser. No server uploads.
       </p>
     </div>
   );

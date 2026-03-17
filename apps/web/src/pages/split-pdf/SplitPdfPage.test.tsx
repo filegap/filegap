@@ -32,7 +32,7 @@ describe('SplitPdfPage', () => {
     ).toBeInTheDocument();
     expect(screen.getByText('Free • No signup • Works in your browser')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Split PDF' })).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('1-3,4-7,8-10')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('e.g. 1-3, 4, 5-10')).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2, name: 'Uploaded files' })).toBeInTheDocument();
     expect(screen.getByText('No files selected yet.')).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2, name: 'How to split PDF files' })).toBeInTheDocument();
@@ -40,7 +40,10 @@ describe('SplitPdfPage', () => {
     expect(screen.getByRole('heading', { level: 2, name: 'Frequently asked questions' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2, name: 'Split PDF files quickly and securely' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2, name: 'Ready to split your PDF?' })).toBeInTheDocument();
-    const splitCtas = screen.getAllByRole('link', { name: 'Split PDF instantly' });
+    expect(screen.getByText('Can I split a PDF without uploading it?')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'merge PDF files' })).toHaveAttribute('href', '/merge-pdf');
+    expect(screen.getByRole('link', { name: 'extract specific pages' })).toHaveAttribute('href', '/extract-pages');
+    const splitCtas = screen.getAllByRole('link', { name: 'Split your PDF now' });
     expect(splitCtas[splitCtas.length - 1]).toHaveAttribute('href', '#split-pdf-tool');
   });
 
@@ -71,7 +74,7 @@ describe('SplitPdfPage', () => {
       expect(screen.getByText(/PDF ready/i)).toBeInTheDocument();
     });
 
-    await user.type(screen.getByPlaceholderText('1-3,4-7,8-10'), '1-2,3,4-4');
+    await user.type(screen.getByPlaceholderText('e.g. 1-3, 4, 5-10'), '1-2,3,4-4');
     await user.click(screen.getByRole('button', { name: 'Split PDF' }));
 
     await waitFor(() => {
@@ -99,7 +102,7 @@ describe('SplitPdfPage', () => {
       expect(screen.getByText(/PDF ready/i)).toBeInTheDocument();
     });
 
-    await user.type(screen.getByPlaceholderText('1-3,4-7,8-10'), '1');
+    await user.type(screen.getByPlaceholderText('e.g. 1-3, 4, 5-10'), '1');
     await user.click(screen.getByRole('button', { name: 'Split PDF' }));
 
     await waitFor(() => {

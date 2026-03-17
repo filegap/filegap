@@ -32,14 +32,18 @@ describe('ReorderPdfPage', () => {
     ).toBeInTheDocument();
     expect(screen.getByText('Free • No signup • Works in your browser')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Reorder PDF' })).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('3,1,2,4-6')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('e.g. 3, 1, 2, 4-6')).toBeInTheDocument();
     expect(screen.getByText('No files selected yet.')).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2, name: 'How to reorder PDF pages' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2, name: 'Why use this Reorder PDF tool' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2, name: 'Frequently asked questions' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2, name: 'Reorder PDF pages quickly and securely' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2, name: 'Ready to reorder your PDF?' })).toBeInTheDocument();
-    const reorderCtas = screen.getAllByRole('link', { name: 'Reorder PDF instantly' });
+    expect(screen.getByText('Can I reorder PDF pages without uploading my file?')).toBeInTheDocument();
+    expect(screen.getByText('Can I change the page order in a PDF?')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'extract pages' })).toHaveAttribute('href', '/extract-pages');
+    expect(screen.getByRole('link', { name: 'split PDF files' })).toHaveAttribute('href', '/split-pdf');
+    const reorderCtas = screen.getAllByRole('link', { name: 'Reorder PDF pages now' });
     expect(reorderCtas[reorderCtas.length - 1]).toHaveAttribute('href', '#reorder-pdf-tool');
   });
 
@@ -66,7 +70,7 @@ describe('ReorderPdfPage', () => {
       expect(screen.getByText(/PDF ready/i)).toBeInTheDocument();
     });
 
-    const orderInput = screen.getByPlaceholderText('3,1,2,4-6');
+    const orderInput = screen.getByPlaceholderText('e.g. 3, 1, 2, 4-6');
     fireEvent.change(orderInput, { target: { value: '2,1,3,4' } });
     await user.click(screen.getByRole('button', { name: 'Reorder PDF' }));
 
