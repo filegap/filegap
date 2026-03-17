@@ -75,7 +75,7 @@ fn split_every_command_creates_multiple_output_files() {
     let out_dir = dir.path().join("out_every");
     fs::write(&input_path, build_multi_page_pdf_bytes(5)).expect("write input.pdf");
 
-    Command::cargo_bin("pdflo-cli")
+    Command::cargo_bin("filegap")
         .expect("binary should build")
         .args([
             "split",
@@ -111,7 +111,7 @@ fn split_ranges_command_creates_expected_outputs() {
     let out_dir = dir.path().join("out_ranges");
     fs::write(&input_path, build_multi_page_pdf_bytes(5)).expect("write input.pdf");
 
-    Command::cargo_bin("pdflo-cli")
+    Command::cargo_bin("filegap")
         .expect("binary should build")
         .args([
             "split",

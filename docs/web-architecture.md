@@ -1,8 +1,8 @@
-# PDFlo Web Architecture
+# Filegap Web Architecture
 
 ## Scope
 
-This document defines architecture rules for the **web app only** (`pdflo.dr-w.it`).
+This document defines architecture rules for the **web app only** (`filegap.dr-w.it`).
 CLI and desktop concerns are intentionally out of scope.
 
 Core rule:

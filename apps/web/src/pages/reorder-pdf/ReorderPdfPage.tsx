@@ -266,6 +266,8 @@ export function ReorderPdfPage() {
     <ToolLayout
       title='Reorder PDF Pages'
       description='Reorder all pages of one PDF directly in your browser. No uploads, no server processing.'
+      metaTitle='Reorder PDF pages online - private, local, free | Filegap'
+      metaDescription='Reorder PDF pages directly in your browser. No uploads. Your files never leave your device.'
       heroVariant='brand'
     >
       <Card>
@@ -375,7 +377,7 @@ export function ReorderPdfPage() {
       <PreDownloadModal
         open={showDownloadGate && Boolean(output)}
         title='Reorder completed'
-        description='PDFlo runs entirely in your browser. If it helps, support the project and share it with people who need truly private PDF tools.'
+        description='Filegap runs entirely in your browser. If it helps, support the project and share it with people who need private PDF tools that run locally.'
         confirmLabel='Continue to download'
         onConfirm={handleConfirmDownload}
         onClose={() => setShowDownloadGate(false)}

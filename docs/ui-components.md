@@ -1,4 +1,4 @@
-# PDFlo Web UI Components
+# Filegap Web UI Components
 
 ## Goal
 

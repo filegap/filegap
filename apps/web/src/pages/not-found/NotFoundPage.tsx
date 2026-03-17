@@ -2,8 +2,14 @@ import { AppFooter } from '../../components/layout/AppFooter';
 import { AppHeader } from '../../components/layout/AppHeader';
 import { PageContainer } from '../../components/layout/PageContainer';
 import { Card } from '../../components/ui/Card';
+import { usePageMetadata } from '../../lib/seo/usePageMetadata';
 
 export function NotFoundPage() {
+  usePageMetadata({
+    title: 'Page not found | Filegap',
+    description: 'This page does not exist. Use Filegap private PDF tools that run locally.',
+  });
+
   return (
     <>
       <AppHeader />

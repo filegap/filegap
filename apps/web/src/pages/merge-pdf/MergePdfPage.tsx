@@ -316,6 +316,8 @@ export function MergePdfPage() {
     <ToolLayout
       title='Merge PDF'
       description='Merge multiple PDF files into a single document directly in your browser. No uploads, no server processing.'
+      metaTitle='Merge PDF online - private, local, free | Filegap'
+      metaDescription='Merge PDF files directly in your browser. No uploads. Your files never leave your device.'
       heroVariant='brand'
     >
       <Card>
@@ -382,7 +384,7 @@ export function MergePdfPage() {
         </Card>
 
         <Card>
-          <h3 className='font-heading text-2xl font-semibold text-ui-text'>Why PDFlo</h3>
+          <h3 className='font-heading text-2xl font-semibold text-ui-text'>Why Filegap</h3>
           <ul className='mt-3 list-disc space-y-2 pl-5 text-sm leading-relaxed text-ui-muted'>
             <li>No file upload to servers.</li>
             <li>Processing runs entirely in your browser.</li>
@@ -394,7 +396,7 @@ export function MergePdfPage() {
       <PreDownloadModal
         open={showDownloadGate && Boolean(mergedOutput)}
         title='Merge completed'
-        description='PDFlo runs entirely in your browser. If it helps, support the project and share it with people who need truly private PDF tools.'
+        description='Filegap runs entirely in your browser. If it helps, support the project and share it with people who need private PDF tools that run locally.'
         confirmLabel='Continue to download'
         onConfirm={handleConfirmDownload}
         onClose={() => setShowDownloadGate(false)}

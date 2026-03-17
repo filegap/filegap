@@ -100,7 +100,7 @@ mod tests {
 
         let info_id = doc.add_object(dictionary! {
             "Title" => Object::string_literal("demo"),
-            "Producer" => Object::string_literal("pdflo-tests"),
+            "Producer" => Object::string_literal("filegap-tests"),
         });
         let catalog_id = doc.add_object(dictionary! {
             "Type" => "Catalog",
@@ -126,6 +126,6 @@ mod tests {
         assert_eq!(info.pdf_version, "1.5");
         assert!(!info.is_encrypted);
         assert_eq!(info.title.as_deref(), Some("demo"));
-        assert_eq!(info.producer.as_deref(), Some("pdflo-tests"));
+        assert_eq!(info.producer.as_deref(), Some("filegap-tests"));
     }
 }

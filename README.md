@@ -1,12 +1,12 @@
-# pdflo
+# filegap
 
-Privacy-first PDF tools that run locally.
+Private PDF tools that run locally.
 
 Core promise: **your files never leave your device**.
 
 ## Vision
 
-`pdflo` is an open-source PDF tools suite distributed through:
+`filegap` is an open-source PDF tools suite distributed through:
 
 - Web app (local browser processing, no uploads)
 - CLI tool (developer-friendly automation)
@@ -25,7 +25,7 @@ MVP operations:
 ## Repository Structure
 
 ```text
-pdflo/
+filegap/
 ├─ crates/
 │  ├─ core/      # shared Rust PDF domain logic
 │  └─ cli/       # CLI wrapper around core operations
@@ -69,18 +69,18 @@ cargo build
 Run CLI:
 
 ```bash
-cargo run -p pdflo-cli -- --help
+cargo run -p filegap-cli -- --help
 ```
 
 Examples:
 
 ```bash
-cargo run -p pdflo-cli -- merge -i a.pdf b.pdf -o merged.pdf
-cargo run -p pdflo-cli -- extract -i in.pdf -p 2-4 -o out.pdf
-cargo run -p pdflo-cli -- split -i in.pdf --every 2 -d ./out
-cargo run -p pdflo-cli -- reorder -i in.pdf -p 3,1,2 -o reordered.pdf
-cargo run -p pdflo-cli -- info -i in.pdf
-cargo run -p pdflo-cli -- info -i in.pdf --json
+cargo run -p filegap-cli -- merge -i a.pdf b.pdf -o merged.pdf
+cargo run -p filegap-cli -- extract -i in.pdf -p 2-4 -o out.pdf
+cargo run -p filegap-cli -- split -i in.pdf --every 2 -d ./out
+cargo run -p filegap-cli -- reorder -i in.pdf -p 3,1,2 -o reordered.pdf
+cargo run -p filegap-cli -- info -i in.pdf
+cargo run -p filegap-cli -- info -i in.pdf --json
 ```
 
 ## Quick Start (Web Scaffold)

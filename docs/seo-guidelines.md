@@ -1,4 +1,4 @@
-# PDFlo Web SEO Guidelines
+# Filegap Web SEO Guidelines
 
 ## SEO Objective
 
@@ -36,7 +36,7 @@ For each tool route:
 5. Tool interface above the fold.
 6. Supporting content blocks:
 - How it works
-- Why PDFlo
+- Why Filegap
 - FAQ
 
 ## Content Rules
@@ -55,14 +55,14 @@ For each tool route:
 
 Per-page title pattern:
 
-- `Merge PDF Online (No Upload) | PDFlo`
-- `Split PDF in Browser | PDFlo`
-- `Extract PDF Pages Locally | PDFlo`
-- `Reorder PDF Pages Online | PDFlo`
+- `Merge PDF Online (No Upload) | Filegap`
+- `Split PDF in Browser | Filegap`
+- `Extract PDF Pages Locally | Filegap`
+- `Reorder PDF Pages Online | Filegap`
 
 Meta description pattern:
 
-- "Use PDFlo to [action] directly in your browser. No uploads, no server processing. Your files never leave your device."
+- "Use Filegap to [action] directly in your browser. No uploads, no server processing. Your files never leave your device."
 
 ## Internal Linking
 

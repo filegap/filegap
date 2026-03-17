@@ -3,17 +3,17 @@ use std::path::Path;
 
 use anyhow::{bail, Context, Result};
 use clap::{Args, Parser, Subcommand};
-use pdflo_core::{
+use filegap_core::{
     ops::{extract_pages, inspect_pdf, merge_pdfs, reorder_pages, split_pdf},
     ExtractRequest, InfoRequest, MergeRequest, ReorderRequest, SplitMode, SplitRequest,
 };
 use serde_json::json;
 
 #[derive(Debug, Parser)]
-#[command(name = "pdflo")]
-#[command(about = "Privacy-first PDF tools that run locally")]
+#[command(name = "filegap")]
+#[command(about = "Private PDF tools that run locally")]
 #[command(
-    after_help = "Examples:\n  pdflo merge -i a.pdf b.pdf -o merged.pdf\n  pdflo extract -i in.pdf -p 2-4 -o out.pdf\n  pdflo split -i in.pdf --every 2 -d ./out\n  pdflo reorder -i in.pdf -p 3,1,2 -o out.pdf\n  pdflo info -i in.pdf"
+    after_help = "Examples:\n  filegap merge -i a.pdf b.pdf -o merged.pdf\n  filegap extract -i in.pdf -p 2-4 -o out.pdf\n  filegap split -i in.pdf --every 2 -d ./out\n  filegap reorder -i in.pdf -p 3,1,2 -o out.pdf\n  filegap info -i in.pdf"
 )]
 struct Cli {
     #[command(subcommand)]

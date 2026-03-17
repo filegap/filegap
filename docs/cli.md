@@ -1,15 +1,15 @@
 # CLI (v0.1)
 
-Binary: `pdflo`
+Binary: `filegap`
 
 ## Commands
 
-- `pdflo merge -i a.pdf b.pdf -o out.pdf`
-- `pdflo extract -i in.pdf -p 1,3,5-8 -o out.pdf`
-- `pdflo split -i in.pdf --every 1 -d ./out`
-- `pdflo split -i in.pdf --ranges 1-2,3-5 -d ./out`
-- `pdflo reorder -i in.pdf -p 3,1,2 -o out.pdf`
-- `pdflo info -i in.pdf`
+- `filegap merge -i a.pdf b.pdf -o out.pdf`
+- `filegap extract -i in.pdf -p 1,3,5-8 -o out.pdf`
+- `filegap split -i in.pdf --every 1 -d ./out`
+- `filegap split -i in.pdf --ranges 1-2,3-5 -d ./out`
+- `filegap reorder -i in.pdf -p 3,1,2 -o out.pdf`
+- `filegap info -i in.pdf`
 
 ## Notes
 

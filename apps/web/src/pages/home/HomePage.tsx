@@ -3,6 +3,7 @@ import { ArrowUpDown, Files, Leaf, Scissors, ShieldCheck, Split, Zap } from 'luc
 import { AppFooter } from '../../components/layout/AppFooter';
 import { AppHeader } from '../../components/layout/AppHeader';
 import { PageContainer } from '../../components/layout/PageContainer';
+import { usePageMetadata } from '../../lib/seo/usePageMetadata';
 import { HomeToolCard } from './HomeToolCard';
 
 const TOOLS = [
@@ -51,16 +52,23 @@ const WHY_ITEMS = [
 ];
 
 export function HomePage() {
+  usePageMetadata({
+    title: 'Private PDF tools that run locally | Filegap',
+    description:
+      'Private PDF tools that run locally. All processing runs in your browser. No uploads. Your files never leave your device.',
+  });
+
   return (
     <>
       <AppHeader />
       <PageContainer>
         <section className='mx-auto max-w-3xl space-y-4 text-center'>
           <h1 className='font-heading text-4xl font-bold leading-tight text-ui-text md:text-5xl'>
-            Privacy-first PDF tools.
+            Private PDF tools that run locally.
           </h1>
           <p className='text-sm leading-relaxed text-ui-muted md:text-base'>
-            All processing runs locally in your browser. No uploads. No tracking.
+            All processing runs locally in your browser. No uploads. Your files never leave your
+            device.
           </p>
         </section>
 
@@ -77,7 +85,7 @@ export function HomePage() {
         </section>
 
         <section className='mt-10 rounded-xl border border-ui-border bg-ui-surface p-5'>
-          <h2 className='font-heading text-2xl font-semibold text-ui-text'>Why PDFlo</h2>
+          <h2 className='font-heading text-2xl font-semibold text-ui-text'>Why Filegap</h2>
           <ul className='mt-4 space-y-3'>
             {WHY_ITEMS.map((item) => (
               <li key={item.title} className='flex items-start gap-3 py-1'>

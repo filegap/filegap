@@ -1,6 +1,6 @@
 # Privacy Policy (Project-Level)
 
-`pdflo` is privacy-first by design.
+`filegap` is privacy-first by design.
 
 ## Core commitment
 

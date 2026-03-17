@@ -3,19 +3,29 @@ import type { PropsWithChildren } from 'react';
 import { AppFooter } from './AppFooter';
 import { AppHeader } from './AppHeader';
 import { PageContainer } from './PageContainer';
+import { usePageMetadata } from '../../lib/seo/usePageMetadata';
 
 type ToolLayoutProps = PropsWithChildren<{
   title: string;
   description: string;
+  metaTitle?: string;
+  metaDescription?: string;
   heroVariant?: 'neutral' | 'brand';
 }>;
 
 export function ToolLayout({
   title,
   description,
+  metaTitle,
+  metaDescription,
   children,
   heroVariant: _heroVariant = 'neutral',
 }: ToolLayoutProps) {
+  usePageMetadata({
+    title: metaTitle ?? title,
+    description: metaDescription ?? description,
+  });
+
   return (
     <>
       <AppHeader />

@@ -375,6 +375,28 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "37909eebbb50d72f9059c3b6d82c0463f2ff062c9e95845c43a6c9c0355411be"
 
 [[package]]
+name = "filegap-cli"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "assert_cmd",
+ "clap",
+ "filegap-core",
+ "lopdf",
+ "predicates",
+ "serde_json",
+ "tempfile",
+]
+
+[[package]]
+name = "filegap-core"
+version = "0.1.0"
+dependencies = [
+ "lopdf",
+ "thiserror",
+]
+
+[[package]]
 name = "find-msvc-tools"
 version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -656,28 +678,6 @@ name = "once_cell_polyfill"
 version = "1.70.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "384b8ab6d37215f3c5301a95a4accb5d64aa607f1fcb26a11b5303878451b4fe"
-
-[[package]]
-name = "pdflo-cli"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "assert_cmd",
- "clap",
- "lopdf",
- "pdflo-core",
- "predicates",
- "serde_json",
- "tempfile",
-]
-
-[[package]]
-name = "pdflo-core"
-version = "0.1.0"
-dependencies = [
- "lopdf",
- "thiserror",
-]
 
 [[package]]
 name = "powerfmt"

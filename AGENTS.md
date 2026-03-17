@@ -1,7 +1,7 @@
 # AGENTS.md
 
 ## Contesto Progetto
-- `pdflo` e una suite di tool PDF privacy-first: elaborazione locale, senza upload di file a servizi esterni.
+- `filegap` e una suite di tool PDF privacy-first: elaborazione locale, senza upload di file a servizi esterni.
 - Per visione, obiettivi e dettagli architetturali fare sempre riferimento a [README.md](README.md).
 
 ## Regole Open Source e Sicurezza

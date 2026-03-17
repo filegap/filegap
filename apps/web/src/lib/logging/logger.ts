@@ -2,7 +2,7 @@ export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
 type LogContext = Record<string, unknown>;
 
-const PREFIX = 'PDFlo';
+const PREFIX = 'Filegap';
 
 function nowIso(): string {
   return new Date().toISOString();

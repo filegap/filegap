@@ -76,7 +76,7 @@ fn extract_command_creates_a_valid_output_pdf() {
 
     fs::write(&input_path, build_multi_page_pdf_bytes(4)).expect("write input.pdf");
 
-    Command::cargo_bin("pdflo-cli")
+    Command::cargo_bin("filegap")
         .expect("binary should build")
         .args([
             "extract",
@@ -103,7 +103,7 @@ fn extract_command_fails_for_out_of_bounds_pages() {
 
     fs::write(&input_path, build_multi_page_pdf_bytes(2)).expect("write input.pdf");
 
-    Command::cargo_bin("pdflo-cli")
+    Command::cargo_bin("filegap")
         .expect("binary should build")
         .args([
             "extract",

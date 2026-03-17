@@ -1,8 +1,8 @@
-# PDFlo Web Design System
+# Filegap Web Design System
 
 ## Brand Direction
 
-PDFlo should feel modern, product-oriented, and confident.
+Filegap should feel modern, product-oriented, and confident.
 Visual direction is inspired by Gumroad-like bold accents while staying clean and task-focused.
 
 ## Design Tokens

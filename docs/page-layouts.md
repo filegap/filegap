@@ -1,4 +1,4 @@
-# PDFlo Web Page Layouts
+# Filegap Web Page Layouts
 
 ## Route Set (MVP)
 
@@ -27,7 +27,7 @@ Order of sections:
 3. How It Works:
 - 3-4 short steps
 
-4. Why PDFlo:
+4. Why Filegap:
 - privacy-first bullet points
 - no upload reassurance
 

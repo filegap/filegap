@@ -9,8 +9,8 @@ resolver = "2"
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
-authors = ["pdflo contributors"]
-repository = "https://github.com/your-org/pdflo"
+authors = ["filegap contributors"]
+repository = "https://github.com/your-org/filegap"
 
 [workspace.dependencies]
 anyhow = "1"

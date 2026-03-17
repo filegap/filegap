@@ -69,7 +69,7 @@ fn info_command_prints_expected_fields() {
     let input_path = dir.path().join("input.pdf");
     fs::write(&input_path, build_single_page_pdf_bytes()).expect("write input.pdf");
 
-    Command::cargo_bin("pdflo-cli")
+    Command::cargo_bin("filegap")
         .expect("binary should build")
         .args(["info", "-i", input_path.to_str().expect("valid utf-8 path")])
         .assert()
@@ -85,7 +85,7 @@ fn info_command_json_outputs_valid_payload() {
     let input_path = dir.path().join("input.pdf");
     fs::write(&input_path, build_single_page_pdf_bytes()).expect("write input.pdf");
 
-    Command::cargo_bin("pdflo-cli")
+    Command::cargo_bin("filegap")
         .expect("binary should build")
         .args([
             "info",

@@ -76,7 +76,7 @@ fn reorder_command_creates_a_valid_reordered_pdf() {
 
     fs::write(&input_path, build_multi_page_pdf_bytes(3)).expect("write input.pdf");
 
-    Command::cargo_bin("pdflo-cli")
+    Command::cargo_bin("filegap")
         .expect("binary should build")
         .args([
             "reorder",
@@ -107,7 +107,7 @@ fn reorder_command_fails_when_page_order_is_incomplete() {
 
     fs::write(&input_path, build_multi_page_pdf_bytes(3)).expect("write input.pdf");
 
-    Command::cargo_bin("pdflo-cli")
+    Command::cargo_bin("filegap")
         .expect("binary should build")
         .args([
             "reorder",

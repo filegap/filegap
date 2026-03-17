@@ -314,6 +314,8 @@ export function SplitPdfPage() {
     <ToolLayout
       title='Split PDF'
       description='Split one PDF into multiple files directly in your browser. No uploads, no server processing.'
+      metaTitle='Split PDF online - private, local, free | Filegap'
+      metaDescription='Split PDF files directly in your browser. No uploads. Your files never leave your device.'
       heroVariant='brand'
     >
       <Card>
@@ -436,7 +438,7 @@ export function SplitPdfPage() {
       <PreDownloadModal
         open={showDownloadGate && outputs.length > 0}
         title='Split completed'
-        description='PDFlo runs entirely in your browser. If it helps, support the project and share it with people who need truly private PDF tools.'
+        description='Filegap runs entirely in your browser. If it helps, support the project and share it with people who need private PDF tools that run locally.'
         confirmLabel='Continue to download'
         onConfirm={handleConfirmDownload}
         onClose={() => setShowDownloadGate(false)}

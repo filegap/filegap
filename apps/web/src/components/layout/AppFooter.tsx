@@ -4,9 +4,9 @@ export function AppFooter() {
       <div className='mx-auto w-[min(1080px,94vw)] py-6'>
         <div className='flex flex-col gap-4 md:flex-row md:items-center md:justify-between'>
           <div className='space-y-1'>
-            <p className='font-heading text-base text-ui-text'>PDFlo</p>
-            <p className='text-xs uppercase tracking-wide text-ui-muted'>Privacy-first PDF tools</p>
-            <p className='text-xs text-ui-muted'>Local processing. No file uploads.</p>
+            <p className='font-heading text-base text-ui-text'>Filegap</p>
+            <p className='text-xs tracking-wide text-ui-muted'>Private PDF tools that run locally</p>
+            <p className='text-xs text-ui-muted'>Local processing only. Your files never leave your device.</p>
           </div>
 
           <nav className='flex items-center gap-4 text-xs font-medium text-ui-muted'>

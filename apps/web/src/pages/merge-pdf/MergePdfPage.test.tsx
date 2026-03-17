@@ -17,7 +17,7 @@ describe('MergePdfPage', () => {
       screen.getByRole('heading', { level: 1, name: 'Merge PDF' })
     ).toBeInTheDocument();
     expect(screen.getByText('How it works')).toBeInTheDocument();
-    expect(screen.getByText('Why PDFlo')).toBeInTheDocument();
+    expect(screen.getByText('Why Filegap')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Merge PDF' })).toBeInTheDocument();
   });
 

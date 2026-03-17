@@ -69,7 +69,7 @@ fn merge_command_creates_a_valid_output_pdf() {
     fs::write(&a_path, build_single_page_pdf_bytes("doc-a")).expect("write a.pdf");
     fs::write(&b_path, build_single_page_pdf_bytes("doc-b")).expect("write b.pdf");
 
-    Command::cargo_bin("pdflo-cli")
+    Command::cargo_bin("filegap")
         .expect("binary should build")
         .args([
             "merge",
@@ -95,7 +95,7 @@ fn merge_command_fails_with_single_input_file() {
     let output_path = dir.path().join("merged.pdf");
     fs::write(&a_path, build_single_page_pdf_bytes("doc-a")).expect("write a.pdf");
 
-    Command::cargo_bin("pdflo-cli")
+    Command::cargo_bin("filegap")
         .expect("binary should build")
         .args([
             "merge",

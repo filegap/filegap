@@ -296,6 +296,8 @@ export function ExtractPagesPage() {
     <ToolLayout
       title='Extract PDF Pages'
       description='Extract selected pages from one PDF directly in your browser. No uploads, no server processing.'
+      metaTitle='Extract PDF pages online - private, local, free | Filegap'
+      metaDescription='Extract selected PDF pages directly in your browser. No uploads. Your files never leave your device.'
       heroVariant='brand'
     >
       <Card>
@@ -403,7 +405,7 @@ export function ExtractPagesPage() {
       <PreDownloadModal
         open={showDownloadGate && Boolean(output)}
         title='Extract completed'
-        description='PDFlo runs entirely in your browser. If it helps, support the project and share it with people who need truly private PDF tools.'
+        description='Filegap runs entirely in your browser. If it helps, support the project and share it with people who need private PDF tools that run locally.'
         confirmLabel='Continue to download'
         onConfirm={handleConfirmDownload}
         onClose={() => setShowDownloadGate(false)}

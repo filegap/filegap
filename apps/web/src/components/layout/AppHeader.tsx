@@ -12,10 +12,10 @@ export function AppHeader() {
         <a href='/' className='inline-flex min-w-[190px] flex-col justify-center leading-tight text-ui-text'>
           <span className='inline-flex items-center gap-2 font-heading text-2xl tracking-tight'>
             <span className='inline-block h-3 w-3 rounded-full bg-brand-primary' />
-            PDFlo
+            Filegap
           </span>
-          <span className='pl-5 text-[10px] font-medium uppercase tracking-[0.1em] text-ui-muted'>
-            privacy-first PDF tools
+          <span className='pl-5 text-[10px] font-medium tracking-wide text-ui-muted'>
+            Private PDF tools that run locally
           </span>
         </a>
 

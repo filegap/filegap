@@ -5,14 +5,16 @@ export function PrivacyPage() {
   return (
     <ToolLayout
       title='Privacy Policy'
-      description='How PDFlo handles your data while providing privacy-first PDF tools.'
+      description='How Filegap handles your data while providing private PDF tools that run locally.'
+      metaTitle='Privacy Policy | Filegap'
+      metaDescription='How Filegap handles your data. Local processing only. Your files never leave your device by default.'
       heroVariant='brand'
     >
       <Card>
         <div className='space-y-4 text-sm leading-relaxed text-ui-muted'>
           <p>Last updated: March 16, 2026.</p>
           <p>
-            PDFlo is designed to process PDF files locally in your browser. By default, files you
+            Filegap is designed to process PDF files locally in your browser. By default, files you
             select stay on your device and are not uploaded to our servers for PDF operations.
           </p>
           <p>
