@@ -27,11 +27,25 @@ describe('ExtractPagesPage', () => {
   it('renders base extract route layout', () => {
     render(<ExtractPagesPage />);
 
-    expect(screen.getByRole('heading', { level: 1, name: 'Extract PDF Pages' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Extract PDF pages online — fast, private, and local' })
+    ).toBeInTheDocument();
+    expect(screen.getByText('Free • No signup • Works in your browser')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Extract pages' })).toBeInTheDocument();
     expect(screen.getByPlaceholderText('1-3,5,7-9')).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2, name: 'Uploaded files' })).toBeInTheDocument();
     expect(screen.getByText('No files selected yet.')).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 2, name: 'How to extract pages from a PDF' })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 2, name: 'Why use this Extract Pages tool' })
+    ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: 'Frequently asked questions' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: 'Extract PDF pages quickly and securely' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: 'Ready to extract your pages?' })).toBeInTheDocument();
+    const extractCtas = screen.getAllByRole('link', { name: 'Extract pages instantly' });
+    expect(extractCtas[extractCtas.length - 1]).toHaveAttribute('href', '#extract-pdf-tool');
   });
 
   it('shows validation if extracting without selecting source file', async () => {

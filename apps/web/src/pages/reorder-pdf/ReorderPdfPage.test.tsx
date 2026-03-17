@@ -27,10 +27,20 @@ describe('ReorderPdfPage', () => {
   it('renders base reorder route layout', () => {
     render(<ReorderPdfPage />);
 
-    expect(screen.getByRole('heading', { level: 1, name: 'Reorder PDF Pages' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Reorder PDF pages online — fast, private, and local' })
+    ).toBeInTheDocument();
+    expect(screen.getByText('Free • No signup • Works in your browser')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Reorder PDF' })).toBeInTheDocument();
     expect(screen.getByPlaceholderText('3,1,2,4-6')).toBeInTheDocument();
     expect(screen.getByText('No files selected yet.')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: 'How to reorder PDF pages' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: 'Why use this Reorder PDF tool' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: 'Frequently asked questions' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: 'Reorder PDF pages quickly and securely' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: 'Ready to reorder your PDF?' })).toBeInTheDocument();
+    const reorderCtas = screen.getAllByRole('link', { name: 'Reorder PDF instantly' });
+    expect(reorderCtas[reorderCtas.length - 1]).toHaveAttribute('href', '#reorder-pdf-tool');
   });
 
   it('shows validation if reorder starts without selecting source file', async () => {

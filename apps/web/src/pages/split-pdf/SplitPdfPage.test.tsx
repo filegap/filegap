@@ -27,11 +27,21 @@ describe('SplitPdfPage', () => {
   it('renders base split route layout', () => {
     render(<SplitPdfPage />);
 
-    expect(screen.getByRole('heading', { level: 1, name: 'Split PDF' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Split PDF files online — fast, private, and local' })
+    ).toBeInTheDocument();
+    expect(screen.getByText('Free • No signup • Works in your browser')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Split PDF' })).toBeInTheDocument();
     expect(screen.getByPlaceholderText('1-3,4-7,8-10')).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2, name: 'Uploaded files' })).toBeInTheDocument();
     expect(screen.getByText('No files selected yet.')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: 'How to split PDF files' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: 'Why use this Split PDF tool' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: 'Frequently asked questions' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: 'Split PDF files quickly and securely' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: 'Ready to split your PDF?' })).toBeInTheDocument();
+    const splitCtas = screen.getAllByRole('link', { name: 'Split PDF instantly' });
+    expect(splitCtas[splitCtas.length - 1]).toHaveAttribute('href', '#split-pdf-tool');
   });
 
   it('shows validation if splitting without selecting source file', async () => {

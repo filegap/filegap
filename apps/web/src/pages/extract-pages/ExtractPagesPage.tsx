@@ -6,6 +6,7 @@ import { Card } from '../../components/ui/Card';
 import { DropZone } from '../../components/ui/DropZone';
 import { Button } from '../../components/ui/Button';
 import { PreDownloadModal } from '../../components/ui/PreDownloadModal';
+import { ToolLandingSections } from '../../components/seo/ToolLandingSections';
 import { TrustNotice } from '../../components/ui/TrustNotice';
 import { UploadedFilesTable } from '../../components/ui/UploadedFilesTable';
 import { ToolLayout } from '../../components/layout/ToolLayout';
@@ -66,6 +67,60 @@ function buildExtractFilename(baseFilename: string): string {
     : baseFilename;
   return `${base}-extracted.pdf`;
 }
+
+const EXTRACT_PAGE_CONTENT = {
+  howItWorksTitle: 'How to extract pages from a PDF',
+  howItWorksSteps: [
+    'Upload one PDF file from your device.',
+    'Enter the page ranges you want to keep.',
+    'Click “Extract pages” and download the new PDF instantly.',
+  ],
+  whyTitle: 'Why use this Extract Pages tool',
+  whyItems: [
+    {
+      title: 'No file uploads',
+      text: 'Your PDF stays local and is never uploaded to any external server.',
+    },
+    {
+      title: 'Keep only what you need',
+      text: 'Extract specific pages from long PDFs and save a smaller, focused document.',
+    },
+    {
+      title: 'Secure and private',
+      text: 'All processing happens in your browser, so your files remain on your device.',
+    },
+  ],
+  faqTitle: 'Frequently asked questions',
+  faqItems: [
+    {
+      question: 'How do I extract pages from a PDF online?',
+      answer:
+        'Upload your PDF, enter the page ranges you need, and click “Extract pages” to download a new file.',
+    },
+    {
+      question: 'Is it safe to extract PDF pages with Filegap?',
+      answer: 'Yes. Filegap processes files locally in your browser and never uploads them.',
+    },
+    {
+      question: 'Can I extract PDF pages for free?',
+      answer: 'Yes. You can use the Extract Pages tool for free without creating an account.',
+    },
+    {
+      question: 'Is there a file size limit?',
+      answer: 'Limits depend on your browser and device resources because processing is local.',
+    },
+  ],
+  seoTitle: 'Extract PDF pages quickly and securely',
+  seoParagraphs: [
+    'Filegap lets you extract pages from PDF files online without uploading documents to a server. Processing runs fully in your browser, which is better for private or sensitive files.',
+    'You can select exact page ranges, generate a clean output PDF, and download it right away.',
+    'Whether you need specific pages for work, school, or personal use, Filegap offers a fast, private, and free way to extract PDF pages directly on your device.',
+  ],
+  finalCtaTitle: 'Ready to extract your pages?',
+  finalCtaText: 'Start extracting PDF pages now — no uploads, no signup.',
+  finalCtaLabel: 'Extract pages instantly',
+  finalCtaHref: '#extract-pdf-tool',
+};
 
 export function ExtractPagesPage() {
   const [sourceFile, setSourceFile] = useState<File | null>(null);
@@ -294,13 +349,14 @@ export function ExtractPagesPage() {
 
   return (
     <ToolLayout
-      title='Extract PDF Pages'
-      description='Extract selected pages from one PDF directly in your browser. No uploads, no server processing.'
+      title='Extract PDF pages online — fast, private, and local'
+      description='Extract selected PDF pages directly in your browser. No uploads. No accounts. Your files never leave your device.'
+      trustLine='Free • No signup • Works in your browser'
       metaTitle='Extract PDF pages online - private, local, free | Filegap'
-      metaDescription='Extract selected PDF pages directly in your browser. No uploads. Your files never leave your device.'
+      metaDescription='Extract PDF pages online directly in your browser. No uploads, no accounts, and fully local processing.'
       heroVariant='brand'
     >
-      <Card>
+      <Card id='extract-pdf-tool'>
         <div className='space-y-6'>
           <DropZone
             onFilesSelected={(files) => void handleSourceSelected(files)}
@@ -382,25 +438,7 @@ export function ExtractPagesPage() {
         </div>
       </Card>
 
-      <section className='grid gap-6 md:grid-cols-2'>
-        <Card>
-          <h3 className='font-heading text-2xl font-semibold text-ui-text'>How it works</h3>
-          <ol className='mt-3 list-decimal space-y-2 pl-5 text-sm leading-relaxed text-ui-muted'>
-            <li>Select one PDF file.</li>
-            <li>Enter page ranges to keep.</li>
-            <li>Extract locally and download the result.</li>
-          </ol>
-        </Card>
-
-        <Card>
-          <h3 className='font-heading text-2xl font-semibold text-ui-text'>Preview-ready foundation</h3>
-          <ul className='mt-3 list-disc space-y-2 pl-5 text-sm leading-relaxed text-ui-muted'>
-            <li>Range parsing is isolated from UI controls.</li>
-            <li>The same segments can power future visual page selection.</li>
-            <li>All processing remains local in browser runtime.</li>
-          </ul>
-        </Card>
-      </section>
+      <ToolLandingSections {...EXTRACT_PAGE_CONTENT} />
 
       <PreDownloadModal
         open={showDownloadGate && Boolean(output)}

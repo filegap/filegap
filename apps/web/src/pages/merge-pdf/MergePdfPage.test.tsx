@@ -14,10 +14,21 @@ describe('MergePdfPage', () => {
     render(<MergePdfPage />);
 
     expect(
-      screen.getByRole('heading', { level: 1, name: 'Merge PDF' })
+      screen.getByRole('heading', { level: 1, name: 'Merge PDF files online — fast, private, and local' })
     ).toBeInTheDocument();
-    expect(screen.getByText('How it works')).toBeInTheDocument();
-    expect(screen.getByText('Why Filegap')).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'Combine multiple PDF files into one document directly in your browser. No uploads. No accounts. Your files never leave your device.'
+      )
+    ).toBeInTheDocument();
+    expect(screen.getByText('Free • No signup • Works in your browser')).toBeInTheDocument();
+    expect(screen.getByText('How to merge PDF files')).toBeInTheDocument();
+    expect(screen.getByText('Why use this Merge PDF tool')).toBeInTheDocument();
+    expect(screen.getByText('Frequently asked questions')).toBeInTheDocument();
+    expect(screen.getByText('Merge PDF files quickly and securely')).toBeInTheDocument();
+    expect(screen.getByText('Ready to merge your PDFs?')).toBeInTheDocument();
+    const mergeCtas = screen.getAllByRole('link', { name: 'Merge PDFs instantly' });
+    expect(mergeCtas[mergeCtas.length - 1]).toHaveAttribute('href', '#merge-pdf-tool');
     expect(screen.getByRole('button', { name: 'Merge PDF' })).toBeInTheDocument();
   });
 

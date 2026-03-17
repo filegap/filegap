@@ -6,6 +6,7 @@ import { Card } from '../../components/ui/Card';
 import { DropZone } from '../../components/ui/DropZone';
 import { Button } from '../../components/ui/Button';
 import { PreDownloadModal } from '../../components/ui/PreDownloadModal';
+import { ToolLandingSections } from '../../components/seo/ToolLandingSections';
 import { TrustNotice } from '../../components/ui/TrustNotice';
 import { UploadedFilesTable } from '../../components/ui/UploadedFilesTable';
 import { ToolLayout } from '../../components/layout/ToolLayout';
@@ -76,6 +77,60 @@ function getIdleOrReadyStatus(fileCount: number): StatusState {
   }
   return { tone: 'info', message: 'Ready to merge locally.' };
 }
+
+const MERGE_PAGE_CONTENT = {
+  howItWorksTitle: 'How to merge PDF files',
+  howItWorksSteps: [
+    'Upload or drag and drop your PDF files.',
+    'Arrange them in the desired order.',
+    'Click “Merge PDF” and download your file instantly.',
+  ],
+  whyTitle: 'Why use this Merge PDF tool',
+  whyItems: [
+    {
+      title: 'No file uploads',
+      text: 'Your files are processed locally in your browser and never uploaded to any server.',
+    },
+    {
+      title: 'Fast and simple',
+      text: 'Merge multiple PDF files in seconds without waiting for uploads.',
+    },
+    {
+      title: 'Secure and private',
+      text: 'Your documents stay on your device at all times.',
+    },
+  ],
+  faqTitle: 'Frequently asked questions',
+  faqItems: [
+    {
+      question: 'How do I merge PDF files online?',
+      answer:
+        'Upload your PDF files, arrange them in order, and click “Merge PDF” to combine them into a single document.',
+    },
+    {
+      question: 'Is it safe to merge PDF files with Filegap?',
+      answer: 'Yes. All processing happens locally in your browser. Your files are never uploaded.',
+    },
+    {
+      question: 'Can I merge PDF files for free?',
+      answer: 'Yes. You can merge PDF files for free with no signup required.',
+    },
+    {
+      question: 'Is there a file size limit?',
+      answer: 'Limits depend on your device performance since all processing happens locally.',
+    },
+  ],
+  seoTitle: 'Merge PDF files quickly and securely',
+  seoParagraphs: [
+    'Filegap lets you merge PDF files online without uploading them to any server. Unlike traditional tools, everything runs locally in your browser, making it a safer option for sensitive documents.',
+    'You can combine multiple PDF files into a single document in seconds, reorder them as needed, and download the result instantly.',
+    'Whether you need to merge PDFs for work, school, or personal use, Filegap provides a fast, private, and free solution directly in your browser.',
+  ],
+  finalCtaTitle: 'Ready to merge your PDFs?',
+  finalCtaText: 'Start combining your PDF files now — no uploads, no signup.',
+  finalCtaLabel: 'Merge PDFs instantly',
+  finalCtaHref: '#merge-pdf-tool',
+};
 
 export function MergePdfPage() {
   const [files, setFiles] = useState<MergeQueueFile[]>([]);
@@ -314,13 +369,14 @@ export function MergePdfPage() {
 
   return (
     <ToolLayout
-      title='Merge PDF'
-      description='Merge multiple PDF files into a single document directly in your browser. No uploads, no server processing.'
+      title='Merge PDF files online — fast, private, and local'
+      description='Combine multiple PDF files into one document directly in your browser. No uploads. No accounts. Your files never leave your device.'
+      trustLine='Free • No signup • Works in your browser'
       metaTitle='Merge PDF online - private, local, free | Filegap'
-      metaDescription='Merge PDF files directly in your browser. No uploads. Your files never leave your device.'
+      metaDescription='Merge PDF files online directly in your browser. Combine PDF files fast with no uploads, no accounts, and fully local processing.'
       heroVariant='brand'
     >
-      <Card>
+      <Card id='merge-pdf-tool'>
         <div className='space-y-6'>
           <DropZone
             onFilesSelected={handleFilesSelected}
@@ -373,25 +429,7 @@ export function MergePdfPage() {
         </div>
       </Card>
 
-      <section className='grid gap-6 md:grid-cols-2'>
-        <Card>
-          <h3 className='font-heading text-2xl font-semibold text-ui-text'>How it works</h3>
-          <ol className='mt-3 list-decimal space-y-2 pl-5 text-sm leading-relaxed text-ui-muted'>
-            <li>Drop your PDF files in the upload area.</li>
-            <li>Click Merge PDF.</li>
-            <li>Download the merged file generated locally.</li>
-          </ol>
-        </Card>
-
-        <Card>
-          <h3 className='font-heading text-2xl font-semibold text-ui-text'>Why Filegap</h3>
-          <ul className='mt-3 list-disc space-y-2 pl-5 text-sm leading-relaxed text-ui-muted'>
-            <li>No file upload to servers.</li>
-            <li>Processing runs entirely in your browser.</li>
-            <li>Open source and transparent by design.</li>
-          </ul>
-        </Card>
-      </section>
+      <ToolLandingSections {...MERGE_PAGE_CONTENT} />
 
       <PreDownloadModal
         open={showDownloadGate && Boolean(mergedOutput)}

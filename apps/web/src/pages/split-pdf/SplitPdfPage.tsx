@@ -6,6 +6,7 @@ import { Card } from '../../components/ui/Card';
 import { DropZone } from '../../components/ui/DropZone';
 import { Button } from '../../components/ui/Button';
 import { PreDownloadModal } from '../../components/ui/PreDownloadModal';
+import { ToolLandingSections } from '../../components/seo/ToolLandingSections';
 import { TrustNotice } from '../../components/ui/TrustNotice';
 import { UploadedFilesTable } from '../../components/ui/UploadedFilesTable';
 import { ToolLayout } from '../../components/layout/ToolLayout';
@@ -70,6 +71,60 @@ function formatRangeLabel(range: SplitRangeSegment): string {
   }
   return `${range.start}-${range.end}`;
 }
+
+const SPLIT_PAGE_CONTENT = {
+  howItWorksTitle: 'How to split PDF files',
+  howItWorksSteps: [
+    'Upload one PDF file from your device.',
+    'Enter the page ranges you want to split into separate files.',
+    'Click “Split PDF” and download each output instantly.',
+  ],
+  whyTitle: 'Why use this Split PDF tool',
+  whyItems: [
+    {
+      title: 'No file uploads',
+      text: 'Your PDF is processed locally in your browser and never uploaded to any server.',
+    },
+    {
+      title: 'Fast and flexible',
+      text: 'Split large PDFs into multiple parts in seconds using custom page ranges.',
+    },
+    {
+      title: 'Private by design',
+      text: 'Your documents stay on your device throughout the entire process.',
+    },
+  ],
+  faqTitle: 'Frequently asked questions',
+  faqItems: [
+    {
+      question: 'How do I split PDF files online?',
+      answer:
+        'Upload your PDF, enter ranges like 1-3,4-7, and click “Split PDF” to generate separate files.',
+    },
+    {
+      question: 'Is it safe to split PDF files with Filegap?',
+      answer: 'Yes. All processing happens locally in your browser. Your files are never uploaded.',
+    },
+    {
+      question: 'Can I split PDF files for free?',
+      answer: 'Yes. You can split PDF files for free with no signup required.',
+    },
+    {
+      question: 'Is there a file size limit?',
+      answer: 'Limits depend on your device performance because processing happens locally.',
+    },
+  ],
+  seoTitle: 'Split PDF files quickly and securely',
+  seoParagraphs: [
+    'Filegap helps you split PDF files online without sending them to a server. Everything runs locally in your browser, which makes it a safer option for sensitive documents.',
+    'You can define custom ranges, generate multiple output files, and download them immediately after processing.',
+    'Whether you need to split PDFs for work, study, or personal tasks, Filegap gives you a fast, private, and free tool directly in your browser.',
+  ],
+  finalCtaTitle: 'Ready to split your PDF?',
+  finalCtaText: 'Start splitting your PDF files now — no uploads, no signup.',
+  finalCtaLabel: 'Split PDF instantly',
+  finalCtaHref: '#split-pdf-tool',
+};
 
 export function SplitPdfPage() {
   const [sourceFile, setSourceFile] = useState<File | null>(null);
@@ -312,13 +367,14 @@ export function SplitPdfPage() {
 
   return (
     <ToolLayout
-      title='Split PDF'
-      description='Split one PDF into multiple files directly in your browser. No uploads, no server processing.'
+      title='Split PDF files online — fast, private, and local'
+      description='Split one PDF into multiple files directly in your browser. No uploads. No accounts. Your files never leave your device.'
+      trustLine='Free • No signup • Works in your browser'
       metaTitle='Split PDF online - private, local, free | Filegap'
-      metaDescription='Split PDF files directly in your browser. No uploads. Your files never leave your device.'
+      metaDescription='Split PDF files online directly in your browser. No uploads, no accounts, and fully local processing.'
       heroVariant='brand'
     >
-      <Card>
+      <Card id='split-pdf-tool'>
         <div className='space-y-6'>
           <DropZone
             onFilesSelected={(files) => void handleSourceSelected(files)}
@@ -415,25 +471,7 @@ export function SplitPdfPage() {
         </div>
       </Card>
 
-      <section className='grid gap-6 md:grid-cols-2'>
-        <Card>
-          <h3 className='font-heading text-2xl font-semibold text-ui-text'>How it works</h3>
-          <ol className='mt-3 list-decimal space-y-2 pl-5 text-sm leading-relaxed text-ui-muted'>
-            <li>Select one PDF file.</li>
-            <li>Enter page ranges for each output part (single pages supported, like 4).</li>
-            <li>Split locally and download generated files.</li>
-          </ol>
-        </Card>
-
-        <Card>
-          <h3 className='font-heading text-2xl font-semibold text-ui-text'>Preview-ready foundation</h3>
-          <ul className='mt-3 list-disc space-y-2 pl-5 text-sm leading-relaxed text-ui-muted'>
-            <li>Range parsing is isolated from UI controls.</li>
-            <li>The same split segments can drive future visual page selection.</li>
-            <li>No backend is required for this evolution path.</li>
-          </ul>
-        </Card>
-      </section>
+      <ToolLandingSections {...SPLIT_PAGE_CONTENT} />
 
       <PreDownloadModal
         open={showDownloadGate && outputs.length > 0}
