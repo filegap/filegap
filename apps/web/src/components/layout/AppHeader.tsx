@@ -11,10 +11,38 @@ export function AppHeader() {
       <div className='mx-auto flex h-[72px] w-[min(1080px,94vw)] items-center justify-between gap-8'>
         <a href='/' className='inline-flex min-w-[190px] flex-col justify-center leading-tight text-ui-text'>
           <span className='inline-flex items-center gap-2 font-heading text-2xl tracking-tight'>
-            <span className='inline-block h-3 w-3 rounded-full bg-brand-primary' />
+            <svg
+              xmlns='http://www.w3.org/2000/svg'
+              viewBox='0 0 24 24'
+              fill='none'
+              aria-hidden='true'
+              className='h-5 w-5 shrink-0'
+            >
+              <path
+                d='M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z'
+                stroke='currentColor'
+                strokeWidth='2'
+                strokeLinecap='round'
+                strokeLinejoin='round'
+              />
+              <path
+                d='M14 2v5a1 1 0 0 0 1 1h5'
+                stroke='currentColor'
+                strokeWidth='2'
+                strokeLinecap='round'
+                strokeLinejoin='round'
+              />
+              <path
+                d='m9 15 2 2 4-4'
+                stroke='#ff2e8b'
+                strokeWidth='2'
+                strokeLinecap='round'
+                strokeLinejoin='round'
+              />
+            </svg>
             Filegap
           </span>
-          <span className='pl-5 text-[10px] font-medium tracking-wide text-ui-muted'>
+          <span className='pl-6 text-[10px] font-medium tracking-wide text-ui-muted'>
             Private PDF tools that run locally
           </span>
         </a>
