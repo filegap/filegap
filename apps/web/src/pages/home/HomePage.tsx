@@ -1,8 +1,9 @@
-import { ArrowUpDown, Files, Leaf, Scissors, ShieldCheck, Split, Zap } from 'lucide-react';
+import { ArrowUpDown, Files, Github, Leaf, Scissors, ShieldCheck, Split, Zap } from 'lucide-react';
 
 import { AppFooter } from '../../components/layout/AppFooter';
 import { AppHeader } from '../../components/layout/AppHeader';
 import { PageContainer } from '../../components/layout/PageContainer';
+import { TrustNotice } from '../../components/ui/TrustNotice';
 import { usePageMetadata } from '../../lib/seo/usePageMetadata';
 import { HomeToolCard } from './HomeToolCard';
 
@@ -96,27 +97,45 @@ export function HomePage() {
     <>
       <AppHeader />
       <PageContainer>
-        <section className='mx-auto max-w-3xl space-y-6 text-center md:space-y-7'>
-          <h1 className='font-heading text-4xl font-bold leading-tight text-ui-text md:text-5xl'>
-            Free PDF tools — private, fast, and local
-          </h1>
-          <p className='mx-auto max-w-2xl text-base leading-relaxed text-ui-muted'>
-            Merge, split, and edit PDF files directly in your browser. No uploads. No accounts.
-            Your files never leave your device.
+        <section className='mx-auto max-w-4xl space-y-6 text-center md:space-y-7'>
+          <div className='flex justify-center'>
+            <TrustNotice className='px-2.5 py-1.5' textClassName='text-[11px]' />
+          </div>
+
+          <p className='text-sm text-ui-muted'>
+            <a
+              href='https://github.com/your-org/filegap'
+              target='_blank'
+              rel='noreferrer'
+              className='inline-flex items-center gap-1.5 transition hover:text-ui-text'
+            >
+              <Github className='h-4 w-4' aria-hidden='true' />
+              <span>Open source on GitHub</span>
+            </a>
           </p>
-          <div className='space-y-3'>
+
+          <h1 className='mx-auto max-w-4xl font-heading text-4xl font-bold leading-tight text-ui-text md:text-5xl'>
+            Edit PDF files online
+            <br />
+            <span className='block font-semibold'>No uploads. No accounts.</span>
+          </h1>
+          <p className='mx-auto max-w-lg text-base leading-relaxed text-ui-muted'>
+            <span className='block'>Merge, split, and edit PDF files directly in your browser</span>
+            <span className='block font-medium'>Everything runs locally</span>
+          </p>
+
+          <div className='space-y-2'>
             <a
               href='/merge-pdf'
               className='inline-flex items-center justify-center rounded-xl bg-brand-primary px-6 py-3 text-sm font-semibold text-white transition hover:bg-brand-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/40 focus-visible:ring-offset-2'
             >
               Merge PDFs instantly
             </a>
-            <p className='text-sm text-ui-muted'>Or choose a tool below</p>
-            <p className='text-xs text-ui-muted'>Works in Chrome, Edge, Safari</p>
+            <p className='text-[11px] text-ui-muted/75'>Works in all modern browsers</p>
           </div>
         </section>
 
-        <section data-testid='home-tool-grid' className='mt-12 grid gap-4 md:mt-14 md:grid-cols-2'>
+        <section data-testid='home-tool-grid' className='mt-16 grid gap-4 md:mt-20 md:grid-cols-2'>
           {TOOLS.map((tool) => (
             <HomeToolCard
               key={tool.href}

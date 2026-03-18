@@ -8,18 +8,23 @@ describe('HomePage', () => {
     render(<HomePage />);
 
     expect(
-      screen.getByRole('heading', { level: 1, name: 'Free PDF tools — private, fast, and local' })
+      screen.getByRole('heading', { level: 1, name: /Edit PDF files online\s*No uploads\. No accounts\./ })
     ).toBeInTheDocument();
     expect(
-      screen.getByText(
-        'Merge, split, and edit PDF files directly in your browser. No uploads. No accounts. Your files never leave your device.'
-      )
+      screen.getByText('Merge, split, and edit PDF files directly in your browser')
     ).toBeInTheDocument();
+    expect(screen.getByText('Everything runs locally')).toBeInTheDocument();
 
     const mergeCtas = screen.getAllByRole('link', { name: 'Merge PDFs instantly' });
     expect(mergeCtas[0]).toHaveAttribute('href', '/merge-pdf');
-    expect(screen.getByText('Or choose a tool below')).toBeInTheDocument();
-    expect(screen.getByText('Works in Chrome, Edge, Safari')).toBeInTheDocument();
+    expect(
+      screen.getByText('Local processing only — your files never leave your device')
+    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Open source on GitHub' })).toHaveAttribute(
+      'href',
+      'https://github.com/your-org/filegap'
+    );
+    expect(screen.getByText('Works in all modern browsers')).toBeInTheDocument();
 
     const grid = screen.getByTestId('home-tool-grid');
     expect(within(grid).getByRole('link', { name: /Merge PDF/i })).toHaveAttribute('href', '/merge-pdf');
