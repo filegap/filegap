@@ -1,4 +1,15 @@
-import { ArrowUpDown, Files, Github, Leaf, Scissors, ShieldCheck, Split, Zap } from 'lucide-react';
+import {
+  ArrowUpDown,
+  Download,
+  Files,
+  Github,
+  Leaf,
+  Scissors,
+  ShieldCheck,
+  Split,
+  Terminal,
+  Zap,
+} from 'lucide-react';
 
 import { AppFooter } from '../../components/layout/AppFooter';
 import { AppHeader } from '../../components/layout/AppHeader';
@@ -131,7 +142,61 @@ export function HomePage() {
             >
               Merge PDFs instantly
             </a>
+            <p className='text-sm text-ui-muted'>
+              Use the <a className='underline hover:text-ui-text' href='/cli'>CLI</a> or{' '}
+              <a className='underline hover:text-ui-text' href='/download'>download the app</a>
+            </p>
             <p className='text-[11px] text-ui-muted/75'>Works in all modern browsers</p>
+          </div>
+        </section>
+
+        <section className='mt-10 space-y-4'>
+          <h2 className='font-heading text-2xl font-semibold text-ui-text'>More ways to use Filegap</h2>
+          <div className='grid gap-4 md:grid-cols-2'>
+            <a
+              href='/cli'
+              className='rounded-xl border border-ui-border bg-ui-surface p-6 transition hover:border-brand-primary/70 hover:bg-brand-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/30 focus-visible:ring-offset-2'
+            >
+              <div className='flex items-start gap-4'>
+                <span
+                  className='inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-primary/10 text-brand-primary'
+                  aria-hidden='true'
+                >
+                  <Terminal className='h-5 w-5' />
+                </span>
+                <div>
+                  <h3 className='font-heading text-lg font-semibold text-ui-text'>
+                    Use Filegap from your terminal
+                  </h3>
+                  <p className='mt-2 text-sm leading-relaxed text-ui-muted'>
+                    Run PDF tools directly via CLI — fast, scriptable, private.
+                  </p>
+                  <p className='mt-4 text-sm font-semibold text-ui-text underline'>Go to CLI</p>
+                </div>
+              </div>
+            </a>
+            <a
+              href='/download'
+              className='rounded-xl border border-ui-border bg-ui-surface p-6 transition hover:border-brand-primary/70 hover:bg-brand-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/30 focus-visible:ring-offset-2'
+            >
+              <div className='flex items-start gap-4'>
+                <span
+                  className='inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-primary/10 text-brand-primary'
+                  aria-hidden='true'
+                >
+                  <Download className='h-5 w-5' />
+                </span>
+                <div>
+                  <h3 className='font-heading text-lg font-semibold text-ui-text'>
+                    Download the desktop app
+                  </h3>
+                  <p className='mt-2 text-sm leading-relaxed text-ui-muted'>
+                    Process files locally without a browser — fully offline.
+                  </p>
+                  <p className='mt-4 text-sm font-semibold text-ui-text underline'>Download app</p>
+                </div>
+              </div>
+            </a>
           </div>
         </section>
 

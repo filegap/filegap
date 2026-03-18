@@ -24,7 +24,26 @@ describe('HomePage', () => {
       'href',
       'https://github.com/your-org/filegap'
     );
+    expect(
+      screen.getByText((_, element) => element?.textContent === 'Use the CLI or download the app')
+    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'CLI' })).toHaveAttribute('href', '/cli');
+    expect(screen.getByRole('link', { name: 'download the app' })).toHaveAttribute(
+      'href',
+      '/download'
+    );
     expect(screen.getByText('Works in all modern browsers')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: 'More ways to use Filegap' })).toBeInTheDocument();
+    expect(screen.getByText('Use Filegap from your terminal')).toBeInTheDocument();
+    expect(
+      screen.getByText('Run PDF tools directly via CLI — fast, scriptable, private.')
+    ).toBeInTheDocument();
+    expect(screen.getByText('Go to CLI').closest('a')).toHaveAttribute('href', '/cli');
+    expect(screen.getByText('Download the desktop app')).toBeInTheDocument();
+    expect(
+      screen.getByText('Process files locally without a browser — fully offline.')
+    ).toBeInTheDocument();
+    expect(screen.getByText('Download app').closest('a')).toHaveAttribute('href', '/download');
 
     const grid = screen.getByTestId('home-tool-grid');
     expect(within(grid).getByRole('link', { name: /Merge PDF/i })).toHaveAttribute('href', '/merge-pdf');

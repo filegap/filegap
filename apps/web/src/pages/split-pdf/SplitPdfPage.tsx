@@ -93,6 +93,10 @@ const SPLIT_PAGE_CONTENT = {
       title: 'Private by design',
       text: 'Your documents stay on your device throughout the entire process.',
     },
+    {
+      title: 'Automation ready',
+      text: 'Use Filegap via CLI or desktop app for batch processing and offline workflows.',
+    },
   ],
   faqTitle: 'Frequently asked questions',
   faqItems: [
@@ -479,11 +483,38 @@ export function SplitPdfPage() {
       <ToolLandingSections
         {...SPLIT_PAGE_CONTENT}
         seoSupplement={
-          <p>
-            You can also <a className='text-ui-text underline' href='/merge-pdf'>merge PDF files</a>{' '}
-            or <a className='text-ui-text underline' href='/extract-pages'>extract specific pages</a>{' '}
-            using other Filegap tools.
-          </p>
+          <>
+            <p>
+              You can also <a className='text-ui-text underline' href='/merge-pdf'>merge PDF files</a>{' '}
+              or <a className='text-ui-text underline' href='/extract-pages'>extract specific pages</a>{' '}
+              using other Filegap tools.
+            </p>
+            <div className='pt-1'>
+              <h3 className='text-base font-semibold text-ui-text'>Need automation or offline use?</h3>
+              <p className='mt-1.5 text-sm text-ui-muted'>
+                Run Filegap via CLI or use the desktop app for batch processing and offline
+                workflows.
+              </p>
+              <div className='mt-3 flex flex-col gap-2.5 sm:flex-row'>
+                <div className='min-w-0'>
+                  <a
+                    href='/cli'
+                    className='inline-flex items-center justify-center rounded-lg border border-ui-border bg-ui-surface px-4 py-2 text-sm font-semibold text-ui-text transition hover:bg-ui-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-border/80 focus-visible:ring-offset-2'
+                  >
+                    Try the CLI
+                  </a>
+                </div>
+                <div className='min-w-0'>
+                  <a
+                    href='/download'
+                    className='inline-flex items-center justify-center rounded-lg border border-ui-border bg-ui-surface px-4 py-2 text-sm font-semibold text-ui-text transition hover:bg-ui-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-border/80 focus-visible:ring-offset-2'
+                  >
+                    Download app
+                  </a>
+                </div>
+              </div>
+            </div>
+          </>
         }
       />
 
