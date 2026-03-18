@@ -10,10 +10,10 @@ import { ToolLandingSections } from '../../components/seo/ToolLandingSections';
 import { TrustNotice } from '../../components/ui/TrustNotice';
 import { UploadedFilesTable } from '../../components/ui/UploadedFilesTable';
 import { ToolLayout } from '../../components/layout/ToolLayout';
-import { logDebug, logError, logInfo, logWarn } from '../../lib/logging/logger';
 import { extractPdfByRanges, parseSplitRanges, type SplitRangeSegment } from '../../adapters/pdfEngine';
 import type { WorkerResponse } from '../../types';
 
+// ⚠️ Do not log user file data. This project is privacy-first.
 type StatusTone = 'neutral' | 'info' | 'error';
 
 type StatusState = {
@@ -183,8 +183,6 @@ export function ExtractPagesPage() {
     setRangeInput('');
     setStatus({ tone: 'info', message: 'Reading PDF metadata...' });
 
-    logInfo('Extract source file selected.', { fileName: file.name, bytes: file.size });
-
     const totalPages = await getPdfPageCount(file);
     setPageCount(totalPages);
     if (!totalPages) {
@@ -192,7 +190,6 @@ export function ExtractPagesPage() {
         tone: 'error',
         message: 'Could not read page count. Please select a valid PDF file.',
       });
-      logWarn('Extract source metadata unavailable.');
       return;
     }
 
@@ -200,7 +197,6 @@ export function ExtractPagesPage() {
       tone: 'info',
       message: `PDF ready (${totalPages} pages). Enter pages to extract like 1-3,5,7-9.`,
     });
-    logDebug('Extract source metadata loaded.', { pageCount: totalPages });
   }
 
   async function handleExtract(): Promise<void> {
@@ -223,10 +219,6 @@ export function ExtractPagesPage() {
 
     setIsProcessing(true);
     setStatus({ tone: 'info', message: 'Processing locally in your browser...' });
-    logInfo('Starting local extract in browser.', {
-      pageCount,
-      ranges: ranges.length,
-    });
 
     const fileBuffer = await fileToArrayBuffer(sourceFile);
     const response = await new Promise<WorkerResponse>((resolve) => {
@@ -276,16 +268,12 @@ export function ExtractPagesPage() {
 
     let extracted: Uint8Array;
     if (!response.ok) {
-      logWarn('Worker unavailable for extract, falling back to main thread.', {
-        reason: response.error,
-      });
       try {
         extracted = await extractPdfByRanges(fileBuffer, ranges);
       } catch (error) {
         const reason = error instanceof Error ? error.message : 'unknown extract error';
         setStatus({ tone: 'error', message: `Extract failed: ${reason}` });
         setIsProcessing(false);
-        logError('Extract failed in main-thread fallback.', { reason });
         return;
       }
     } else {
@@ -305,7 +293,6 @@ export function ExtractPagesPage() {
     setShowDownloadGate(false);
     setIsProcessing(false);
     setStatus({ tone: 'info', message: 'Extract completed. Your PDF is ready to download.' });
-    logInfo('Extract completed successfully.');
   }
 
   function startNewExtract(): void {
@@ -318,7 +305,6 @@ export function ExtractPagesPage() {
       tone: 'neutral',
       message: 'Select one PDF file to start.',
     });
-    logInfo('New extract started.');
   }
 
   function removeSourceFile(): void {
@@ -331,12 +317,10 @@ export function ExtractPagesPage() {
       tone: 'neutral',
       message: 'Select one PDF file to start.',
     });
-    logInfo('Extract source file removed.');
   }
 
   function handleDownloadCta(): void {
     setShowDownloadGate(true);
-    logInfo('Pre-download modal opened for extract.');
   }
 
   function handleConfirmDownload(): void {
@@ -345,7 +329,6 @@ export function ExtractPagesPage() {
     }
     saveBlob(output.filename, output.bytes);
     setShowDownloadGate(false);
-    logInfo('Extract download started.');
   }
 
   const statusClassName = status.tone === 'error' ? 'text-sm text-red-600' : 'text-sm text-ui-muted';

@@ -10,10 +10,10 @@ import { ToolLandingSections } from '../../components/seo/ToolLandingSections';
 import { TrustNotice } from '../../components/ui/TrustNotice';
 import { UploadedFilesTable } from '../../components/ui/UploadedFilesTable';
 import { ToolLayout } from '../../components/layout/ToolLayout';
-import { logDebug, logError, logInfo, logWarn } from '../../lib/logging/logger';
 import { mergePdfBuffers } from '../../adapters/pdfEngine';
 import type { WorkerResponse } from '../../types';
 
+// ⚠️ Do not log user file data. This project is privacy-first.
 type StatusTone = 'neutral' | 'info' | 'error';
 
 type StatusState = {
@@ -177,15 +177,6 @@ export function MergePdfPage() {
       const mergedFiles = [...currentFiles, ...queuedFiles];
       setStatus(getIdleOrReadyStatus(mergedFiles.length));
 
-      logInfo('PDF files selected.', {
-        selectedFiles: nextFiles.length,
-        totalInQueue: mergedFiles.length,
-      });
-      logDebug('File selection technical details.', {
-        selectedFiles: nextFiles.length,
-        totalBytes: mergedFiles.reduce((sum, file) => sum + file.file.size, 0),
-      });
-
       return mergedFiles;
     });
 
@@ -215,7 +206,6 @@ export function MergePdfPage() {
     setFiles((currentFiles) => {
       const next = currentFiles.filter((_, index) => index !== indexToRemove);
       setStatus(getIdleOrReadyStatus(next.length));
-      logInfo('File removed from merge queue.', { indexToRemove, totalInQueue: next.length });
       return next;
     });
   }
@@ -234,7 +224,6 @@ export function MergePdfPage() {
       const [item] = next.splice(fromIndex, 1);
       next.splice(toIndex, 0, item);
       setStatus({ tone: 'info', message: 'File order updated.' });
-      logInfo('Merge queue order updated.', { fromIndex, toIndex });
       return next;
     });
   }
@@ -247,27 +236,16 @@ export function MergePdfPage() {
     if (files.length < 2) {
       const invalidStatus = getIdleOrReadyStatus(files.length);
       setStatus(invalidStatus);
-      logWarn('At least 2 PDF files are required before merge.', {
-        selectedFiles: files.length,
-      });
       return;
     }
 
     setIsProcessing(true);
     setStatus({ tone: 'info', message: 'Processing locally in your browser...' });
-    logInfo('Starting local merge in browser.', { selectedFiles: files.length });
 
     const buffers = await Promise.all(files.map((file) => fileToArrayBuffer(file.file)));
-    logDebug('PDF buffers prepared for worker.', {
-      selectedFiles: files.length,
-      totalBytes: files.reduce((sum, file) => sum + file.file.size, 0),
-    });
 
     const response = await new Promise<WorkerResponse>((resolve) => {
       const timeoutId = setTimeout(() => {
-        logError('Worker merge timeout: no response in 15s.', {
-          selectedFiles: files.length,
-        });
         resolve({
           ok: false,
           error: 'merge timeout: worker did not respond in time',
@@ -288,12 +266,6 @@ export function MergePdfPage() {
 
       worker.onerror = (event: ErrorEvent) => {
         cleanup();
-        logError('Worker error during merge.', {
-          message: event.message,
-          filename: event.filename,
-          lineno: event.lineno,
-          colno: event.colno,
-        });
         resolve({
           ok: false,
           error: event.message || 'worker error',
@@ -302,7 +274,6 @@ export function MergePdfPage() {
 
       worker.onmessageerror = () => {
         cleanup();
-        logError('Worker message error: payload not deserializable.');
         resolve({
           ok: false,
           error: 'worker message error',
@@ -316,21 +287,13 @@ export function MergePdfPage() {
     });
 
     if (!response.ok) {
-      logWarn('Worker unavailable, falling back to main thread.', {
-        reason: response.error,
-      });
       try {
         const output = await mergePdfBuffers(buffers);
         setMergedOutput(output);
         setShowDownloadGate(false);
-        logInfo('Merge completed using main-thread fallback.', {
-          outputFile: 'merged.pdf',
-          selectedFiles: files.length,
-        });
       } catch (error) {
         const reason = error instanceof Error ? error.message : 'unknown merge error';
         setStatus({ tone: 'error', message: `Merge failed: ${reason}` });
-        logError('Merge failed in main-thread fallback.', { reason });
       } finally {
         setIsProcessing(false);
       }
@@ -346,10 +309,6 @@ export function MergePdfPage() {
     setMergedOutput(response.payload.output);
     setShowDownloadGate(false);
     setIsProcessing(false);
-    logInfo('Merge completed successfully.', {
-      outputFile: 'merged.pdf',
-      selectedFiles: files.length,
-    });
   }
 
   function startNewMerge(): void {
@@ -357,12 +316,10 @@ export function MergePdfPage() {
     setMergedOutput(null);
     setShowDownloadGate(false);
     setStatus(getIdleOrReadyStatus(0));
-    logInfo('New merge started.');
   }
 
   function handleDownloadCta(): void {
     setShowDownloadGate(true);
-    logInfo('Pre-download modal opened.');
   }
 
   function handleConfirmDownload(): void {
@@ -371,7 +328,6 @@ export function MergePdfPage() {
     }
     saveBlob('merged.pdf', mergedOutput);
     setShowDownloadGate(false);
-    logInfo('merged.pdf download started.');
   }
 
   const statusClassName = status.tone === 'error' ? 'text-sm text-red-600' : 'text-sm text-ui-muted';

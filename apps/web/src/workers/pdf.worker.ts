@@ -4,17 +4,13 @@ import {
   reorderPdfPages,
   splitPdfByRanges,
 } from '../adapters/pdfEngine';
-import { logDebug, logError, logInfo, logWarn } from '../lib/logging/logger';
 import type { WorkerRequest, WorkerResponse } from '../types';
 
+// ⚠️ Do not log user file data. This project is privacy-first.
 self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
   try {
     if (event.data.type === 'merge') {
-      logDebug('Worker merge request received.', {
-        fileCount: event.data.payload.files.length,
-      });
       const output = await mergePdfBuffers(event.data.payload.files);
-      logInfo('Worker merge completed.');
       const response: WorkerResponse = {
         ok: true,
         type: 'merge',
@@ -25,11 +21,7 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
     }
 
     if (event.data.type === 'split') {
-      logDebug('Worker split request received.', {
-        ranges: event.data.payload.ranges.length,
-      });
       const outputs = await splitPdfByRanges(event.data.payload.file, event.data.payload.ranges);
-      logInfo('Worker split completed.');
       const response: WorkerResponse = {
         ok: true,
         type: 'split',
@@ -40,11 +32,7 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
     }
 
     if (event.data.type === 'extract') {
-      logDebug('Worker extract request received.', {
-        ranges: event.data.payload.ranges.length,
-      });
       const output = await extractPdfByRanges(event.data.payload.file, event.data.payload.ranges);
-      logInfo('Worker extract completed.');
       const response: WorkerResponse = {
         ok: true,
         type: 'extract',
@@ -55,11 +43,7 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
     }
 
     if (event.data.type === 'reorder') {
-      logDebug('Worker reorder request received.', {
-        pageOrderLength: event.data.payload.pageOrder.length,
-      });
       const output = await reorderPdfPages(event.data.payload.file, event.data.payload.pageOrder);
-      logInfo('Worker reorder completed.');
       const response: WorkerResponse = {
         ok: true,
         type: 'reorder',
@@ -73,12 +57,8 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
       ok: false,
       error: 'unsupported operation',
     };
-    logWarn('Worker operation not supported.');
     (self as unknown as Worker).postMessage(unknownResponse);
   } catch (error) {
-    logError('Worker merge error.', {
-      reason: error instanceof Error ? error.message : 'unknown worker error',
-    });
     const response: WorkerResponse = {
       ok: false,
       error: error instanceof Error ? error.message : 'unknown worker error',

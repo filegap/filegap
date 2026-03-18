@@ -21,6 +21,12 @@
 - Qualsiasi proposta che introduca processing server-side dei PDF e fuori scope.
 - Se una modifica mette a rischio uno di questi invarianti, il lavoro va bloccato e va richiesta conferma esplicita.
 
+## Logging Policy (Obbligatoria)
+- Non loggare mai dati utente o metadati dei file PDF, ne in development ne in production.
+- Sono vietati nei log: filename, path utente, dimensioni file, page count, page order, range di pagine, contenuto del file, estratti o buffer binari.
+- I messaggi di errore devono restare generici e non devono includere input utente.
+- Sono ammessi solo log tecnici ad alto livello, senza payload sensibile.
+
 ## Standard Commit
 - Tutti i commit devono rispettare Conventional Commits:
   - riferimento: https://www.conventionalcommits.org/en/v1.0.0/

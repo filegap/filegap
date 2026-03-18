@@ -14,3 +14,6 @@ apps/web/dist/
 # Logs
 *.log
 *.tsbuildinfo
+
+# Local audit/history artifacts
+.repo-history/

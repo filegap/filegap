@@ -10,10 +10,10 @@ import { ToolLandingSections } from '../../components/seo/ToolLandingSections';
 import { TrustNotice } from '../../components/ui/TrustNotice';
 import { UploadedFilesTable } from '../../components/ui/UploadedFilesTable';
 import { ToolLayout } from '../../components/layout/ToolLayout';
-import { logDebug, logError, logInfo, logWarn } from '../../lib/logging/logger';
 import { parseSplitRanges, splitPdfByRanges, type SplitRangeSegment } from '../../adapters/pdfEngine';
 import type { WorkerResponse } from '../../types';
 
+// ⚠️ Do not log user file data. This project is privacy-first.
 type StatusTone = 'neutral' | 'info' | 'error';
 
 type StatusState = {
@@ -182,11 +182,6 @@ export function SplitPdfPage() {
     setRangeInput('');
     setStatus({ tone: 'info', message: 'Reading PDF metadata...' });
 
-    logInfo('Split source file selected.', {
-      fileName: file.name,
-      bytes: file.size,
-    });
-
     const totalPages = await getPdfPageCount(file);
     setPageCount(totalPages);
     if (!totalPages) {
@@ -194,7 +189,6 @@ export function SplitPdfPage() {
         tone: 'error',
         message: 'Could not read page count. Please select a valid PDF file.',
       });
-      logWarn('Split source metadata unavailable.');
       return;
     }
 
@@ -202,7 +196,6 @@ export function SplitPdfPage() {
       tone: 'info',
       message: `PDF ready (${totalPages} pages). Enter split ranges like 1-3,4-7.`,
     });
-    logDebug('Split source metadata loaded.', { pageCount: totalPages });
   }
 
   async function handleSplit(): Promise<void> {
@@ -225,10 +218,6 @@ export function SplitPdfPage() {
 
     setIsProcessing(true);
     setStatus({ tone: 'info', message: 'Processing locally in your browser...' });
-    logInfo('Starting local split in browser.', {
-      pageCount,
-      ranges: parsedRanges.ranges.length,
-    });
 
     const fileBuffer = await fileToArrayBuffer(sourceFile);
     const response = await new Promise<WorkerResponse>((resolve) => {
@@ -278,16 +267,12 @@ export function SplitPdfPage() {
 
     let outputBuffers: Uint8Array[] = [];
     if (!response.ok) {
-      logWarn('Worker unavailable for split, falling back to main thread.', {
-        reason: response.error,
-      });
       try {
         outputBuffers = await splitPdfByRanges(fileBuffer, ranges);
       } catch (error) {
         const reason = error instanceof Error ? error.message : 'unknown split error';
         setStatus({ tone: 'error', message: `Split failed: ${reason}` });
         setIsProcessing(false);
-        logError('Split failed in main-thread fallback.', { reason });
         return;
       }
     } else {
@@ -312,22 +297,16 @@ export function SplitPdfPage() {
       tone: 'info',
       message: `Split completed. ${nextOutputs.length} PDF files are ready to download.`,
     });
-
-    logInfo('Split completed successfully.', {
-      outputs: nextOutputs.length,
-    });
   }
 
   function handleDownloadAll(): void {
     outputs.forEach((output, index) => {
       setTimeout(() => saveBlob(output.filename, output.bytes), index * 150);
     });
-    logInfo('Split download-all triggered.', { outputs: outputs.length });
   }
 
   function handleDownloadCta(): void {
     setShowDownloadGate(true);
-    logInfo('Pre-download modal opened for split.');
   }
 
   function handleConfirmDownload(): void {
@@ -345,7 +324,6 @@ export function SplitPdfPage() {
       tone: 'neutral',
       message: 'Select one PDF file to start.',
     });
-    logInfo('New split started.');
   }
 
   function removeSourceFile(): void {
@@ -358,7 +336,6 @@ export function SplitPdfPage() {
       tone: 'neutral',
       message: 'Select one PDF file to start.',
     });
-    logInfo('Split source file removed.');
   }
 
   const statusClassName = status.tone === 'error' ? 'text-sm text-red-600' : 'text-sm text-ui-muted';

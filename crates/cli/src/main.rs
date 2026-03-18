@@ -150,6 +150,8 @@ struct CliError {
     message: String,
 }
 
+// ⚠️ Do not log user file data. This project is privacy-first.
+// Error messages must stay generic and must not include filenames, paths, page counts, or user input.
 impl CliError {
     fn generic(message: impl Into<String>) -> Self {
         Self {
@@ -176,13 +178,13 @@ impl CliError {
         match err {
             CoreError::InvalidInput(message) => {
                 if looks_like_page_error(&message) {
-                    Self::invalid_page_syntax(message)
+                    Self::invalid_page_syntax("invalid page syntax")
                 } else {
-                    Self::invalid_input(message)
+                    Self::invalid_input("invalid input")
                 }
             }
-            CoreError::Processing(message) => Self::generic(message),
-            CoreError::Unsupported(message) => Self::generic(message),
+            CoreError::Processing(_) => Self::generic("pdf processing failed"),
+            CoreError::Unsupported(_) => Self::generic("unsupported operation"),
         }
     }
 }
@@ -190,8 +192,8 @@ impl CliError {
 fn main() -> ExitCode {
     let cli = match Cli::try_parse() {
         Ok(cli) => cli,
-        Err(err) => {
-            eprintln!("{err}");
+        Err(_) => {
+            eprintln!("Error: invalid CLI arguments");
             return ExitCode::from(2);
         }
     };
@@ -411,7 +413,7 @@ fn read_single_input(input: Option<&str>) -> Result<Vec<u8>, CliError> {
 }
 
 fn read_file(path: &str) -> Result<Vec<u8>, CliError> {
-    fs::read(path).map_err(|err| CliError::generic(format!("failed to read `{path}`: {err}")))
+    fs::read(path).map_err(|err| CliError::generic(format!("failed to read input file: {err}")))
 }
 
 fn read_stdin_all() -> Result<Vec<u8>, CliError> {
@@ -430,7 +432,7 @@ fn read_stdin_all() -> Result<Vec<u8>, CliError> {
 fn write_bytes_output(bytes: &[u8], output: Option<&str>) -> Result<(), CliError> {
     if let Some(path) = output {
         fs::write(path, bytes)
-            .map_err(|err| CliError::generic(format!("failed to write `{path}`: {err}")))?;
+            .map_err(|err| CliError::generic(format!("failed to write output file: {err}")))?;
         return Ok(());
     }
 
@@ -456,16 +458,14 @@ fn write_parts_to_pattern(pattern: &str, parts: &[Vec<u8>]) -> Result<(), CliErr
         if let Some(parent) = Path::new(&filename).parent() {
             if !parent.as_os_str().is_empty() {
                 fs::create_dir_all(parent).map_err(|err| {
-                    CliError::generic(format!(
-                        "failed to create output directory `{}`: {err}",
-                        parent.display()
-                    ))
+                    CliError::generic(format!("failed to create output directory: {err}"))
                 })?;
             }
         }
 
-        fs::write(&filename, part)
-            .map_err(|err| CliError::generic(format!("failed to write `{filename}`: {err}")))?;
+        fs::write(&filename, part).map_err(|err| {
+            CliError::generic(format!("failed to write one of the output files: {err}"))
+        })?;
     }
     Ok(())
 }
@@ -493,7 +493,7 @@ fn build_zip(parts: Vec<Vec<u8>>) -> Result<Vec<u8>, CliError> {
 
 fn get_page_count(bytes: &[u8]) -> Result<u32, CliError> {
     let doc = Document::load_mem(bytes)
-        .map_err(|err| CliError::invalid_input(format!("failed to parse input PDF: {err}")))?;
+        .map_err(|_| CliError::invalid_input("failed to parse input PDF"))?;
     let count = doc.get_pages().len() as u32;
     if count == 0 {
         return Err(CliError::invalid_input("input PDF has no pages"));
@@ -513,9 +513,7 @@ fn parse_page_groups(input: &str, total_pages: u32) -> Result<Vec<Vec<u32>>, Cli
     }
 
     if groups.is_empty() {
-        return Err(CliError::invalid_page_syntax(
-            "invalid page range: expected values like 1-3,5,7-9",
-        ));
+        return Err(CliError::invalid_page_syntax("invalid page syntax"));
     }
 
     Ok(groups)
@@ -531,9 +529,7 @@ fn parse_range_token(token: &str, total_pages: u32) -> Result<Vec<u32>, CliError
         let start = parse_page_number(start_raw.trim(), total_pages)?;
         let end = parse_page_number(end_raw.trim(), total_pages)?;
         if start > end {
-            return Err(CliError::invalid_page_syntax(format!(
-                "invalid page range '{token}'"
-            )));
+            return Err(CliError::invalid_page_syntax("invalid page syntax"));
         }
         return Ok((start..=end).collect());
     }
@@ -544,11 +540,9 @@ fn parse_range_token(token: &str, total_pages: u32) -> Result<Vec<u32>, CliError
 fn parse_page_number(value: &str, total_pages: u32) -> Result<u32, CliError> {
     let page = value
         .parse::<u32>()
-        .map_err(|_| CliError::invalid_page_syntax(format!("invalid page number '{value}'")))?;
+        .map_err(|_| CliError::invalid_page_syntax("invalid page syntax"))?;
     if page == 0 || page > total_pages {
-        return Err(CliError::invalid_page_syntax(format!(
-            "page {page} out of bounds (document has {total_pages} pages)"
-        )));
+        return Err(CliError::invalid_page_syntax("invalid page syntax"));
     }
     Ok(page)
 }

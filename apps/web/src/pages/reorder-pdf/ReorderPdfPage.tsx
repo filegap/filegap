@@ -9,10 +9,10 @@ import { PreDownloadModal } from '../../components/ui/PreDownloadModal';
 import { ToolLandingSections } from '../../components/seo/ToolLandingSections';
 import { TrustNotice } from '../../components/ui/TrustNotice';
 import { ToolLayout } from '../../components/layout/ToolLayout';
-import { logDebug, logError, logInfo, logWarn } from '../../lib/logging/logger';
 import { parsePageOrder, reorderPdfPages } from '../../adapters/pdfEngine';
 import type { WorkerResponse } from '../../types';
 
+// ⚠️ Do not log user file data. This project is privacy-first.
 type StatusTone = 'neutral' | 'info' | 'error';
 
 type StatusState = {
@@ -178,8 +178,6 @@ export function ReorderPdfPage() {
     setOrderInput('');
     setStatus({ tone: 'info', message: 'Reading PDF metadata...' });
 
-    logInfo('Reorder source file selected.', { fileName: file.name, bytes: file.size });
-
     const totalPages = await getPdfPageCount(file);
     setPageCount(totalPages);
     if (!totalPages) {
@@ -187,7 +185,6 @@ export function ReorderPdfPage() {
         tone: 'error',
         message: 'Could not read page count. Please select a valid PDF file.',
       });
-      logWarn('Reorder source metadata unavailable.');
       return;
     }
 
@@ -197,7 +194,6 @@ export function ReorderPdfPage() {
       tone: 'info',
       message: `PDF ready (${totalPages} pages). Update page order if needed.`,
     });
-    logDebug('Reorder source metadata loaded.', { pageCount: totalPages });
   }
 
   async function handleReorder(): Promise<void> {
@@ -220,7 +216,6 @@ export function ReorderPdfPage() {
 
     setIsProcessing(true);
     setStatus({ tone: 'info', message: 'Processing locally in your browser...' });
-    logInfo('Starting local reorder in browser.', { pageCount, pageOrderLength: pageOrder.length });
 
     const fileBuffer = await fileToArrayBuffer(sourceFile);
     const response = await new Promise<WorkerResponse>((resolve) => {
@@ -270,16 +265,12 @@ export function ReorderPdfPage() {
 
     let reordered: Uint8Array;
     if (!response.ok) {
-      logWarn('Worker unavailable for reorder, falling back to main thread.', {
-        reason: response.error,
-      });
       try {
         reordered = await reorderPdfPages(fileBuffer, pageOrder);
       } catch (error) {
         const reason = error instanceof Error ? error.message : 'unknown reorder error';
         setStatus({ tone: 'error', message: `Reorder failed: ${reason}` });
         setIsProcessing(false);
-        logError('Reorder failed in main-thread fallback.', { reason });
         return;
       }
     } else {
@@ -299,7 +290,6 @@ export function ReorderPdfPage() {
     setShowDownloadGate(false);
     setIsProcessing(false);
     setStatus({ tone: 'info', message: 'Reorder completed. Your PDF is ready to download.' });
-    logInfo('Reorder completed successfully.');
   }
 
   function startNewReorder(): void {
@@ -312,12 +302,10 @@ export function ReorderPdfPage() {
       tone: 'neutral',
       message: 'Select one PDF file to start.',
     });
-    logInfo('New reorder started.');
   }
 
   function handleDownloadCta(): void {
     setShowDownloadGate(true);
-    logInfo('Pre-download modal opened for reorder.');
   }
 
   function handleConfirmDownload(): void {
@@ -326,7 +314,6 @@ export function ReorderPdfPage() {
     }
     saveBlob(output.filename, output.bytes);
     setShowDownloadGate(false);
-    logInfo('Reorder download started.');
   }
 
   const statusClassName = status.tone === 'error' ? 'text-sm text-red-600' : 'text-sm text-ui-muted';

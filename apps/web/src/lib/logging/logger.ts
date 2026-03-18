@@ -1,51 +1,46 @@
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
-type LogContext = Record<string, unknown>;
-
 const PREFIX = 'Filegap';
 
+// ⚠️ Do not log user file data. This project is privacy-first.
+// Keep logs generic and never include filenames, sizes, page counts, file content, or user input.
 function nowIso(): string {
   return new Date().toISOString();
 }
 
-function write(level: LogLevel, message: string, context?: LogContext): void {
+function write(level: LogLevel, message: string): void {
   const label = `[${PREFIX}][${level.toUpperCase()}][${nowIso()}]`;
-  const payload = context && Object.keys(context).length > 0 ? context : undefined;
 
   if (level === 'debug') {
-    // Debug logs can include technical execution details.
-    console.log(label, message, payload ?? '');
+    console.log(label, message);
     return;
   }
 
   if (level === 'info') {
-    // Info logs should be understandable for end users.
-    console.info(label, message, payload ?? '');
+    console.info(label, message);
     return;
   }
 
   if (level === 'warn') {
-    // Warn logs should suggest user-actionable recovery hints.
-    console.warn(label, message, payload ?? '');
+    console.warn(label, message);
     return;
   }
 
-  // Error logs can carry technical detail but should remain privacy-safe.
-  console.error(label, message, payload ?? '');
+  console.error(label, message);
 }
 
-export function logDebug(message: string, context?: LogContext): void {
-  write('debug', message, context);
+export function logDebug(message: string): void {
+  write('debug', message);
 }
 
-export function logInfo(message: string, context?: LogContext): void {
-  write('info', message, context);
+export function logInfo(message: string): void {
+  write('info', message);
 }
 
-export function logWarn(message: string, context?: LogContext): void {
-  write('warn', message, context);
+export function logWarn(message: string): void {
+  write('warn', message);
 }
 
-export function logError(message: string, context?: LogContext): void {
-  write('error', message, context);
+export function logError(message: string): void {
+  write('error', message);
 }
