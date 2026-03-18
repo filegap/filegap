@@ -11,6 +11,7 @@ import { TrustNotice } from '../../components/ui/TrustNotice';
 import { UploadedFilesTable } from '../../components/ui/UploadedFilesTable';
 import { ToolLayout } from '../../components/layout/ToolLayout';
 import { extractPdfByRanges, parseSplitRanges, type SplitRangeSegment } from '../../adapters/pdfEngine';
+import { trackEvent } from '../../lib/analytics/trackEvent';
 import type { WorkerResponse } from '../../types';
 
 // ⚠️ Do not log user file data. This project is privacy-first.
@@ -170,6 +171,10 @@ export function ExtractPagesPage() {
   useEffect(() => {
     return () => worker.terminate();
   }, [worker]);
+
+  useEffect(() => {
+    trackEvent('extract_opened');
+  }, []);
 
   async function handleSourceSelected(files: File[]): Promise<void> {
     const file = files[0];
@@ -454,6 +459,7 @@ export function ExtractPagesPage() {
                 <div className='min-w-0'>
                   <a
                     href='/cli'
+                    onClick={() => trackEvent('download_cli_clicked')}
                     className='inline-flex items-center justify-center rounded-lg border border-ui-border bg-ui-surface px-4 py-2 text-sm font-semibold text-ui-text transition hover:bg-ui-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-border/80 focus-visible:ring-offset-2'
                   >
                     Try the CLI
@@ -462,6 +468,7 @@ export function ExtractPagesPage() {
                 <div className='min-w-0'>
                   <a
                     href='/download'
+                    onClick={() => trackEvent('download_app_clicked')}
                     className='inline-flex items-center justify-center rounded-lg border border-ui-border bg-ui-surface px-4 py-2 text-sm font-semibold text-ui-text transition hover:bg-ui-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-border/80 focus-visible:ring-offset-2'
                   >
                     Download app

@@ -14,6 +14,7 @@ import {
 import { AppFooter } from '../../components/layout/AppFooter';
 import { AppHeader } from '../../components/layout/AppHeader';
 import { PageContainer } from '../../components/layout/PageContainer';
+import { trackEvent } from '../../lib/analytics/trackEvent';
 import { TrustNotice } from '../../components/ui/TrustNotice';
 import { usePageMetadata } from '../../lib/seo/usePageMetadata';
 import { HomeToolCard } from './HomeToolCard';
@@ -59,9 +60,9 @@ const WHY_ITEMS = [
   },
   {
     icon: <Zap className='h-6 w-6' />,
-    title: 'No accounts, no tracking',
+    title: 'No accounts, no file tracking',
     description:
-      'Use all tools instantly without signing up. We don’t track you, and we don’t store your data.',
+      'Use all tools instantly without signing up. We only track high-level tool usage and never your files.',
   },
   {
     icon: <Leaf className='h-6 w-6' />,
@@ -143,8 +144,22 @@ export function HomePage() {
               Merge PDFs instantly
             </a>
             <p className='text-sm text-ui-muted'>
-              Use the <a className='underline hover:text-ui-text' href='/cli'>CLI</a> or{' '}
-              <a className='underline hover:text-ui-text' href='/download'>download the app</a>
+              Use the{' '}
+              <a
+                className='underline hover:text-ui-text'
+                href='/cli'
+                onClick={() => trackEvent('download_cli_clicked')}
+              >
+                CLI
+              </a>{' '}
+              or{' '}
+              <a
+                className='underline hover:text-ui-text'
+                href='/download'
+                onClick={() => trackEvent('download_app_clicked')}
+              >
+                download the app
+              </a>
             </p>
             <p className='text-[11px] text-ui-muted/75'>Works in all modern browsers</p>
           </div>
@@ -155,6 +170,7 @@ export function HomePage() {
           <div className='grid gap-4 md:grid-cols-2'>
             <a
               href='/cli'
+              onClick={() => trackEvent('download_cli_clicked')}
               className='rounded-xl border border-ui-border bg-ui-surface p-6 transition hover:border-brand-primary/70 hover:bg-brand-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/30 focus-visible:ring-offset-2'
             >
               <div className='flex items-start gap-4'>
@@ -177,6 +193,7 @@ export function HomePage() {
             </a>
             <a
               href='/download'
+              onClick={() => trackEvent('download_app_clicked')}
               className='rounded-xl border border-ui-border bg-ui-surface p-6 transition hover:border-brand-primary/70 hover:bg-brand-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/30 focus-visible:ring-offset-2'
             >
               <div className='flex items-start gap-4'>

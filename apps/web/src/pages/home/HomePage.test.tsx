@@ -62,10 +62,10 @@ describe('HomePage', () => {
         'Your PDF files are processed directly in your browser. They are never uploaded to any server.'
       )
     ).toBeInTheDocument();
-    expect(screen.getByText('No accounts, no tracking')).toBeInTheDocument();
+    expect(screen.getByText('No accounts, no file tracking')).toBeInTheDocument();
     expect(
       screen.getByText(
-        'Use all tools instantly without signing up. We don’t track you, and we don’t store your data.'
+        'Use all tools instantly without signing up. We only track high-level tool usage and never your files.'
       )
     ).toBeInTheDocument();
     expect(screen.getByText('Fast and lightweight')).toBeInTheDocument();

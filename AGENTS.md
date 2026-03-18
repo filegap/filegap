@@ -27,6 +27,22 @@
 - I messaggi di errore devono restare generici e non devono includere input utente.
 - Sono ammessi solo log tecnici ad alto livello, senza payload sensibile.
 
+## Privacy & Analytics Rules (Obbligatorie)
+- Questo progetto e privacy-first.
+- Analytics consentita solo in forma anonima, aggregata e ad eventi ad alto livello.
+- Non tracciare mai: filename, path utente, dimensioni file, page count, page order, range, contenuto file, input utente legato ai file.
+- Tracking consentito:
+  - page views
+  - uso strumenti ad alto livello (es. apertura tool)
+  - click CTA ad alto livello
+- Gli eventi analytics devono contenere solo il nome evento, senza payload.
+- In caso di dubbio: non tracciare.
+
+## Logging Rules (Rinforzo)
+- Non loggare dati file utente.
+- Evitare log di input utente.
+- Meglio nessun log che un log potenzialmente non sicuro.
+
 ## Standard Commit
 - Tutti i commit devono rispettare Conventional Commits:
   - riferimento: https://www.conventionalcommits.org/en/v1.0.0/

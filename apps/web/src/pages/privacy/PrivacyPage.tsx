@@ -86,7 +86,7 @@ export function PrivacyPage() {
               <li>Your files stay on your device</li>
               <li>Nothing is uploaded</li>
               <li>Nothing is stored</li>
-              <li>Nothing is tracked</li>
+              <li>Only high-level tool usage is tracked, never your files</li>
             </ul>
           </section>
         </div>
