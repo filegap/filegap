@@ -250,8 +250,8 @@ export function MergePdfPage() {
   const destinationFriendlyLabel = !outputDirectory
     ? 'No destination selected'
     : outputDirectory === defaultDownloadDirectory
-    ? '📁 Downloads'
-    : `📁 ${fileNameFromPath(outputDirectory)}`;
+    ? 'Downloads'
+    : fileNameFromPath(outputDirectory);
 
   return (
     <ToolLayout
