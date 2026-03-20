@@ -1,6 +1,9 @@
 use std::fs;
+use std::path::Path;
+use std::process::Command;
 
 use filegap_core::{ops::merge_pdfs as core_merge_pdfs, CoreError, MergeRequest};
+use lopdf::Document;
 use serde::Serialize;
 
 #[derive(Debug, Serialize)]
@@ -9,11 +12,32 @@ pub struct MergeResult {
     pub input_count: usize,
 }
 
+#[derive(Debug, Serialize)]
+pub struct PdfFileInfo {
+    pub path: String,
+    pub size_bytes: u64,
+    pub page_count: Option<u32>,
+}
+
 fn map_core_error(err: CoreError) -> String {
     match err {
         CoreError::InvalidInput(_) => "Invalid input PDF files.".to_string(),
         CoreError::Processing(_) => "PDF processing failed.".to_string(),
         CoreError::Unsupported(_) => "Unsupported PDF operation.".to_string(),
+    }
+}
+
+fn inspect_pdf_file(path: &str) -> PdfFileInfo {
+    let size_bytes = fs::metadata(path).map(|meta| meta.len()).unwrap_or(0);
+    let page_count = fs::read(path)
+        .ok()
+        .and_then(|bytes| Document::load_mem(&bytes).ok())
+        .map(|doc| doc.get_pages().len() as u32);
+
+    PdfFileInfo {
+        path: path.to_string(),
+        size_bytes,
+        page_count,
     }
 }
 
@@ -43,4 +67,86 @@ pub fn merge_pdfs(input_paths: Vec<String>, output_path: String) -> Result<Merge
         output_path,
         input_count: input_paths.len(),
     })
+}
+
+#[tauri::command]
+pub fn inspect_pdf_files(paths: Vec<String>) -> Vec<PdfFileInfo> {
+    paths.iter().map(|path| inspect_pdf_file(path)).collect()
+}
+
+#[tauri::command]
+pub fn show_in_folder(path: String) -> Result<(), String> {
+    let target = Path::new(&path);
+    if !target.exists() {
+        return Err("Target path does not exist.".to_string());
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        Command::new("open")
+            .arg("-R")
+            .arg(path)
+            .status()
+            .map_err(|_| "Failed to open file location.".to_string())?;
+    }
+
+    #[cfg(target_os = "windows")]
+    {
+        Command::new("explorer")
+            .arg("/select,")
+            .arg(path)
+            .status()
+            .map_err(|_| "Failed to open file location.".to_string())?;
+    }
+
+    #[cfg(target_os = "linux")]
+    {
+        let folder = target
+            .parent()
+            .and_then(|value| value.to_str())
+            .ok_or_else(|| "Failed to resolve folder path.".to_string())?;
+        Command::new("xdg-open")
+            .arg(folder)
+            .status()
+            .map_err(|_| "Failed to open file location.".to_string())?;
+    }
+
+    Ok(())
+}
+
+#[tauri::command]
+pub fn open_file(path: String) -> Result<(), String> {
+    let target = Path::new(&path);
+    if !target.exists() {
+        return Err("Target path does not exist.".to_string());
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        Command::new("open")
+            .arg(path)
+            .status()
+            .map_err(|_| "Failed to open file.".to_string())?;
+    }
+
+    #[cfg(target_os = "windows")]
+    {
+        Command::new("cmd")
+            .arg("/C")
+            .arg("start")
+            .arg("")
+            .arg(path)
+            .status()
+            .map_err(|_| "Failed to open file.".to_string())?;
+    }
+
+    #[cfg(target_os = "linux")]
+    {
+        Command::new("xdg-open")
+            .arg(path)
+            .status()
+            .map_err(|_| "Failed to open file.".to_string())?;
+    }
+
+    Ok(())
 }

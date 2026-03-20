@@ -4,7 +4,13 @@ mod commands;
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
-        .invoke_handler(tauri::generate_handler![commands::merge_pdfs])
+        .plugin(tauri_plugin_opener::init())
+        .invoke_handler(tauri::generate_handler![
+            commands::merge_pdfs,
+            commands::inspect_pdf_files,
+            commands::show_in_folder,
+            commands::open_file
+        ])
         .run(tauri::generate_context!())
         .expect("error while running filegap desktop app");
 }

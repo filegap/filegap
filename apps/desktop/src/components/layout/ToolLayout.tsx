@@ -1,23 +1,27 @@
-import type { PropsWithChildren } from 'react';
+import type { ReactNode } from 'react';
 import { AppShell } from './AppShell';
 import { PageContainer } from './PageContainer';
 
-type ToolLayoutProps = PropsWithChildren<{
+type ToolLayoutProps = {
   title: string;
-  description: string;
-  trustLine?: string;
-}>;
+  subtitle: string;
+  leftPanel: ReactNode;
+  rightPanel: ReactNode;
+};
 
-export function ToolLayout({ title, description, trustLine, children }: ToolLayoutProps) {
+export function ToolLayout({ title, subtitle, leftPanel, rightPanel }: ToolLayoutProps) {
   return (
     <AppShell>
       <PageContainer>
-        <header className="tool-hero">
+        <header className="tool-page-header">
           <h1>{title}</h1>
-          <p>{description}</p>
-          {trustLine ? <p className="tool-hero-trust">{trustLine}</p> : null}
+          <p>{subtitle}</p>
         </header>
-        <section className="tool-section">{children}</section>
+
+        <section className="tool-split-layout">
+          <section className="tool-left-panel">{leftPanel}</section>
+          <aside className="tool-right-panel">{rightPanel}</aside>
+        </section>
       </PageContainer>
     </AppShell>
   );

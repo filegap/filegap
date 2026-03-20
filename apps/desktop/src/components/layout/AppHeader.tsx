@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { ArrowUpDown, Files, Scissors, Split } from 'lucide-react';
+import { ArrowUpDown, Files, House, Scissors, Split } from 'lucide-react';
 
 const TOOL_LINKS = [
   { to: '/merge-pdf', label: 'Merge PDF', icon: <Files aria-hidden="true" /> },
@@ -12,6 +12,9 @@ export function AppHeader() {
   return (
     <header className="app-header">
       <div className="header-row">
+        <NavLink to="/" className="header-home-btn" aria-label="Home">
+          <House aria-hidden="true" />
+        </NavLink>
         <nav className="header-tools-nav" aria-label="Tool navigation">
           {TOOL_LINKS.map((tool) => (
             <NavLink

@@ -1,9 +1,16 @@
 import { invoke } from '@tauri-apps/api/core';
-import { open, save } from '@tauri-apps/plugin-dialog';
+import { downloadDir } from '@tauri-apps/api/path';
+import { open } from '@tauri-apps/plugin-dialog';
 
 export type MergeResult = {
   output_path: string;
   input_count: number;
+};
+
+export type PdfFileInfo = {
+  path: string;
+  size_bytes: number;
+  page_count: number | null;
 };
 
 export async function choosePdfInputs(): Promise<string[]> {
@@ -25,14 +32,22 @@ export async function choosePdfInputs(): Promise<string[]> {
   return selection.filter((path): path is string => typeof path === 'string');
 }
 
-export async function chooseOutputPdf(defaultName = 'merged.pdf'): Promise<string | null> {
-  const output = await save({
-    title: 'Save merged PDF',
-    defaultPath: defaultName,
-    filters: [{ name: 'PDF', extensions: ['pdf'] }],
+export async function chooseOutputDirectory(): Promise<string | null> {
+  const output = await open({
+    title: 'Choose destination folder',
+    directory: true,
+    multiple: false,
   });
 
   return typeof output === 'string' ? output : null;
+}
+
+export async function getDownloadDirectory(): Promise<string | null> {
+  try {
+    return await downloadDir();
+  } catch {
+    return null;
+  }
 }
 
 export async function mergePdfs(inputPaths: string[], outputPath: string): Promise<MergeResult> {
@@ -40,4 +55,16 @@ export async function mergePdfs(inputPaths: string[], outputPath: string): Promi
     inputPaths,
     outputPath,
   });
+}
+
+export async function inspectPdfFiles(paths: string[]): Promise<PdfFileInfo[]> {
+  return invoke<PdfFileInfo[]>('inspect_pdf_files', { paths });
+}
+
+export async function openFile(path: string): Promise<void> {
+  await invoke('open_file', { path });
+}
+
+export async function revealInFolder(path: string): Promise<void> {
+  await invoke('show_in_folder', { path });
 }
