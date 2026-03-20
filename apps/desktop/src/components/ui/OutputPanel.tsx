@@ -1,5 +1,5 @@
 import type { RefObject } from 'react';
-import { File, Folder, Lock } from 'lucide-react';
+import { BadgeCheck, File, Folder, Lock, RotateCcw } from 'lucide-react';
 import { Button } from './Button';
 
 type OutputPanelProps = {
@@ -87,7 +87,12 @@ export function OutputPanel({
           <>
             <div className="output-result-block">
               <div className="output-complete-state">
-                <p className="output-complete-title">✓ Merge completed</p>
+                <p className="output-complete-title">
+                  <span className="output-success-icon" aria-hidden="true">
+                    <BadgeCheck strokeWidth={2.25} />
+                  </span>
+                  <span>Merge completed</span>
+                </p>
                 <p className="output-complete-details">{completedMergeCount} files merged</p>
 
                 <div className="output-result-inline-actions">
@@ -109,13 +114,14 @@ export function OutputPanel({
                     aria-label="Show in folder"
                   >
                     <Folder aria-hidden="true" />
-                    <span>Show</span>
+                    <span>Reveal</span>
                   </button>
                 </div>
               </div>
             </div>
             <Button variant="ghost" className="output-new-merge-btn" onClick={onNewMerge}>
-              Start new merge
+              <RotateCcw aria-hidden="true" />
+              <span>New merge</span>
             </Button>
           </>
         ) : null}

@@ -852,23 +852,44 @@ p {
 }
 
 .output-result-block {
-  border: 1px solid #b9e4cb;
-  border-radius: 10px;
-  background: #edf8f1;
-  box-shadow: 0 1px 2px rgba(18, 111, 65, 0.08);
-  padding: 12px;
+  border: 1px solid #d9e4dd;
+  border-radius: 7px;
+  background: #f5f8f6;
+  box-shadow: 0 1px 1px rgba(17, 24, 39, 0.04);
+  padding: 10px;
 }
 
 .output-complete-title {
-  color: var(--success);
-  font-size: 0.8rem;
-  font-weight: 700;
+  color: #334155;
+  font-size: 0.72rem;
+  font-weight: 650;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.output-success-icon {
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: #dcfce7;
+  color: #15803d;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.output-success-icon svg {
+  width: 16px;
+  height: 16px;
+  color: #15803d;
 }
 
 .output-complete-details {
-  color: color-mix(in srgb, var(--success) 80%, black);
-  font-size: 0.76rem;
-  font-weight: 600;
+  color: #0f172a;
+  font-size: 0.82rem;
+  font-weight: 700;
 }
 
 .output-panel-section {
@@ -922,6 +943,21 @@ p {
 .output-change-btn {
   flex: 0 0 auto;
   padding: 7px 10px;
+  border-color: transparent;
+  color: #475569;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.output-change-btn:hover:enabled {
+  border-color: #e2e8f0;
+  background: #f8fafc;
+  color: #334155;
+}
+
+.output-change-btn:active:enabled {
+  border-color: #cbd5e1;
+  background: #f1f5f9;
+  color: #1f2937;
 }
 
 .merge-primary-btn {
@@ -945,7 +981,7 @@ p {
 .output-inline-action {
   height: 26px;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 6px;
   background: var(--surface);
   color: var(--muted);
   font-size: 0.74rem;
@@ -954,7 +990,7 @@ p {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 0 8px;
+  padding: 0 7px;
   cursor: pointer;
   transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
 }
@@ -963,6 +999,11 @@ p {
   background: var(--surface-alt);
   border-color: var(--border-strong);
   color: var(--text);
+}
+
+.output-inline-action:active {
+  background: var(--surface-muted);
+  border-color: var(--border-strong);
 }
 
 .output-inline-action svg {
@@ -976,19 +1017,38 @@ p {
 }
 
 .output-new-merge-btn {
-  margin-top: 4px;
+  margin-top: 8px;
   align-self: flex-start;
-  padding: 5px 4px;
+  padding: 5px 6px;
   border-color: transparent;
-  color: var(--muted);
+  color: #334155;
   font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease, transform 120ms ease;
+}
+
+.output-new-merge-btn svg {
+  width: 16px;
+  height: 16px;
+  color: currentColor;
 }
 
 .output-new-merge-btn:hover:enabled {
-  border-color: transparent;
-  background: transparent;
-  color: var(--text);
-  text-decoration: underline;
+  border-color: #cbd5e1;
+  background: #e2e8f0;
+  color: #1f2937;
+  text-decoration: none;
+  transform: scale(1.015);
+}
+
+.output-new-merge-btn:active:enabled {
+  background: #cbd5e1;
+  border-color: #94a3b8;
+  color: #0f172a;
+  transform: scale(1);
 }
 
 .output-panel-trust {
