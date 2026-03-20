@@ -70,8 +70,15 @@ pub fn merge_pdfs(input_paths: Vec<String>, output_path: String) -> Result<Merge
 }
 
 #[tauri::command]
-pub fn inspect_pdf_files(paths: Vec<String>) -> Vec<PdfFileInfo> {
-    paths.iter().map(|path| inspect_pdf_file(path)).collect()
+pub async fn inspect_pdf_files(paths: Vec<String>) -> Result<Vec<PdfFileInfo>, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        paths
+            .into_iter()
+            .map(|path| inspect_pdf_file(&path))
+            .collect::<Vec<PdfFileInfo>>()
+    })
+    .await
+    .map_err(|_| "Failed to inspect selected PDF files.".to_string())
 }
 
 #[tauri::command]

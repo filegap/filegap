@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ToolLayout } from '../../components/layout/ToolLayout';
+import { Button } from '../../components/ui/Button';
 import { Dropzone } from '../../components/ui/Dropzone';
 import { FileTable } from '../../components/ui/FileTable';
 import { OutputPanel } from '../../components/ui/OutputPanel';
@@ -88,17 +89,23 @@ export function MergePdfPage() {
   const [isOutputNameDirty, setIsOutputNameDirty] = useState(false);
   const [pathSeparator, setPathSeparator] = useState<'/' | '\\'>('/');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isLoadingFiles, setIsLoadingFiles] = useState(false);
+  const [pendingSelection, setPendingSelection] = useState<string[] | null>(null);
   const [hasCompleted, setHasCompleted] = useState(false);
+  const [completedMergeCount, setCompletedMergeCount] = useState<number | null>(null);
   const [lastOutputPath, setLastOutputPath] = useState('');
   const [status, setStatus] = useState<StatusState>({
     tone: 'neutral',
     message: 'Idle',
   });
   const outputInputRef = useRef<HTMLInputElement>(null);
+  const processingFilesMessage = pendingSelection?.length
+    ? `Processing ${pendingSelection.length} files...`
+    : 'Processing files...';
 
   const canMerge = useMemo(
-    () => files.length >= 2 && outputDirectory.trim().length > 0 && outputName.trim().length > 0,
-    [files, outputDirectory, outputName]
+    () => !isLoadingFiles && files.length >= 2 && outputDirectory.trim().length > 0 && outputName.trim().length > 0,
+    [files, outputDirectory, outputName, isLoadingFiles]
   );
 
   const mergeActionLabel = isProcessing ? 'Merging…' : hasCompleted ? 'Merge again' : 'Merge PDF';
@@ -132,14 +139,61 @@ export function MergePdfPage() {
         return;
       }
       event.preventDefault();
-      if (!isProcessing) {
+      if (!isProcessing && !isLoadingFiles) {
         void handleSelectInputs();
       }
     };
 
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [isProcessing]);
+  }, [isProcessing, isLoadingFiles]);
+
+  useEffect(() => {
+    if (!pendingSelection || pendingSelection.length === 0) {
+      return;
+    }
+
+    let cancelled = false;
+    void (async () => {
+      try {
+        const fileInfos = await inspectPdfFiles(pendingSelection);
+        if (cancelled) {
+          return;
+        }
+
+        const infoMap = toInfoMap(fileInfos);
+        const nextRows = pendingSelection.map((path) => {
+          const info = infoMap.get(path);
+          return {
+            id: `${path}-${Math.random().toString(16).slice(2)}`,
+            path,
+            sizeBytes: info?.size_bytes ?? 0,
+            pageCount: info?.page_count ?? null,
+          };
+        });
+
+        setFiles((current) => [...current, ...nextRows]);
+        setHasCompleted(false);
+        setCompletedMergeCount(null);
+        setStatus({ tone: 'neutral', message: 'Idle' });
+        queueMicrotask(() => outputInputRef.current?.focus());
+      } catch (error) {
+        const reason = readErrorMessage(error);
+        if (!cancelled) {
+          setStatus({ tone: 'error', message: `Failed to inspect files: ${reason}` });
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoadingFiles(false);
+          setPendingSelection(null);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [pendingSelection]);
 
   async function handleSelectInputs() {
     const selected = await choosePdfInputs();
@@ -147,23 +201,9 @@ export function MergePdfPage() {
       return;
     }
 
-    const fileInfos = await inspectPdfFiles(selected);
-    const infoMap = toInfoMap(fileInfos);
-
-    const nextRows = selected.map((path) => {
-      const info = infoMap.get(path);
-      return {
-        id: `${path}-${Math.random().toString(16).slice(2)}`,
-        path,
-        sizeBytes: info?.size_bytes ?? 0,
-        pageCount: info?.page_count ?? null,
-      };
-    });
-
-    setFiles((current) => [...current, ...nextRows]);
-    setHasCompleted(false);
-    setStatus({ tone: 'info', message: 'Files added' });
-    queueMicrotask(() => outputInputRef.current?.focus());
+    setIsLoadingFiles(true);
+    setStatus({ tone: 'info', message: 'Processing files...' });
+    setPendingSelection(selected);
   }
 
   async function handleChooseOutputDirectory() {
@@ -180,6 +220,7 @@ export function MergePdfPage() {
   function removeFile(id: string) {
     setFiles((current) => current.filter((item) => item.id !== id));
     setHasCompleted(false);
+    setCompletedMergeCount(null);
     setStatus({ tone: 'info', message: 'File removed' });
   }
 
@@ -194,7 +235,26 @@ export function MergePdfPage() {
       return next;
     });
     setHasCompleted(false);
+    setCompletedMergeCount(null);
     setStatus({ tone: 'info', message: 'Order updated' });
+  }
+
+  function clearAllFiles() {
+    setFiles([]);
+    setHasCompleted(false);
+    setCompletedMergeCount(null);
+    setLastOutputPath('');
+    setStatus({ tone: 'info', message: 'Files cleared' });
+  }
+
+  function startNewMerge() {
+    setFiles([]);
+    setHasCompleted(false);
+    setCompletedMergeCount(null);
+    setLastOutputPath('');
+    setOutputName(createDefaultOutputName(0));
+    setIsOutputNameDirty(false);
+    setStatus({ tone: 'neutral', message: 'Idle' });
   }
 
   async function handleMerge() {
@@ -204,6 +264,7 @@ export function MergePdfPage() {
 
     setIsProcessing(true);
     setHasCompleted(false);
+    setCompletedMergeCount(null);
     setStatus({ tone: 'info', message: 'Processing merge...' });
 
     try {
@@ -214,6 +275,7 @@ export function MergePdfPage() {
       );
       setLastOutputPath(outputPath);
       setHasCompleted(true);
+      setCompletedMergeCount(result.input_count);
       setStatus({
         tone: 'success',
         message: `Done: ${result.input_count} files merged`,
@@ -246,6 +308,7 @@ export function MergePdfPage() {
     sizeLabel: formatSize(file.sizeBytes),
     pagesLabel: file.pageCount ? String(file.pageCount) : '-',
   }));
+  const tableRows = isLoadingFiles ? [] : rows;
 
   const destinationFriendlyLabel = !outputDirectory
     ? 'No destination selected'
@@ -253,7 +316,7 @@ export function MergePdfPage() {
     ? 'Downloads'
     : fileNameFromPath(outputDirectory);
 
-  const footerMessage = status.tone === 'neutral' ? 'Ready' : status.message;
+  const footerMessage = isLoadingFiles ? processingFilesMessage : status.tone === 'neutral' ? 'Ready' : status.message;
 
   return (
     <ToolLayout
@@ -262,8 +325,17 @@ export function MergePdfPage() {
       footerMessage={footerMessage}
       leftPanel={
         <div className="merge-left-panel">
-          <Dropzone disabled={isProcessing} fileCount={files.length} onSelectFiles={() => void handleSelectInputs()} />
-          <FileTable rows={rows} onRemove={removeFile} onReorder={reorderFiles} />
+          <Dropzone disabled={isProcessing || isLoadingFiles} fileCount={files.length} onSelectFiles={() => void handleSelectInputs()} />
+          {files.length > 0 ? (
+            <div className="uploaded-files-header">
+              <p>Selected files ({files.length})</p>
+              <Button variant="ghost" onClick={clearAllFiles} disabled={isProcessing || isLoadingFiles}>
+                Clear all
+              </Button>
+            </div>
+          ) : null}
+          {isLoadingFiles ? <p className="file-loading-hint">{processingFilesMessage}</p> : null}
+          <FileTable rows={tableRows} onRemove={removeFile} onReorder={reorderFiles} isLoading={isLoadingFiles} />
         </div>
       }
       rightPanel={
@@ -275,6 +347,7 @@ export function MergePdfPage() {
           canRun={canMerge}
           isProcessing={isProcessing}
           hasCompleted={hasCompleted}
+          completedMergeCount={completedMergeCount}
           mergeActionLabel={mergeActionLabel}
           onOutputNameChange={(next) => {
             setOutputName(next);
@@ -282,6 +355,7 @@ export function MergePdfPage() {
           }}
           onChooseDestination={() => void handleChooseOutputDirectory()}
           onRun={() => void handleMerge()}
+          onNewMerge={startNewMerge}
           onOpenFile={() => void handleOpenFile()}
           onShowInFolder={() => void handleShowInFolder()}
         />

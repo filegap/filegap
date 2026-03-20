@@ -11,10 +11,14 @@ type FileTableProps = {
   rows: FileRow[];
   onRemove: (id: string) => void;
   onReorder: (fromIndex: number, toIndex: number) => void;
+  isLoading?: boolean;
 };
 
-export function FileTable({ rows, onRemove, onReorder }: FileTableProps) {
+export function FileTable({ rows, onRemove, onReorder, isLoading = false }: FileTableProps) {
   if (rows.length === 0) {
+    if (isLoading) {
+      return null;
+    }
     return (
       <div className="file-table-empty">
         <p>No files selected</p>

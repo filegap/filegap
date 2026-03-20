@@ -10,10 +10,12 @@ type OutputPanelProps = {
   canRun: boolean;
   isProcessing: boolean;
   hasCompleted: boolean;
+  completedMergeCount: number | null;
   mergeActionLabel: string;
   onOutputNameChange: (next: string) => void;
   onChooseDestination: () => void;
   onRun: () => void;
+  onNewMerge: () => void;
   onOpenFile: () => void;
   onShowInFolder: () => void;
 };
@@ -26,21 +28,24 @@ export function OutputPanel({
   canRun,
   isProcessing,
   hasCompleted,
+  completedMergeCount,
   mergeActionLabel,
   onOutputNameChange,
   onChooseDestination,
   onRun,
+  onNewMerge,
   onOpenFile,
   onShowInFolder,
 }: OutputPanelProps) {
-  const showResultActions = hasCompleted && !isProcessing;
+  const showCompletionState = hasCompleted && !isProcessing && completedMergeCount !== null;
+  const showResultActions = showCompletionState;
 
   return (
     <div className="output-panel">
       <section className="output-panel-top output-panel-section">
-        <h2>Output settings</h2>
+        <h2>Export</h2>
         <label className="output-label" htmlFor="output-file-name">
-          Output file name
+          File name
         </label>
         <input
           id="output-file-name"
@@ -50,13 +55,18 @@ export function OutputPanel({
           onChange={(event) => onOutputNameChange(event.target.value)}
           className="output-input"
         />
-        <Button variant="secondary" onClick={onChooseDestination}>
-          Choose destination
-        </Button>
-        <p className="output-destination" title={destinationPath ?? destinationLabel}>
-          <Folder aria-hidden="true" />
-          <span>{destinationLabel}</span>
-        </p>
+        <div className="output-location-row">
+          <p className="output-location-label">Location</p>
+          <div className="output-destination-wrap">
+            <p className="output-destination" title={destinationPath ?? destinationLabel}>
+              <Folder aria-hidden="true" />
+              <span>{destinationLabel}</span>
+            </p>
+            <Button variant="ghost" className="output-change-btn" onClick={onChooseDestination}>
+              Change
+            </Button>
+          </div>
+        </div>
       </section>
 
       <div className="output-panel-divider" />
@@ -72,35 +82,44 @@ export function OutputPanel({
           {mergeActionLabel}
         </Button>
 
-        {showResultActions ? (
-          <div className="output-result-inline-actions">
-            <button
-              type="button"
-              className="output-inline-action"
-              onClick={onOpenFile}
-              title="Open file"
-              aria-label="Open file"
-            >
-              <File aria-hidden="true" />
-              <span>Open</span>
-            </button>
-            <button
-              type="button"
-              className="output-inline-action"
-              onClick={onShowInFolder}
-              title="Show in folder"
-              aria-label="Show in folder"
-            >
-              <Folder aria-hidden="true" />
-              <span>Show</span>
-            </button>
+        {showCompletionState ? (
+          <div className="output-complete-state">
+            <p className="output-complete-title">✓ Merge completed</p>
+            <p className="output-complete-details">{completedMergeCount} files merged</p>
+
+            <div className="output-result-inline-actions">
+              <button
+                type="button"
+                className="output-inline-action"
+                onClick={onOpenFile}
+                title="Open file"
+                aria-label="Open file"
+              >
+                <File aria-hidden="true" />
+                <span>Open</span>
+              </button>
+              <button
+                type="button"
+                className="output-inline-action"
+                onClick={onShowInFolder}
+                title="Show in folder"
+                aria-label="Show in folder"
+              >
+                <Folder aria-hidden="true" />
+                <span>Show</span>
+              </button>
+            </div>
+
+            <Button variant="ghost" className="output-new-merge-btn" onClick={onNewMerge}>
+              New merge
+            </Button>
           </div>
         ) : null}
       </section>
 
       <section className="output-panel-trust">
         <Lock aria-hidden="true" />
-        <p>Files are processed locally — never uploaded</p>
+        <p>Processed locally on your device — no uploads</p>
       </section>
     </div>
   );

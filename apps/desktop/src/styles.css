@@ -617,6 +617,25 @@ p {
   pointer-events: none;
 }
 
+.uploaded-files-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.uploaded-files-header p {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.file-loading-hint {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
 .file-table-empty {
   color: var(--muted);
   font-size: 0.88rem;
@@ -801,6 +820,43 @@ p {
   gap: 8px;
 }
 
+.output-location-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.output-location-label {
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+
+.output-destination-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.output-complete-state {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.output-complete-title {
+  color: var(--success);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.output-complete-details {
+  color: color-mix(in srgb, var(--success) 80%, black);
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
 .output-panel-section {
   display: flex;
   flex-direction: column;
@@ -840,12 +896,18 @@ p {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  flex: 1;
   overflow-wrap: anywhere;
 }
 
 .output-destination svg {
   width: 14px;
   height: 14px;
+}
+
+.output-change-btn {
+  flex: 0 0 auto;
+  padding: 7px 10px;
 }
 
 .merge-primary-btn {
@@ -897,6 +959,12 @@ p {
 .output-inline-action:focus-visible {
   outline: 2px solid color-mix(in srgb, var(--accent) 45%, white);
   outline-offset: 1px;
+}
+
+.output-new-merge-btn {
+  margin-top: 2px;
+  align-self: flex-start;
+  padding: 7px 10px;
 }
 
 .output-panel-trust {
