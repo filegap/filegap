@@ -84,37 +84,40 @@ export function OutputPanel({
         {isProcessing ? <p className="output-merge-progress">Merging...</p> : null}
 
         {showCompletionState ? (
-          <div className="output-complete-state">
-            <p className="output-complete-title">✓ Merge completed</p>
-            <p className="output-complete-details">{completedMergeCount} files merged</p>
+          <>
+            <div className="output-result-block">
+              <div className="output-complete-state">
+                <p className="output-complete-title">✓ Merge completed</p>
+                <p className="output-complete-details">{completedMergeCount} files merged</p>
 
-            <div className="output-result-inline-actions">
-              <button
-                type="button"
-                className="output-inline-action"
-                onClick={onOpenFile}
-                title="Open file"
-                aria-label="Open file"
-              >
-                <File aria-hidden="true" />
-                <span>Open</span>
-              </button>
-              <button
-                type="button"
-                className="output-inline-action"
-                onClick={onShowInFolder}
-                title="Show in folder"
-                aria-label="Show in folder"
-              >
-                <Folder aria-hidden="true" />
-                <span>Show</span>
-              </button>
+                <div className="output-result-inline-actions">
+                  <button
+                    type="button"
+                    className="output-inline-action"
+                    onClick={onOpenFile}
+                    title="Open file"
+                    aria-label="Open file"
+                  >
+                    <File aria-hidden="true" />
+                    <span>Open</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="output-inline-action"
+                    onClick={onShowInFolder}
+                    title="Show in folder"
+                    aria-label="Show in folder"
+                  >
+                    <Folder aria-hidden="true" />
+                    <span>Show</span>
+                  </button>
+                </div>
+              </div>
             </div>
-
             <Button variant="ghost" className="output-new-merge-btn" onClick={onNewMerge}>
-              New merge
+              Start new merge
             </Button>
-          </div>
+          </>
         ) : null}
       </section>
 
