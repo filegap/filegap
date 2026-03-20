@@ -1,0 +1,15 @@
+[package]
+name = "filegap-desktop"
+version = "0.1.0"
+description = "Filegap desktop app"
+authors = ["filegap contributors"]
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+filegap-core = { path = "../../../crates/core" }

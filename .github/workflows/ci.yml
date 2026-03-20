@@ -44,3 +44,19 @@ jobs:
       - name: npm audit (non-blocking)
         working-directory: apps/web
         run: npm audit --audit-level=high || true
+
+      - name: Install desktop dependencies
+        working-directory: apps/desktop
+        run: npm install
+
+      - name: Desktop build
+        working-directory: apps/desktop
+        run: npm run build
+
+      - name: Desktop test
+        working-directory: apps/desktop
+        run: npm run test
+
+      - name: npm audit desktop (non-blocking)
+        working-directory: apps/desktop
+        run: npm audit --audit-level=high || true

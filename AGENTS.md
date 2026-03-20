@@ -57,6 +57,9 @@
 - Se il commit tocca `apps/web`, i gate minimi obbligatori sono:
   - `npm run build` in `apps/web`
   - `npm run test` in `apps/web`
+- Se il commit tocca `apps/desktop`, i gate minimi obbligatori sono:
+  - `npm run build` in `apps/desktop`
+  - `npm run test` in `apps/desktop`
 
 ## Checklist Pre-Commit
 1. Scope chiaro: il commit include una sola modifica logica e mantiene un diff minimo.
@@ -66,7 +69,7 @@
 5. Build/validazione locale: eseguire almeno i controlli tecnici del perimetro modificato.
 6. Test obbligatori: eseguire sempre i test automatici pertinenti prima del commit.
 7. Test in stato verde: non committare con test falliti.
-8. Se ci sono modifiche frontend in `apps/web`, eseguire sempre `npm run build` e `npm run test` in `apps/web`.
+8. Se ci sono modifiche frontend in `apps/web` o `apps/desktop`, eseguire sempre `npm run build` e `npm run test` nella rispettiva app.
 9. Documentazione aggiornata: allineare `README.md` e `docs/*` quando cambia il comportamento.
 10. Messaggio commit conforme: usare formato Conventional Commits.
 11. Branch policy rispettata: usare branch coerenti con `dev/main` e prassi git-flow.

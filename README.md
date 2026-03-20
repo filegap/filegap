@@ -30,8 +30,8 @@ filegap/
 │  ├─ core/      # shared Rust PDF domain logic
 │  └─ cli/       # CLI wrapper around core operations
 ├─ apps/
-│  ├─ web/       # web app (planned)
-│  └─ desktop/   # tauri app (planned)
+│  ├─ web/       # web app (browser-local processing)
+│  └─ desktop/   # tauri desktop app (Rust core integration)
 ├─ docs/
 └─ testdata/
 ```
@@ -106,6 +106,31 @@ npm run dev
 
 Current web scaffold includes local merge flow via Web Worker.
 
+## Quick Start (Desktop MVP)
+
+Desktop app lives in `apps/desktop` and uses Tauri + React with direct calls to `crates/core`.
+
+Requirements:
+
+- Rust stable toolchain
+- Node.js 20+
+
+Run in development:
+
+```bash
+cd apps/desktop
+npm install
+npm run tauri:dev
+```
+
+Current desktop MVP includes:
+
+- Desktop home page
+- Merge PDF tool
+- Local file picker + save dialog
+- Rust-side merge command powered by `filegap_core`
+
 ## Status
 
 `v0.1` feature-complete on CLI (`merge`, `extract`, `split`, `reorder`, `info`) with automated tests.
+Desktop app has an MVP scaffold with the first production flow (`merge`) running through Tauri -> Rust core.

@@ -3,6 +3,7 @@ members = [
   "crates/core",
   "crates/cli",
 ]
+exclude = ["apps/desktop/src-tauri"]
 resolver = "2"
 
 [workspace.package]

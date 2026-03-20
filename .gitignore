@@ -5,6 +5,8 @@
 # Node
 node_modules/
 apps/web/dist/
+apps/desktop/dist/
+apps/desktop/src-tauri/target/
 
 # OS / Editor
 .DS_Store

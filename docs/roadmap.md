@@ -7,6 +7,7 @@
 - CLI commands implemented (`merge`, `extract`, `split`, `reorder`, `info`)
 - Automated tests for core + CLI integration
 - Web app scaffold (React + Vite + Worker local merge flow)
+- Desktop MVP scaffold (Tauri + React) with home + merge flow wired to `filegap_core`
 
 ## v0.2
 
