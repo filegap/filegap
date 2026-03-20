@@ -39,6 +39,96 @@ No server-side processing and no network dependency are required for PDF operati
 - Error messages returned to UI remain generic.
 - Processing remains local-only.
 
+## Merge Tool Overview (Finalized Baseline)
+
+Purpose:
+
+- Combine multiple PDF documents into a single output file using only local processing.
+- Provide a desktop-native flow optimized for repeated operations (merge, verify result, start new merge).
+
+User flow:
+
+1. Select local files via file picker.
+2. Review and reorder files in the left working area.
+3. Configure export options in the right sidebar (`File name`, `Location`, `Change`).
+4. Run merge from primary CTA (`Merge PDF` / `Merge again`).
+5. Inspect completion result in sidebar result block.
+6. Use post-merge actions (`Open`, `Reveal`) or reset with `New merge`.
+
+Key UX decisions:
+
+- Local-first only: no file uploads, no remote processing path.
+- Sidebar as control panel: all export and merge actions are centralized on the right.
+- Result-state grouping: completion message and file actions are grouped in a dedicated result block.
+
+## Desktop UI/UX Patterns
+
+### Layout
+
+- Left panel: working surface (dropzone, selected files list, table actions).
+- Right panel: persistent control sidebar (export configuration, run action, result actions, trust note).
+- Footer: system feedback area for transient operational messages.
+
+### States
+
+- Idle: no active operation.
+- Processing files: selected file metadata inspection is running.
+- Merging: merge operation is running.
+- Completed: result block is visible with completion details and follow-up actions.
+- Error: generic error message in footer/system feedback channel.
+
+### Action hierarchy
+
+- Primary: `Merge PDF` / `Merge again`
+- Secondary: `New merge`
+- Utility: `Change` (location), per-row file actions, `Clear all`
+
+## Reusable Components (Desktop)
+
+These components and patterns should be reused by future tools (`Split`, `Extract`, `Reorder`):
+
+- Result state block:
+  - Completion title + result details + file actions.
+  - Styled as subtle system feedback, not marketing card.
+- File table:
+  - Ordered rows with remove and reorder actions.
+  - Internal scrolling for large lists (prevents page growth).
+- Sidebar sections:
+  - Export/configuration section.
+  - Action section (primary CTA + completion/reset flow).
+  - Trust/privacy section anchored to sidebar bottom.
+- Button variants:
+  - Primary (`Merge`)
+  - Secondary (supporting actions)
+  - Ghost/utility (`Change`, `New merge`)
+- Inline utility actions:
+  - Compact controls with semantic icons and concise labels.
+
+## Copy Guidelines (Desktop, Privacy-First)
+
+Use local-first terminology consistently:
+
+- Prefer `Selected files` (not `Uploaded files`).
+- Use `Processed locally on your device — no uploads`.
+- Use `Reveal` (not `Show`) for file-location action.
+- Avoid web/server wording such as `upload`, `server`, `cloud processing`.
+
+## Interaction Guidelines
+
+- Hover behavior:
+  - All interactive elements must have visible hover and active states.
+  - Utility actions use lower-intensity hover than primary actions.
+- Button hierarchy:
+  - Primary CTA remains visually dominant.
+  - Secondary/utility actions remain clearly interactive but non-competing.
+- Icon usage:
+  - Use semantic Lucide icons only.
+  - Keep icon sizing consistent (typically 16px for inline/action contexts).
+  - Match icon spacing and interaction behavior across similar actions.
+- Motion:
+  - Keep transitions fast and subtle.
+  - Avoid decorative or attention-stealing animations.
+
 ## Next Steps
 
 - Add `info` command and route for metadata inspection.
