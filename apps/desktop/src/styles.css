@@ -33,6 +33,7 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  overflow: hidden;
 }
 
 a {
@@ -52,15 +53,18 @@ p {
 }
 
 .app-shell {
+  height: 100vh;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .app-main {
   flex: 1;
   min-height: 0;
   display: flex;
+  overflow: hidden;
 }
 
 .app-header {
@@ -207,9 +211,18 @@ p {
   width: min(980px, calc(100vw - 28px));
   margin: 0 auto;
   padding: 12px 0;
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.page-container-tool {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  gap: 0;
 }
 
 .home-main-center {
@@ -319,7 +332,7 @@ p {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  margin-bottom: 10px;
+  margin-bottom: 14px;
 }
 
 .tool-page-header h1 {
@@ -335,18 +348,31 @@ p {
 
 .tool-split-layout {
   display: flex;
-  gap: 14px;
+  gap: 0;
+  flex: 1;
   min-height: 0;
+  align-items: stretch;
 }
 
 .tool-left-panel {
-  flex: 0 0 60%;
+  flex: 1 1 auto;
   min-width: 0;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .tool-right-panel {
-  flex: 0 0 40%;
+  flex: 0 0 380px;
   min-width: 0;
+  height: 100%;
+  background: var(--surface-muted);
+  border-left: 1px solid var(--border);
+  padding: 18px 16px 14px;
+  display: flex;
+  flex-direction: column;
 }
 
 .card {
@@ -514,9 +540,12 @@ p {
 
 .merge-left-panel {
   height: 100%;
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  overflow: hidden;
 }
 
 .dropzone {
@@ -601,6 +630,10 @@ p {
   border-radius: 12px;
   background: var(--surface);
   overflow: hidden;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .file-table-head {
@@ -619,9 +652,15 @@ p {
 }
 
 .file-table-body {
+  display: block;
+  flex: 1;
+  max-height: 100%;
   list-style: none;
   margin: 0;
   padding: 0;
+  overflow-y: auto;
+  min-height: 0;
+  overscroll-behavior: contain;
 }
 
 .file-table-row {
@@ -740,13 +779,26 @@ p {
 }
 
 .output-panel {
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--surface-alt);
-  padding: 14px;
+  background: transparent;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  flex: 1;
+  min-height: 0;
+  gap: 12px;
+}
+
+.output-panel-top {
+  gap: 8px;
+}
+
+.output-panel-divider {
+  height: 1px;
+  background: var(--border);
+}
+
+.output-actions-block {
+  gap: 8px;
 }
 
 .output-panel-section {
@@ -808,18 +860,6 @@ p {
   background: var(--accent-hover);
 }
 
-.output-processing {
-  color: #2563eb;
-  font-size: 0.76rem;
-}
-
-.status-inline-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
 .output-result-inline-actions {
   display: flex;
   align-items: center;
@@ -863,18 +903,19 @@ p {
   display: flex;
   gap: 8px;
   align-items: center;
+  margin-top: auto;
+  color: #1f4fbf;
+  font-size: 0.76rem;
+  font-weight: 600;
   border: 1px solid #bfdbfe;
   border-radius: 10px;
   background: #eff6ff;
-  color: #2563eb;
-  font-size: 0.78rem;
-  font-weight: 600;
   padding: 8px 10px;
 }
 
 .output-panel-trust svg {
-  width: 15px;
-  height: 15px;
+  width: 14px;
+  height: 14px;
 }
 
 .btn-loading {
@@ -928,11 +969,16 @@ p {
 
   .tool-split-layout {
     flex-direction: column;
+    gap: 10px;
   }
 
   .tool-left-panel,
   .tool-right-panel {
     flex-basis: auto;
+    padding: 0;
+    border-left: none;
+    background: transparent;
+    height: auto;
   }
 
   .dropzone {

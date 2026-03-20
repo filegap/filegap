@@ -253,10 +253,13 @@ export function MergePdfPage() {
     ? 'Downloads'
     : fileNameFromPath(outputDirectory);
 
+  const footerMessage = status.tone === 'neutral' ? 'Ready' : status.message;
+
   return (
     <ToolLayout
       title="Merge PDF"
       subtitle="Combine multiple PDF files into one document"
+      footerMessage={footerMessage}
       leftPanel={
         <div className="merge-left-panel">
           <Dropzone disabled={isProcessing} fileCount={files.length} onSelectFiles={() => void handleSelectInputs()} />
@@ -272,8 +275,6 @@ export function MergePdfPage() {
           canRun={canMerge}
           isProcessing={isProcessing}
           hasCompleted={hasCompleted}
-          statusTone={status.tone}
-          statusMessage={status.message}
           mergeActionLabel={mergeActionLabel}
           onOutputNameChange={(next) => {
             setOutputName(next);

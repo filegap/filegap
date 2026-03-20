@@ -6,6 +6,7 @@
 node_modules/
 apps/web/dist/
 apps/desktop/dist/
+apps/desktop/.vite/
 apps/desktop/src-tauri/target/
 
 # OS / Editor

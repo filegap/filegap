@@ -7,19 +7,21 @@ type ToolLayoutProps = {
   subtitle: string;
   leftPanel: ReactNode;
   rightPanel: ReactNode;
+  footerMessage?: string;
 };
 
-export function ToolLayout({ title, subtitle, leftPanel, rightPanel }: ToolLayoutProps) {
+export function ToolLayout({ title, subtitle, leftPanel, rightPanel, footerMessage }: ToolLayoutProps) {
   return (
-    <AppShell>
-      <PageContainer>
-        <header className="tool-page-header">
-          <h1>{title}</h1>
-          <p>{subtitle}</p>
-        </header>
-
+    <AppShell footerMessage={footerMessage}>
+      <PageContainer className="page-container-tool">
         <section className="tool-split-layout">
-          <section className="tool-left-panel">{leftPanel}</section>
+          <section className="tool-left-panel">
+            <header className="tool-page-header">
+              <h1>{title}</h1>
+              <p>{subtitle}</p>
+            </header>
+            {leftPanel}
+          </section>
           <aside className="tool-right-panel">{rightPanel}</aside>
         </section>
       </PageContainer>

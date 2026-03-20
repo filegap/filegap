@@ -10,8 +10,6 @@ type OutputPanelProps = {
   canRun: boolean;
   isProcessing: boolean;
   hasCompleted: boolean;
-  statusTone: 'neutral' | 'info' | 'error' | 'success';
-  statusMessage: string;
   mergeActionLabel: string;
   onOutputNameChange: (next: string) => void;
   onChooseDestination: () => void;
@@ -28,8 +26,6 @@ export function OutputPanel({
   canRun,
   isProcessing,
   hasCompleted,
-  statusTone,
-  statusMessage,
   mergeActionLabel,
   onOutputNameChange,
   onChooseDestination,
@@ -37,11 +33,11 @@ export function OutputPanel({
   onOpenFile,
   onShowInFolder,
 }: OutputPanelProps) {
-  const showResultActions = hasCompleted && statusTone === 'success' && !isProcessing;
+  const showResultActions = hasCompleted && !isProcessing;
 
   return (
     <div className="output-panel">
-      <section className="output-panel-section">
+      <section className="output-panel-top output-panel-section">
         <h2>Output settings</h2>
         <label className="output-label" htmlFor="output-file-name">
           Output file name
@@ -63,7 +59,9 @@ export function OutputPanel({
         </p>
       </section>
 
-      <section className="output-panel-section">
+      <div className="output-panel-divider" />
+
+      <section className="output-actions-block output-panel-section">
         <Button
           onClick={onRun}
           loading={isProcessing}
@@ -73,37 +71,31 @@ export function OutputPanel({
         >
           {mergeActionLabel}
         </Button>
-      </section>
 
-      <section className="output-panel-section">
-        <div className="status-inline-row">
-          <p className={`status status-${statusTone}`}>{statusMessage}</p>
-          {showResultActions ? (
-            <div className="output-result-inline-actions">
-              <button
-                type="button"
-                className="output-inline-action"
-                onClick={onOpenFile}
-                title="Open file"
-                aria-label="Open file"
-              >
-                <File aria-hidden="true" />
-                <span>Open</span>
-              </button>
-              <button
-                type="button"
-                className="output-inline-action"
-                onClick={onShowInFolder}
-                title="Show in folder"
-                aria-label="Show in folder"
-              >
-                <Folder aria-hidden="true" />
-                <span>Show</span>
-              </button>
-            </div>
-          ) : null}
-        </div>
-        {isProcessing ? <p className="output-processing">Processing...</p> : null}
+        {showResultActions ? (
+          <div className="output-result-inline-actions">
+            <button
+              type="button"
+              className="output-inline-action"
+              onClick={onOpenFile}
+              title="Open file"
+              aria-label="Open file"
+            >
+              <File aria-hidden="true" />
+              <span>Open</span>
+            </button>
+            <button
+              type="button"
+              className="output-inline-action"
+              onClick={onShowInFolder}
+              title="Show in folder"
+              aria-label="Show in folder"
+            >
+              <Folder aria-hidden="true" />
+              <span>Show</span>
+            </button>
+          </div>
+        ) : null}
       </section>
 
       <section className="output-panel-trust">
