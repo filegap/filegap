@@ -42,31 +42,35 @@ fn inspect_pdf_file(path: &str) -> PdfFileInfo {
 }
 
 #[tauri::command]
-pub fn merge_pdfs(input_paths: Vec<String>, output_path: String) -> Result<MergeResult, String> {
-    if input_paths.len() < 2 {
-        return Err("Select at least 2 PDF files.".to_string());
-    }
-
-    if output_path.trim().is_empty() {
-        return Err("Select a valid output destination.".to_string());
-    }
-
-    let mut documents = Vec::with_capacity(input_paths.len());
-    for path in &input_paths {
-        let bytes = fs::read(path).map_err(|_| "Failed to read one or more input PDF files.".to_string())?;
-        if bytes.is_empty() {
-            return Err("One or more input files are empty.".to_string());
+pub async fn merge_pdfs(input_paths: Vec<String>, output_path: String) -> Result<MergeResult, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        if input_paths.len() < 2 {
+            return Err("Select at least 2 PDF files.".to_string());
         }
-        documents.push(bytes);
-    }
 
-    let merged = core_merge_pdfs(&MergeRequest { documents }).map_err(map_core_error)?;
-    fs::write(&output_path, merged).map_err(|_| "Failed to write merged PDF.".to_string())?;
+        if output_path.trim().is_empty() {
+            return Err("Select a valid output destination.".to_string());
+        }
 
-    Ok(MergeResult {
-        output_path,
-        input_count: input_paths.len(),
+        let mut documents = Vec::with_capacity(input_paths.len());
+        for path in &input_paths {
+            let bytes = fs::read(path).map_err(|_| "Failed to read one or more input PDF files.".to_string())?;
+            if bytes.is_empty() {
+                return Err("One or more input files are empty.".to_string());
+            }
+            documents.push(bytes);
+        }
+
+        let merged = core_merge_pdfs(&MergeRequest { documents }).map_err(map_core_error)?;
+        fs::write(&output_path, merged).map_err(|_| "Failed to write merged PDF.".to_string())?;
+
+        Ok(MergeResult {
+            output_path,
+            input_count: input_paths.len(),
+        })
     })
+    .await
+    .map_err(|_| "Failed to complete merge operation.".to_string())?
 }
 
 #[tauri::command]

@@ -81,6 +81,12 @@ function createDefaultOutputName(fileCount: number): string {
   return 'merged.pdf';
 }
 
+function waitForNextFrame(): Promise<void> {
+  return new Promise((resolve) => {
+    window.requestAnimationFrame(() => resolve());
+  });
+}
+
 export function MergePdfPage() {
   const [files, setFiles] = useState<MergeFile[]>([]);
   const [outputDirectory, setOutputDirectory] = useState('');
@@ -108,7 +114,7 @@ export function MergePdfPage() {
     [files, outputDirectory, outputName, isLoadingFiles]
   );
 
-  const mergeActionLabel = isProcessing ? 'Merging…' : hasCompleted ? 'Merge again' : 'Merge PDF';
+  const mergeActionLabel = isProcessing ? 'Merging...' : hasCompleted ? 'Merge again' : 'Merge PDF';
 
   useEffect(() => {
     let cancelled = false;
@@ -262,10 +268,16 @@ export function MergePdfPage() {
       return;
     }
 
+    if (hasCompleted) {
+      setHasCompleted(false);
+      setCompletedMergeCount(null);
+      setLastOutputPath('');
+      await waitForNextFrame();
+    }
+
     setIsProcessing(true);
-    setHasCompleted(false);
     setCompletedMergeCount(null);
-    setStatus({ tone: 'info', message: 'Processing merge...' });
+    setStatus({ tone: 'info', message: 'Merging...' });
 
     try {
       const outputPath = joinPath(outputDirectory, outputName.trim(), pathSeparator);

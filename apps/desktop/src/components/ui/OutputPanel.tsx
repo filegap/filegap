@@ -75,12 +75,13 @@ export function OutputPanel({
         <Button
           onClick={onRun}
           loading={isProcessing}
-          loadingLabel="Merging…"
+          loadingLabel="Merging..."
           disabled={!canRun}
           className="merge-primary-btn"
         >
           {mergeActionLabel}
         </Button>
+        {isProcessing ? <p className="output-merge-progress">Merging...</p> : null}
 
         {showCompletionState ? (
           <div className="output-complete-state">

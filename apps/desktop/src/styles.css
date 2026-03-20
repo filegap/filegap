@@ -820,6 +820,12 @@ p {
   gap: 8px;
 }
 
+.output-merge-progress {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
 .output-location-row {
   display: flex;
   flex-direction: column;
