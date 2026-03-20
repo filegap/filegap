@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { Lock } from 'lucide-react';
 import { ToolLayout } from '../../components/layout/ToolLayout';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
@@ -31,7 +32,7 @@ export function MergePdfPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [status, setStatus] = useState<StatusState>({
     tone: 'neutral',
-    message: 'Select at least two PDF files to begin.',
+    message: 'Add PDF files to start.',
   });
 
   const canMerge = useMemo(() => inputPaths.length >= 2 && outputPath.trim().length > 0, [inputPaths, outputPath]);
@@ -43,7 +44,10 @@ export function MergePdfPage() {
     }
 
     setInputPaths((current) => [...current, ...selected]);
-    setStatus({ tone: 'info', message: 'Input files loaded locally.' });
+    setStatus({
+      tone: selected.length > 1 || inputPaths.length + selected.length > 1 ? 'info' : 'neutral',
+      message: selected.length > 1 || inputPaths.length + selected.length > 1 ? 'Ready to merge locally.' : 'Add at least 2 files to merge.',
+    });
   }
 
   async function handleChooseOutput() {
@@ -79,7 +83,7 @@ export function MergePdfPage() {
     }
 
     setIsProcessing(true);
-    setStatus({ tone: 'info', message: 'Merging files locally. Please wait.' });
+    setStatus({ tone: 'info', message: 'Merging locally...' });
 
     try {
       const result = await mergePdfs(inputPaths, outputPath);
@@ -89,7 +93,6 @@ export function MergePdfPage() {
       });
     } catch (error) {
       const reason = readErrorMessage(error);
-      // Safe debug signal: no file names, paths, or payloads.
       console.error('[desktop.merge] command failed:', reason);
       setStatus({
         tone: 'error',
@@ -102,64 +105,86 @@ export function MergePdfPage() {
 
   return (
     <ToolLayout
-      title="Merge PDF"
-      description="Select local PDF files, reorder them, and create one merged document using the Rust core engine."
-      trustLine="Processing is local-only and never sent to external services."
+      title="Merge PDF files online — fast, private, and local"
+      description="Combine multiple PDF files into one document directly in your browser. No uploads. No accounts. Your files never leave your device."
+      trustLine="Free • No signup • Works in your browser"
     >
-      <Card>
-        <div className="stack-row">
-          <Button onClick={handleSelectInputs} variant="secondary">
-            Add PDF Files
+      <Card className="merge-workspace-card">
+        <section
+          className="merge-dropzone"
+          onClick={() => void handleSelectInputs()}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              void handleSelectInputs();
+            }
+          }}
+        >
+          <h2>Drag &amp; drop PDF files</h2>
+          <p>Or select files from your device. Files stay in your browser.</p>
+          <Button
+            onClick={(event) => {
+              event.stopPropagation();
+              void handleSelectInputs();
+            }}
+            variant="secondary"
+          >
+            Select PDF files
           </Button>
-          <Button onClick={handleChooseOutput} variant="secondary">
-            Choose Output File
+        </section>
+
+        <div className="merge-trust-notice">
+          <Lock aria-hidden="true" />
+          <span>Local processing only — your files never leave your device</span>
+        </div>
+
+        <section className="merge-files-section">
+          <h2>Uploaded files</h2>
+          {inputPaths.length === 0 ? (
+            <p className="muted-text">No files selected yet.</p>
+          ) : (
+            <ol className="file-list">
+              {inputPaths.map((path, index) => (
+                <li key={`${path}-${index}`} className="file-item">
+                  <div className="file-meta">
+                    <strong>{fileNameFromPath(path)}</strong>
+                    <span>{path}</span>
+                  </div>
+                  <div className="file-actions">
+                    <Button onClick={() => moveItem(index, -1)} variant="ghost" disabled={index === 0}>
+                      Up
+                    </Button>
+                    <Button onClick={() => moveItem(index, 1)} variant="ghost" disabled={index === inputPaths.length - 1}>
+                      Down
+                    </Button>
+                    <Button onClick={() => removeItem(index)} variant="ghost">
+                      Remove
+                    </Button>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          )}
+        </section>
+
+        <section className="merge-output-row">
+          <div className="merge-output-meta">
+            <h3>Output file</h3>
+            {outputPath ? <p className="output-path">{outputPath}</p> : <p className="muted-text">No output file selected.</p>}
+          </div>
+          <Button onClick={() => void handleChooseOutput()} variant="secondary">
+            Choose output file
           </Button>
-          <Button onClick={handleMerge} loading={isProcessing} disabled={!canMerge}>
+        </section>
+
+        <section className="merge-actions-row">
+          <Button onClick={() => void handleMerge()} loading={isProcessing} disabled={!canMerge}>
             Merge PDF
           </Button>
-        </div>
-
-        <div className="status-wrap">
           <p className={`status status-${status.tone}`}>{status.message}</p>
-        </div>
-      </Card>
-
-      <Card>
-        <h2>Input Order</h2>
-        {inputPaths.length === 0 ? (
-          <p className="muted-text">No files selected yet.</p>
-        ) : (
-          <ol className="file-list">
-            {inputPaths.map((path, index) => (
-              <li key={`${path}-${index}`} className="file-item">
-                <div className="file-meta">
-                  <strong>{fileNameFromPath(path)}</strong>
-                  <span>{path}</span>
-                </div>
-                <div className="file-actions">
-                  <Button onClick={() => moveItem(index, -1)} variant="ghost" disabled={index === 0}>
-                    Up
-                  </Button>
-                  <Button
-                    onClick={() => moveItem(index, 1)}
-                    variant="ghost"
-                    disabled={index === inputPaths.length - 1}
-                  >
-                    Down
-                  </Button>
-                  <Button onClick={() => removeItem(index)} variant="ghost">
-                    Remove
-                  </Button>
-                </div>
-              </li>
-            ))}
-          </ol>
-        )}
-      </Card>
-
-      <Card>
-        <h2>Output</h2>
-        {outputPath ? <p className="output-path">{outputPath}</p> : <p className="muted-text">No output file selected.</p>}
+        </section>
       </Card>
     </ToolLayout>
   );

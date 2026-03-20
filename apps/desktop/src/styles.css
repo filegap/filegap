@@ -295,24 +295,25 @@ p {
 .tool-hero {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin-bottom: 4px;
+  gap: 12px;
+  margin-bottom: 14px;
 }
 
 .tool-hero h1 {
-  font-size: 1.34rem;
-  line-height: 1.15;
+  font-size: clamp(2rem, 2.8vw, 3rem);
+  line-height: 1.2;
 }
 
 .tool-hero p {
-  max-width: 760px;
+  max-width: 980px;
   color: var(--muted);
-  font-size: 0.88rem;
+  font-size: 0.98rem;
+  line-height: 1.45;
 }
 
 .tool-hero-trust {
-  color: var(--warning);
-  font-size: 0.78rem;
+  color: var(--muted);
+  font-size: 0.9rem;
   font-weight: 600;
 }
 
@@ -485,6 +486,121 @@ p {
   font-weight: 600;
 }
 
+.merge-workspace-card {
+  gap: 20px;
+  padding: 28px;
+  border-radius: 24px;
+}
+
+.merge-dropzone {
+  min-height: 240px;
+  border: 2px dashed var(--border);
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 10px;
+  background: var(--surface);
+  transition: border-color 180ms ease, background-color 180ms ease;
+}
+
+.merge-dropzone:hover {
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+  background: color-mix(in srgb, var(--accent) 6%, white);
+}
+
+.merge-dropzone h2 {
+  font-size: clamp(1.9rem, 3.2vw, 2.7rem);
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.merge-dropzone p {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.merge-dropzone .btn {
+  margin-top: 10px;
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, white);
+}
+
+.merge-dropzone .btn:hover:enabled {
+  color: #ffffff;
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
+.merge-trust-notice {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  border: 1px solid #bfdbfe;
+  border-radius: 10px;
+  background: #eff6ff;
+  color: #2563eb;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 10px 14px;
+}
+
+.merge-trust-notice svg {
+  width: 16px;
+  height: 16px;
+}
+
+.merge-files-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.merge-files-section h2 {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.merge-output-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.merge-output-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.merge-output-meta h3 {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.merge-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.merge-actions-row .btn-primary {
+  color: #ffffff;
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
+.merge-actions-row .btn-primary:hover:enabled {
+  background: var(--accent-hover);
+}
+
 @media (max-width: 860px) {
   .tool-grid {
     grid-template-columns: 1fr;
@@ -516,6 +632,15 @@ p {
 
   .file-item {
     flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .merge-dropzone {
+    min-height: 210px;
+    padding: 18px;
+  }
+
+  .merge-actions-row {
     align-items: flex-start;
   }
 }
