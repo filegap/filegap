@@ -88,7 +88,7 @@ Key UX decisions:
 
 ## Reusable Components (Desktop)
 
-These components and patterns should be reused by future tools (`Split`, `Extract`, `Reorder`):
+These components and patterns are reused across desktop tools (`Merge`, `Split`, `Extract`, `Reorder`):
 
 - Result state block:
   - Completion title + result details + file actions.
