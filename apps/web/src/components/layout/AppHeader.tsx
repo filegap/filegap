@@ -1,13 +1,15 @@
 import { useState } from 'react';
 
-const TOOL_NAV_LINKS = [
+type ToolIcon = 'merge' | 'split' | 'extract' | 'reorder';
+
+const TOOL_NAV_LINKS: Array<{ href: string; label: string; icon: ToolIcon }> = [
   { href: '/merge-pdf', label: 'Merge PDF', icon: 'merge' },
   { href: '/split-pdf', label: 'Split PDF', icon: 'split' },
   { href: '/extract-pages', label: 'Extract Pages', icon: 'extract' },
   { href: '/reorder-pdf', label: 'Reorder PDF', icon: 'reorder' },
 ];
 
-function ToolMenuIcon({ icon }: { icon: 'merge' | 'split' | 'extract' | 'reorder' }) {
+function ToolMenuIcon({ icon }: { icon: ToolIcon }) {
   if (icon === 'merge') {
     return (
       <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' aria-hidden='true' className='h-4 w-4'>
