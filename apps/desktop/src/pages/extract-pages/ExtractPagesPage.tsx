@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronLeft, ChevronsDownUp, Trash2, Upload } from 'lucide-react';
-import { GlobalWorkerOptions, getDocument } from 'pdfjs-dist';
-import workerSrc from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import { ToolLayout } from '../../components/layout/ToolLayout';
 import { Button } from '../../components/ui/Button';
 import { Dropzone } from '../../components/ui/Dropzone';
@@ -17,6 +15,7 @@ import {
   readPdfBytes,
   revealInFolder,
 } from '../../lib/desktop';
+import { renderPdfThumbnails, type PageThumbnail } from '../../lib/pdfPreview';
 import { fileNameFromPath } from '../../lib/pathUtils';
 
 type StatusTone = 'neutral' | 'info' | 'error' | 'success';
@@ -32,13 +31,6 @@ type ExtractFile = {
   sizeBytes: number;
   pageCount: number | null;
 };
-
-type PageThumbnail = {
-  pageNumber: number;
-  imageDataUrl: string;
-};
-
-GlobalWorkerOptions.workerSrc = workerSrc;
 
 const MAX_PREVIEW_PAGES = 60;
 
@@ -146,31 +138,6 @@ function parseRangesInput(value: string, maxPage: number): number[] {
   return [...new Set(pages)].sort((a, b) => a - b);
 }
 
-async function renderPdfThumbnails(fileBytes: Uint8Array, pageCount: number): Promise<PageThumbnail[]> {
-  const pdfDocument = await getDocument({ data: fileBytes }).promise;
-  const maxPages = Math.min(pageCount, MAX_PREVIEW_PAGES);
-  const previews: PageThumbnail[] = [];
-
-  for (let pageNumber = 1; pageNumber <= maxPages; pageNumber += 1) {
-    const page = await pdfDocument.getPage(pageNumber);
-    const viewport = page.getViewport({ scale: 0.22 });
-    const canvas = globalThis.document.createElement('canvas');
-    const context = canvas.getContext('2d');
-    if (!context) {
-      continue;
-    }
-    canvas.width = Math.max(1, Math.floor(viewport.width));
-    canvas.height = Math.max(1, Math.floor(viewport.height));
-    await page.render({ canvasContext: context, viewport, canvas }).promise;
-    previews.push({
-      pageNumber,
-      imageDataUrl: canvas.toDataURL('image/jpeg', 0.72),
-    });
-  }
-
-  return previews;
-}
-
 export function ExtractPagesPage() {
   const [files, setFiles] = useState<ExtractFile[]>([]);
   const [outputDirectory, setOutputDirectory] = useState('');
@@ -259,7 +226,7 @@ export function ExtractPagesPage() {
     void (async () => {
       try {
         const bytes = await readPdfBytes(selected.path);
-        const previews = await renderPdfThumbnails(bytes, totalPages);
+        const previews = await renderPdfThumbnails(bytes, totalPages, MAX_PREVIEW_PAGES);
         if (cancelled) {
           return;
         }

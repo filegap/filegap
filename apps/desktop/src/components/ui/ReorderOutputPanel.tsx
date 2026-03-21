@@ -6,8 +6,7 @@ import { ResultStateBlock } from './ResultStateBlock';
 type ReorderOutputPanelProps = {
   outputName: string;
   outputInputRef?: RefObject<HTMLInputElement>;
-  pageOrder: string;
-  pageOrderInputRef?: RefObject<HTMLInputElement>;
+  pageOrderLabel: string;
   destinationLabel: string;
   destinationPath?: string;
   canRun: boolean;
@@ -15,7 +14,6 @@ type ReorderOutputPanelProps = {
   hasCompleted: boolean;
   actionLabel: string;
   onOutputNameChange: (next: string) => void;
-  onPageOrderChange: (next: string) => void;
   onChooseDestination: () => void;
   onRun: () => void;
   onNewReorder: () => void;
@@ -26,8 +24,7 @@ type ReorderOutputPanelProps = {
 export function ReorderOutputPanel({
   outputName,
   outputInputRef,
-  pageOrder,
-  pageOrderInputRef,
+  pageOrderLabel,
   destinationLabel,
   destinationPath,
   canRun,
@@ -35,7 +32,6 @@ export function ReorderOutputPanel({
   hasCompleted,
   actionLabel,
   onOutputNameChange,
-  onPageOrderChange,
   onChooseDestination,
   onRun,
   onNewReorder,
@@ -48,19 +44,8 @@ export function ReorderOutputPanel({
     <div className="output-panel">
       <section className="output-panel-top output-panel-section">
         <h2>Reorder settings</h2>
-        <label className="output-label" htmlFor="reorder-page-order">
-          Page order
-        </label>
-        <input
-          id="reorder-page-order"
-          type="text"
-          ref={pageOrderInputRef}
-          value={pageOrder}
-          placeholder="Example: 3,1,2,4"
-          onChange={(event) => onPageOrderChange(event.target.value)}
-          className="output-input"
-        />
-        <p className="output-helper-text">Include all pages once, for example: 3,1,2,4.</p>
+        <p className="output-helper-text">Drag page cards in the grid to set the new order.</p>
+        <p className="output-helper-text">Current order: {pageOrderLabel || '-'}</p>
       </section>
 
       <div className="output-panel-divider" />

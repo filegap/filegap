@@ -1,18 +1,21 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { ChevronLeft, ChevronsDownUp, Upload } from 'lucide-react';
 import { ToolLayout } from '../../components/layout/ToolLayout';
 import { Button } from '../../components/ui/Button';
 import { Dropzone } from '../../components/ui/Dropzone';
-import { FileTable } from '../../components/ui/FileTable';
 import { ReorderOutputPanel } from '../../components/ui/ReorderOutputPanel';
+import { ReorderThumbnailGrid, type ReorderThumbnailItem } from '../../components/ui/ReorderThumbnailGrid';
 import {
   chooseOutputDirectory,
   chooseSinglePdfInput,
   getDownloadDirectory,
   inspectPdfFiles,
   openFile,
+  readPdfBytes,
   reorderPdf,
   revealInFolder,
 } from '../../lib/desktop';
+import { renderPdfThumbnails } from '../../lib/pdfPreview';
 import { fileNameFromPath } from '../../lib/pathUtils';
 
 type StatusTone = 'neutral' | 'info' | 'error' | 'success';
@@ -62,56 +65,39 @@ function joinPath(dir: string, name: string, sep: '/' | '\\'): string {
   return `${dir}${sep}${name}`;
 }
 
-function formatSize(sizeBytes: number): string {
-  if (sizeBytes <= 0) {
-    return '-';
-  }
-  return `${Math.max(1, Math.round(sizeBytes / 1024))} KB`;
-}
-
 function createDefaultOutputName(): string {
   return 'reordered.pdf';
 }
 
-function parsePageOrderInput(value: string): number[] {
-  return value
-    .split(',')
-    .map((token) => token.trim())
-    .filter((token) => token.length > 0)
-    .map((token) => Number(token))
-    .filter((page) => Number.isInteger(page) && page > 0);
-}
-
-function buildSequentialPageOrder(pageCount: number): string {
-  if (pageCount <= 0) {
-    return '';
-  }
-  return Array.from({ length: pageCount }, (_, index) => String(index + 1)).join(',');
-}
-
 export function ReorderPdfPage() {
   const [files, setFiles] = useState<ReorderFile[]>([]);
+  const [thumbnails, setThumbnails] = useState<ReorderThumbnailItem[]>([]);
   const [outputDirectory, setOutputDirectory] = useState('');
   const [defaultDownloadDirectory, setDefaultDownloadDirectory] = useState('');
   const [outputName, setOutputName] = useState(createDefaultOutputName());
-  const [pageOrderInput, setPageOrderInput] = useState('');
   const [pathSeparator, setPathSeparator] = useState<'/' | '\\'>('/');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isLoadingFiles, setIsLoadingFiles] = useState(false);
+  const [isRenderingPreviews, setIsRenderingPreviews] = useState(false);
+  const [isDropzoneCollapsed, setIsDropzoneCollapsed] = useState(false);
   const [hasCompleted, setHasCompleted] = useState(false);
   const [lastOutputPath, setLastOutputPath] = useState('');
   const [status, setStatus] = useState<StatusState>({ tone: 'neutral', message: 'Idle' });
   const outputInputRef = useRef<HTMLInputElement>(null);
-  const pageOrderInputRef = useRef<HTMLInputElement>(null);
 
   const selectedFile = files[0] ?? null;
-  const parsedPageOrder = useMemo(() => parsePageOrderInput(pageOrderInput), [pageOrderInput]);
+  const parsedPageOrder = useMemo(() => thumbnails.map((item) => item.pageNumber), [thumbnails]);
   const expectedPageCount = selectedFile?.pageCount ?? null;
   const hasMatchingPageOrderCount = expectedPageCount ? parsedPageOrder.length === expectedPageCount : parsedPageOrder.length > 0;
+  const pageOrderLabel = useMemo(() => {
+    const full = parsedPageOrder.join(',');
+    return full.length > 80 ? `${full.slice(0, 80)}...` : full;
+  }, [parsedPageOrder]);
 
   const canRun = useMemo(
     () =>
       !isLoadingFiles &&
+      !isRenderingPreviews &&
       !isProcessing &&
       files.length === 1 &&
       outputDirectory.trim().length > 0 &&
@@ -120,6 +106,7 @@ export function ReorderPdfPage() {
       hasMatchingPageOrderCount,
     [
       isLoadingFiles,
+      isRenderingPreviews,
       isProcessing,
       files.length,
       outputDirectory,
@@ -146,6 +133,51 @@ export function ReorderPdfPage() {
     };
   }, []);
 
+  useEffect(() => {
+    if (files.length !== 1) {
+      setThumbnails([]);
+      return;
+    }
+
+    const selected = files[0];
+    const totalPages = selected.pageCount ?? 0;
+    if (totalPages <= 0) {
+      setThumbnails([]);
+      return;
+    }
+
+    let cancelled = false;
+    setIsRenderingPreviews(true);
+    setStatus({ tone: 'info', message: 'Rendering page previews...' });
+
+    void (async () => {
+      try {
+        const bytes = await readPdfBytes(selected.path);
+        const previews = await renderPdfThumbnails(bytes, totalPages, totalPages);
+        if (cancelled) {
+          return;
+        }
+        setThumbnails(previews);
+        setStatus({ tone: 'neutral', message: 'Idle' });
+      } catch (error) {
+        if (cancelled) {
+          return;
+        }
+        const reason = readErrorMessage(error);
+        setThumbnails([]);
+        setStatus({ tone: 'error', message: `Preview rendering failed: ${reason}` });
+      } finally {
+        if (!cancelled) {
+          setIsRenderingPreviews(false);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [files]);
+
   async function handleSelectInput() {
     const selected = await chooseSinglePdfInput();
     if (!selected) {
@@ -165,11 +197,12 @@ export function ReorderPdfPage() {
           pageCount,
         },
       ]);
-      setPageOrderInput(pageCount ? buildSequentialPageOrder(pageCount) : '');
+      setThumbnails([]);
       setHasCompleted(false);
       setLastOutputPath('');
+      setIsDropzoneCollapsed(true);
       setStatus({ tone: 'neutral', message: 'Idle' });
-      queueMicrotask(() => pageOrderInputRef.current?.focus());
+      queueMicrotask(() => outputInputRef.current?.focus());
     } catch (error) {
       const reason = readErrorMessage(error);
       setStatus({ tone: 'error', message: `Failed to inspect file: ${reason}` });
@@ -191,7 +224,8 @@ export function ReorderPdfPage() {
 
   function clearSelectedFile() {
     setFiles([]);
-    setPageOrderInput('');
+    setThumbnails([]);
+    setIsDropzoneCollapsed(false);
     setHasCompleted(false);
     setLastOutputPath('');
     setStatus({ tone: 'info', message: 'Files cleared' });
@@ -199,7 +233,8 @@ export function ReorderPdfPage() {
 
   function startNewReorder() {
     setFiles([]);
-    setPageOrderInput('');
+    setThumbnails([]);
+    setIsDropzoneCollapsed(false);
     setHasCompleted(false);
     setLastOutputPath('');
     setOutputName(createDefaultOutputName());
@@ -242,12 +277,20 @@ export function ReorderPdfPage() {
     await revealInFolder(lastOutputPath);
   }
 
-  const rows = files.map((file) => ({
-    id: file.id,
-    filename: fileNameFromPath(file.path),
-    sizeLabel: formatSize(file.sizeBytes),
-    pagesLabel: file.pageCount ? String(file.pageCount) : '-',
-  }));
+  function reorderThumbnails(fromIndex: number, toIndex: number) {
+    setThumbnails((current) => {
+      if (fromIndex < 0 || toIndex < 0 || fromIndex >= current.length || toIndex >= current.length) {
+        return current;
+      }
+      const next = [...current];
+      const [item] = next.splice(fromIndex, 1);
+      next.splice(toIndex, 0, item);
+      return next;
+    });
+    setHasCompleted(false);
+    setLastOutputPath('');
+    setStatus({ tone: 'info', message: 'Page order updated' });
+  }
 
   const destinationFriendlyLabel = !outputDirectory
     ? 'No destination selected'
@@ -260,7 +303,7 @@ export function ReorderPdfPage() {
       ? `Provide exactly ${expectedPageCount} pages in the new order.`
       : '';
 
-  const footerMessage = isLoadingFiles
+  const footerMessage = isLoadingFiles || isRenderingPreviews
     ? 'Processing file...'
     : pageOrderHint || (status.tone === 'neutral' ? 'Ready' : status.message);
 
@@ -271,21 +314,57 @@ export function ReorderPdfPage() {
       footerMessage={footerMessage}
       leftPanel={
         <div className="merge-left-panel">
-          <Dropzone disabled={isProcessing || isLoadingFiles} fileCount={files.length} onSelectFiles={() => void handleSelectInput()} />
+          {files.length === 0 ? (
+            <Dropzone disabled={isProcessing || isLoadingFiles} fileCount={files.length} onSelectFiles={() => void handleSelectInput()} />
+          ) : isDropzoneCollapsed ? (
+            <button
+              type="button"
+              className="extract-picker-collapsed-bar"
+              onClick={() => setIsDropzoneCollapsed(false)}
+              aria-label="Show file picker"
+              title="Show file picker"
+            >
+              <span className="extract-picker-collapsed-left" aria-hidden="true">
+                <Upload />
+              </span>
+              <span className="extract-picker-collapsed-right" aria-hidden="true">
+                <ChevronLeft />
+              </span>
+            </button>
+          ) : (
+            <div className="extract-dropzone-shell">
+              <button
+                type="button"
+                className="extract-dropzone-collapse-btn"
+                onClick={() => setIsDropzoneCollapsed(true)}
+                aria-label="Hide file picker"
+                title="Hide file picker"
+              >
+                <ChevronsDownUp />
+              </button>
+              <Dropzone disabled={isProcessing || isLoadingFiles} fileCount={files.length} onSelectFiles={() => void handleSelectInput()} />
+            </div>
+          )}
           {files.length > 0 ? (
             <div className="uploaded-files-header">
-              <p>Selected files ({files.length})</p>
-              <Button variant="ghost" onClick={clearSelectedFile} disabled={isProcessing || isLoadingFiles}>
-                Clear all
-              </Button>
+              <p className="uploaded-file-name" title={fileNameFromPath(files[0].path)}>
+                {fileNameFromPath(files[0].path)}
+              </p>
+              <div className="stack-row">
+                <Button variant="ghost" onClick={() => void handleSelectInput()} disabled={isProcessing || isLoadingFiles}>
+                  New file
+                </Button>
+                <Button variant="ghost" onClick={clearSelectedFile} disabled={isProcessing || isLoadingFiles}>
+                  Delete file
+                </Button>
+              </div>
             </div>
           ) : null}
           {isLoadingFiles ? <p className="file-loading-hint">Processing file...</p> : null}
-          <FileTable
-            rows={isLoadingFiles ? [] : rows}
-            onRemove={() => clearSelectedFile()}
-            onReorder={() => {}}
-            isLoading={isLoadingFiles}
+          <ReorderThumbnailGrid
+            items={thumbnails}
+            isLoading={isLoadingFiles || isRenderingPreviews}
+            onReorder={reorderThumbnails}
           />
         </div>
       }
@@ -293,8 +372,7 @@ export function ReorderPdfPage() {
         <ReorderOutputPanel
           outputName={outputName}
           outputInputRef={outputInputRef}
-          pageOrder={pageOrderInput}
-          pageOrderInputRef={pageOrderInputRef}
+          pageOrderLabel={pageOrderLabel}
           destinationLabel={destinationFriendlyLabel}
           destinationPath={outputDirectory}
           canRun={canRun}
@@ -302,7 +380,6 @@ export function ReorderPdfPage() {
           hasCompleted={hasCompleted}
           actionLabel={actionLabel}
           onOutputNameChange={setOutputName}
-          onPageOrderChange={setPageOrderInput}
           onChooseDestination={() => void handleChooseOutputDirectory()}
           onRun={() => void handleReorder()}
           onNewReorder={startNewReorder}
