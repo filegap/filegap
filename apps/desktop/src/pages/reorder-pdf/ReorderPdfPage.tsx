@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ChevronLeft, ChevronsDownUp, Upload } from 'lucide-react';
+import { ChevronLeft, ChevronsDownUp, Trash2, Upload } from 'lucide-react';
 import { ToolLayout } from '../../components/layout/ToolLayout';
 import { Button } from '../../components/ui/Button';
 import { Dropzone } from '../../components/ui/Dropzone';
@@ -72,6 +72,7 @@ function createDefaultOutputName(): string {
 export function ReorderPdfPage() {
   const [files, setFiles] = useState<ReorderFile[]>([]);
   const [thumbnails, setThumbnails] = useState<ReorderThumbnailItem[]>([]);
+  const [originalPageOrder, setOriginalPageOrder] = useState<number[]>([]);
   const [outputDirectory, setOutputDirectory] = useState('');
   const [defaultDownloadDirectory, setDefaultDownloadDirectory] = useState('');
   const [outputName, setOutputName] = useState(createDefaultOutputName());
@@ -93,6 +94,15 @@ export function ReorderPdfPage() {
     const full = parsedPageOrder.join(',');
     return full.length > 80 ? `${full.slice(0, 80)}...` : full;
   }, [parsedPageOrder]);
+  const canRestoreOrder = useMemo(() => {
+    if (parsedPageOrder.length === 0 || originalPageOrder.length === 0) {
+      return false;
+    }
+    if (parsedPageOrder.length !== originalPageOrder.length) {
+      return false;
+    }
+    return parsedPageOrder.some((pageNumber, index) => pageNumber !== originalPageOrder[index]);
+  }, [parsedPageOrder, originalPageOrder]);
 
   const canRun = useMemo(
     () =>
@@ -136,6 +146,7 @@ export function ReorderPdfPage() {
   useEffect(() => {
     if (files.length !== 1) {
       setThumbnails([]);
+      setOriginalPageOrder([]);
       return;
     }
 
@@ -143,6 +154,7 @@ export function ReorderPdfPage() {
     const totalPages = selected.pageCount ?? 0;
     if (totalPages <= 0) {
       setThumbnails([]);
+      setOriginalPageOrder([]);
       return;
     }
 
@@ -158,6 +170,7 @@ export function ReorderPdfPage() {
           return;
         }
         setThumbnails(previews);
+        setOriginalPageOrder(previews.map((preview) => preview.pageNumber));
         setStatus({ tone: 'neutral', message: 'Idle' });
       } catch (error) {
         if (cancelled) {
@@ -165,6 +178,7 @@ export function ReorderPdfPage() {
         }
         const reason = readErrorMessage(error);
         setThumbnails([]);
+        setOriginalPageOrder([]);
         setStatus({ tone: 'error', message: `Preview rendering failed: ${reason}` });
       } finally {
         if (!cancelled) {
@@ -198,6 +212,7 @@ export function ReorderPdfPage() {
         },
       ]);
       setThumbnails([]);
+      setOriginalPageOrder([]);
       setHasCompleted(false);
       setLastOutputPath('');
       setIsDropzoneCollapsed(true);
@@ -225,6 +240,7 @@ export function ReorderPdfPage() {
   function clearSelectedFile() {
     setFiles([]);
     setThumbnails([]);
+    setOriginalPageOrder([]);
     setIsDropzoneCollapsed(false);
     setHasCompleted(false);
     setLastOutputPath('');
@@ -234,6 +250,7 @@ export function ReorderPdfPage() {
   function startNewReorder() {
     setFiles([]);
     setThumbnails([]);
+    setOriginalPageOrder([]);
     setIsDropzoneCollapsed(false);
     setHasCompleted(false);
     setLastOutputPath('');
@@ -290,6 +307,22 @@ export function ReorderPdfPage() {
     setHasCompleted(false);
     setLastOutputPath('');
     setStatus({ tone: 'info', message: 'Page order updated' });
+  }
+
+  function restoreOriginalOrder() {
+    if (!canRestoreOrder || originalPageOrder.length === 0) {
+      return;
+    }
+    setThumbnails((current) => {
+      const byPage = new Map(current.map((item) => [item.pageNumber, item]));
+      const restored = originalPageOrder
+        .map((pageNumber) => byPage.get(pageNumber))
+        .filter((item): item is ReorderThumbnailItem => item !== undefined);
+      return restored.length === current.length ? restored : current;
+    });
+    setHasCompleted(false);
+    setLastOutputPath('');
+    setStatus({ tone: 'info', message: 'Original order restored' });
   }
 
   const destinationFriendlyLabel = !outputDirectory
@@ -351,11 +384,18 @@ export function ReorderPdfPage() {
                 {fileNameFromPath(files[0].path)}
               </p>
               <div className="stack-row">
-                <Button variant="ghost" onClick={() => void handleSelectInput()} disabled={isProcessing || isLoadingFiles}>
-                  New file
+                <Button variant="ghost" onClick={restoreOriginalOrder} disabled={!canRestoreOrder || isProcessing || isLoadingFiles}>
+                  Restore
                 </Button>
-                <Button variant="ghost" onClick={clearSelectedFile} disabled={isProcessing || isLoadingFiles}>
-                  Delete file
+                <Button
+                  variant="ghost"
+                  className="extract-delete-file-btn"
+                  onClick={clearSelectedFile}
+                  disabled={isProcessing || isLoadingFiles}
+                  aria-label="Delete file"
+                  title="Delete file"
+                >
+                  <Trash2 aria-hidden="true" />
                 </Button>
               </div>
             </div>

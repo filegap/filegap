@@ -45,7 +45,7 @@ export function ReorderOutputPanel({
       <section className="output-panel-top output-panel-section">
         <h2>Reorder settings</h2>
         <p className="output-helper-text">Drag page cards in the grid to set the new order.</p>
-        <p className="output-helper-text">Current order: {pageOrderLabel || '-'}</p>
+        <p className="output-helper-text output-helper-order">Current order: {pageOrderLabel || '-'}</p>
       </section>
 
       <div className="output-panel-divider" />
