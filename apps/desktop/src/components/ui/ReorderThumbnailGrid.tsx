@@ -20,11 +20,20 @@ export function ReorderThumbnailGrid({
 }: ReorderThumbnailGridProps) {
   const draggedIndexRef = useRef<number | null>(null);
   const dragActiveRef = useRef(false);
+  const overIndexRef = useRef<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [overIndex, setOverIndex] = useState<number | null>(null);
   const [dragPointer, setDragPointer] = useState<{ x: number; y: number } | null>(null);
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(null);
+
+  function updateOverIndex(next: number | null) {
+    if (overIndexRef.current === next) {
+      return;
+    }
+    overIndexRef.current = next;
+    setOverIndex(next);
+  }
 
   useEffect(() => {
     if (!isDragging) {
@@ -42,28 +51,22 @@ export function ReorderThumbnailGrid({
       if (!Number.isInteger(nextOverIndex)) {
         return;
       }
-      setOverIndex((current) => {
-        if (current === nextOverIndex) {
-          return current;
-        }
-        return nextOverIndex;
-      });
+      updateOverIndex(nextOverIndex);
     }
 
     function finishDrag() {
       const sourceIndex = draggedIndexRef.current;
-      setOverIndex((currentOver) => {
-        if (
-          sourceIndex !== null &&
-          currentOver !== null &&
-          sourceIndex !== currentOver &&
-          sourceIndex >= 0 &&
-          currentOver >= 0
-        ) {
-          onReorder(sourceIndex, currentOver);
-        }
-        return null;
-      });
+      const targetIndex = overIndexRef.current;
+      if (
+        sourceIndex !== null &&
+        targetIndex !== null &&
+        sourceIndex !== targetIndex &&
+        sourceIndex >= 0 &&
+        targetIndex >= 0
+      ) {
+        onReorder(sourceIndex, targetIndex);
+      }
+      updateOverIndex(null);
       dragActiveRef.current = false;
       setIsDragging(false);
       draggedIndexRef.current = null;
@@ -117,7 +120,7 @@ export function ReorderThumbnailGrid({
             const cardRect = event.currentTarget.getBoundingClientRect();
             draggedIndexRef.current = index;
             setDraggedIndex(index);
-            setOverIndex(index);
+            updateOverIndex(index);
             setDragPointer({ x: event.clientX, y: event.clientY });
             setDragOffset({
               x: event.clientX - cardRect.left,
@@ -130,7 +133,7 @@ export function ReorderThumbnailGrid({
             if (!dragActiveRef.current) {
               return;
             }
-            setOverIndex(index);
+            updateOverIndex(index);
           }}
           aria-label={`Move page ${item.pageNumber}`}
           title="Drag to reorder"
