@@ -1,55 +1,55 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://filegap.dev/</loc>
+    <loc>https://www.filegap.app/</loc>
     <lastmod>2026-03-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://filegap.dev/merge-pdf</loc>
+    <loc>https://www.filegap.app/merge-pdf</loc>
     <lastmod>2026-03-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://filegap.dev/split-pdf</loc>
+    <loc>https://www.filegap.app/split-pdf</loc>
     <lastmod>2026-03-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://filegap.dev/extract-pages</loc>
+    <loc>https://www.filegap.app/extract-pages</loc>
     <lastmod>2026-03-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://filegap.dev/reorder-pdf</loc>
+    <loc>https://www.filegap.app/reorder-pdf</loc>
     <lastmod>2026-03-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://filegap.dev/cli</loc>
+    <loc>https://www.filegap.app/cli</loc>
     <lastmod>2026-03-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://filegap.dev/download</loc>
+    <loc>https://www.filegap.app/download</loc>
     <lastmod>2026-03-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://filegap.dev/privacy</loc>
+    <loc>https://www.filegap.app/privacy</loc>
     <lastmod>2026-03-22</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://filegap.dev/terms</loc>
+    <loc>https://www.filegap.app/terms</loc>
     <lastmod>2026-03-22</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
