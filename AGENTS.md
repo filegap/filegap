@@ -83,3 +83,41 @@
   - hotfix branch da `main` quando necessario: `hotfix/<nome>`
   - release branch da `dev` quando si prepara il rilascio: `release/<versione>`
 - Integrare verso `dev` durante lo sviluppo ordinario e promuovere in `main` solo codice stabile.
+
+## Parallel Work Protocol
+- Obiettivo: permettere lavoro parallelo tra agenti con conflitti minimi e integrazione prevedibile.
+
+### Ownership per Area
+- `web`: ownership su `apps/web/**`.
+- `desktop-ui`: ownership su `apps/desktop/src/**`.
+- `desktop-tauri`: ownership su `apps/desktop/src-tauri/**`.
+- `cli`: ownership su `crates/cli/**`.
+- `core` (shared): ownership su `crates/core/**`.
+
+### Regole su Shared Hotspots
+- `crates/core/**` e un hotspot condiviso tra `cli` e `desktop-tauri`.
+- Chi modifica `crates/core/**` deve dichiararlo prima dell'implementazione.
+- Durante modifica a `crates/core/**`, evitare modifiche concorrenti su API pubbliche da altri agenti.
+- File condivisi (`README.md`, `docs/**`, `Cargo.toml`, `Cargo.lock`) vanno aggiornati in un pass dedicato finale da un solo owner.
+
+### Regole Operative
+- Ogni task deve indicare esplicitamente:
+  - `scope consentito` (file/directory modificabili)
+  - `scope escluso` (file/directory non modificabili)
+  - `output atteso` (risultato tecnico verificabile)
+- Vietato ampliare scope senza conferma esplicita.
+- Preferire patch piccole e atomiche per ridurre conflitti e facilitare review.
+
+### Integrazione e Verifica
+- Integrare una patch per volta sui file condivisi.
+- Eseguire sempre build/test nel perimetro toccato prima dell'integrazione:
+  - web: `npm run build` + `npm run test` in `apps/web`
+  - desktop: `npm run build` + `npm run test` in `apps/desktop`
+  - cli/core: test Rust pertinenti nel workspace
+- Se una patch tocca comportamento o comandi, aggiornare `README.md` e `docs/*` nello stesso ciclo di lavoro.
+
+### Handoff Template (Obbligatorio)
+- Scope toccato:
+- Scope escluso:
+- Verifiche eseguite:
+- Rischi aperti / dipendenze:

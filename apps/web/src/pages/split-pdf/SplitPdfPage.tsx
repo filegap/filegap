@@ -11,7 +11,7 @@ import { TrustNotice } from '../../components/ui/TrustNotice';
 import { UploadedFilesTable } from '../../components/ui/UploadedFilesTable';
 import { ToolLayout } from '../../components/layout/ToolLayout';
 import { parseSplitRanges, splitPdfByRanges, type SplitRangeSegment } from '../../adapters/pdfEngine';
-import { trackEvent } from '../../lib/analytics/trackEvent';
+import { trackEvent, trackToolEvent } from '../../lib/analytics/trackEvent';
 import type { WorkerResponse } from '../../types';
 
 // ⚠️ Do not log user file data. This project is privacy-first.
@@ -71,6 +71,10 @@ function formatRangeLabel(range: SplitRangeSegment): string {
     return `${range.start}`;
   }
   return `${range.start}-${range.end}`;
+}
+
+function getSelectedPagesCount(ranges: SplitRangeSegment[]): number {
+  return ranges.reduce((total, range) => total + (range.end - range.start + 1), 0);
 }
 
 const SPLIT_PAGE_CONTENT = {
@@ -171,10 +175,6 @@ export function SplitPdfPage() {
     return () => worker.terminate();
   }, [worker]);
 
-  useEffect(() => {
-    trackEvent('split_opened');
-  }, []);
-
   async function handleSourceSelected(files: File[]): Promise<void> {
     const file = files[0];
     if (!file) {
@@ -220,6 +220,8 @@ export function SplitPdfPage() {
       return;
     }
     const ranges = parsedRanges.ranges;
+    const selectedPagesCount = getSelectedPagesCount(ranges);
+    trackToolEvent('selection_made', 'split', { pages_count: selectedPagesCount });
 
     setIsProcessing(true);
     setStatus({ tone: 'info', message: 'Processing locally in your browser...' });
@@ -302,6 +304,15 @@ export function SplitPdfPage() {
       tone: 'info',
       message: `Split completed. ${nextOutputs.length} PDF files are ready to download.`,
     });
+    trackToolEvent('completed', 'split', {
+      output_files_count: nextOutputs.length,
+      pages_count: selectedPagesCount,
+    });
+  }
+
+  function handleSplitCtaClick(): void {
+    trackToolEvent('started', 'split', { ranges_count: parsedRanges.ranges?.length ?? 0 });
+    void handleSplit();
   }
 
   function handleDownloadAll(): void {
@@ -412,7 +423,7 @@ export function SplitPdfPage() {
 
           <div className='flex flex-wrap items-center gap-4'>
             {outputs.length === 0 ? (
-              <Button onClick={() => void handleSplit()} loading={isProcessing}>
+              <Button onClick={handleSplitCtaClick} loading={isProcessing}>
                 Split PDF
               </Button>
             ) : null}

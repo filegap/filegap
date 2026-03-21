@@ -11,7 +11,7 @@ import { TrustNotice } from '../../components/ui/TrustNotice';
 import { UploadedFilesTable } from '../../components/ui/UploadedFilesTable';
 import { ToolLayout } from '../../components/layout/ToolLayout';
 import { mergePdfBuffers } from '../../adapters/pdfEngine';
-import { trackEvent } from '../../lib/analytics/trackEvent';
+import { trackEvent, trackToolEvent } from '../../lib/analytics/trackEvent';
 import type { WorkerResponse } from '../../types';
 
 // ⚠️ Do not log user file data. This project is privacy-first.
@@ -233,10 +233,6 @@ export function MergePdfPage() {
     return () => worker.terminate();
   }, [worker]);
 
-  useEffect(() => {
-    trackEvent('merge_opened');
-  }, []);
-
   async function handleMerge(): Promise<void> {
     if (files.length < 2) {
       const invalidStatus = getIdleOrReadyStatus(files.length);
@@ -296,6 +292,7 @@ export function MergePdfPage() {
         const output = await mergePdfBuffers(buffers);
         setMergedOutput(output);
         setShowDownloadGate(false);
+        trackToolEvent('completed', 'merge', { files_count: files.length });
       } catch (error) {
         const reason = error instanceof Error ? error.message : 'unknown merge error';
         setStatus({ tone: 'error', message: `Merge failed: ${reason}` });
@@ -314,6 +311,12 @@ export function MergePdfPage() {
     setMergedOutput(response.payload.output);
     setShowDownloadGate(false);
     setIsProcessing(false);
+    trackToolEvent('completed', 'merge', { files_count: files.length });
+  }
+
+  function handleMergeCtaClick(): void {
+    trackToolEvent('started', 'merge', { files_count: files.length });
+    void handleMerge();
   }
 
   function startNewMerge(): void {
@@ -371,7 +374,7 @@ export function MergePdfPage() {
 
           <div className='flex flex-wrap items-center gap-4'>
             {!mergedOutput ? (
-              <Button onClick={() => void handleMerge()} loading={isProcessing}>
+              <Button onClick={handleMergeCtaClick} loading={isProcessing}>
                 Merge PDF
               </Button>
             ) : null}

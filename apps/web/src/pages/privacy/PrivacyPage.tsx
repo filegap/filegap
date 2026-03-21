@@ -45,14 +45,36 @@ export function PrivacyPage() {
 
           <section className='space-y-2'>
             <h2 className='font-heading text-lg font-semibold text-ui-text'>Analytics</h2>
-            <p>We collect only aggregated usage data, for example which tools are used most.</p>
-            <p>We do not collect:</p>
+            <p>
+              Filegap is privacy-first by design. We use SimpleAnalytics and collect only anonymous
+              high-level usage signals to understand which features are useful.
+            </p>
+            <p>
+              We may record anonymous events such as when a user clicks "Extract pages" or
+              completes a file operation. These events are aggregated and cannot be linked to an
+              individual.
+            </p>
+            <p>
+              Analytics helps us improve the product, not track people. We do not track users
+              across sessions and we do not build user profiles.
+            </p>
+            <p>What we do not collect through analytics:</p>
             <ul className='list-disc space-y-1 pl-5'>
-              <li>File content</li>
-              <li>File names</li>
-              <li>Document metadata</li>
-              <li>Personal identifiers</li>
+              <li>No personal data</li>
+              <li>No persistent user identifiers</li>
+              <li>No profiling</li>
+              <li>No fingerprinting</li>
+              <li>No cross-site tracking</li>
+              <li>No file content tracking</li>
+              <li>
+                No file names, file paths, page order, or other document-specific metadata
+              </li>
+              <li>
+                No IP-based user tracking (and where IP data is technically handled by
+                infrastructure, it is not used to identify users)
+              </li>
             </ul>
+            <p>All PDF processing remains local on your device with no uploads.</p>
           </section>
 
           <section className='space-y-2'>

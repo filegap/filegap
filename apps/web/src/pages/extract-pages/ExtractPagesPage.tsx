@@ -11,7 +11,7 @@ import { TrustNotice } from '../../components/ui/TrustNotice';
 import { UploadedFilesTable } from '../../components/ui/UploadedFilesTable';
 import { ToolLayout } from '../../components/layout/ToolLayout';
 import { extractPdfByRanges, parseSplitRanges, type SplitRangeSegment } from '../../adapters/pdfEngine';
-import { trackEvent } from '../../lib/analytics/trackEvent';
+import { trackEvent, trackToolEvent } from '../../lib/analytics/trackEvent';
 import type { WorkerResponse } from '../../types';
 
 // ⚠️ Do not log user file data. This project is privacy-first.
@@ -67,6 +67,10 @@ function buildExtractFilename(baseFilename: string): string {
     ? baseFilename.slice(0, -4)
     : baseFilename;
   return `${base}-extracted.pdf`;
+}
+
+function getSelectedPagesCount(ranges: SplitRangeSegment[]): number {
+  return ranges.reduce((total, range) => total + (range.end - range.start + 1), 0);
 }
 
 const EXTRACT_PAGE_CONTENT = {
@@ -172,10 +176,6 @@ export function ExtractPagesPage() {
     return () => worker.terminate();
   }, [worker]);
 
-  useEffect(() => {
-    trackEvent('extract_opened');
-  }, []);
-
   async function handleSourceSelected(files: File[]): Promise<void> {
     const file = files[0];
     if (!file) {
@@ -221,6 +221,8 @@ export function ExtractPagesPage() {
       return;
     }
     const ranges = parsedRanges.ranges;
+    const selectedPagesCount = getSelectedPagesCount(ranges);
+    trackToolEvent('selection_made', 'extract', { pages_count: selectedPagesCount });
 
     setIsProcessing(true);
     setStatus({ tone: 'info', message: 'Processing locally in your browser...' });
@@ -298,6 +300,12 @@ export function ExtractPagesPage() {
     setShowDownloadGate(false);
     setIsProcessing(false);
     setStatus({ tone: 'info', message: 'Extract completed. Your PDF is ready to download.' });
+    trackToolEvent('completed', 'extract', { pages_count: selectedPagesCount });
+  }
+
+  function handleExtractCtaClick(): void {
+    trackToolEvent('started', 'extract', { ranges_count: parsedRanges.ranges?.length ?? 0 });
+    void handleExtract();
   }
 
   function startNewExtract(): void {
@@ -406,7 +414,7 @@ export function ExtractPagesPage() {
 
           <div className='flex flex-wrap items-center gap-4'>
             {!output ? (
-              <Button onClick={() => void handleExtract()} loading={isProcessing}>
+              <Button onClick={handleExtractCtaClick} loading={isProcessing}>
                 Extract pages
               </Button>
             ) : null}

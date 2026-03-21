@@ -10,7 +10,7 @@ import { ToolLandingSections } from '../../components/seo/ToolLandingSections';
 import { TrustNotice } from '../../components/ui/TrustNotice';
 import { ToolLayout } from '../../components/layout/ToolLayout';
 import { parsePageOrder, reorderPdfPages } from '../../adapters/pdfEngine';
-import { trackEvent } from '../../lib/analytics/trackEvent';
+import { trackEvent, trackToolEvent } from '../../lib/analytics/trackEvent';
 import type { WorkerResponse } from '../../types';
 
 // ⚠️ Do not log user file data. This project is privacy-first.
@@ -167,10 +167,6 @@ export function ReorderPdfPage() {
     return () => worker.terminate();
   }, [worker]);
 
-  useEffect(() => {
-    trackEvent('reorder_opened');
-  }, []);
-
   async function handleSourceSelected(files: File[]): Promise<void> {
     const file = files[0];
     if (!file) {
@@ -218,6 +214,7 @@ export function ReorderPdfPage() {
       return;
     }
     const pageOrder = parsedOrder.pageOrder;
+    trackToolEvent('selection_made', 'reorder', { pages_count: pageOrder.length });
 
     setIsProcessing(true);
     setStatus({ tone: 'info', message: 'Processing locally in your browser...' });
@@ -295,6 +292,12 @@ export function ReorderPdfPage() {
     setShowDownloadGate(false);
     setIsProcessing(false);
     setStatus({ tone: 'info', message: 'Reorder completed. Your PDF is ready to download.' });
+    trackToolEvent('completed', 'reorder', { pages_count: pageOrder.length });
+  }
+
+  function handleReorderCtaClick(): void {
+    trackToolEvent('started', 'reorder', { pages_count: parsedOrder.pageOrder?.length ?? 0 });
+    void handleReorder();
   }
 
   function startNewReorder(): void {
@@ -382,7 +385,7 @@ export function ReorderPdfPage() {
 
           <div className='flex flex-wrap items-center gap-4'>
             {!output ? (
-              <Button onClick={() => void handleReorder()} loading={isProcessing}>
+              <Button onClick={handleReorderCtaClick} loading={isProcessing}>
                 Reorder PDF
               </Button>
             ) : null}
