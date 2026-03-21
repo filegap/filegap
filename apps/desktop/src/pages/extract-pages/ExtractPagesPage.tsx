@@ -144,6 +144,7 @@ export function ExtractPagesPage() {
   const [defaultDownloadDirectory, setDefaultDownloadDirectory] = useState('');
   const [outputName, setOutputName] = useState(createDefaultExtractOutputName());
   const [pageRanges, setPageRanges] = useState('');
+  const [lastValidPageRanges, setLastValidPageRanges] = useState('');
   const [pathSeparator, setPathSeparator] = useState<'/' | '\\'>('/');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isLoadingFiles, setIsLoadingFiles] = useState(false);
@@ -156,6 +157,7 @@ export function ExtractPagesPage() {
   const [status, setStatus] = useState<StatusState>({ tone: 'neutral', message: 'Idle' });
   const outputInputRef = useRef<HTMLInputElement>(null);
   const pageRangesInputRef = useRef<HTMLInputElement>(null);
+  const isRangesSyncFromInputRef = useRef(false);
   const pageCount = files[0]?.pageCount ?? 0;
 
   const canRun = useMemo(
@@ -165,8 +167,8 @@ export function ExtractPagesPage() {
       files.length === 1 &&
       outputDirectory.trim().length > 0 &&
       outputName.trim().length > 0 &&
-      pageRanges.trim().length > 0,
-    [isLoadingFiles, isProcessing, files.length, outputDirectory, outputName, pageRanges]
+      selectedPages.size > 0,
+    [isLoadingFiles, isProcessing, files.length, outputDirectory, outputName, selectedPages]
   );
 
   const selectedPageCount = useMemo(() => {
@@ -208,6 +210,8 @@ export function ExtractPagesPage() {
     if (files.length !== 1) {
       setThumbnails([]);
       setSelectedPages(new Set());
+      setPageRanges('');
+      setLastValidPageRanges('');
       return;
     }
 
@@ -216,6 +220,8 @@ export function ExtractPagesPage() {
     if (totalPages <= 0) {
       setThumbnails([]);
       setSelectedPages(new Set());
+      setPageRanges('');
+      setLastValidPageRanges('');
       return;
     }
 
@@ -253,8 +259,13 @@ export function ExtractPagesPage() {
   }, [files]);
 
   useEffect(() => {
+    if (isRangesSyncFromInputRef.current) {
+      isRangesSyncFromInputRef.current = false;
+      return;
+    }
     const ranges = compactPagesToRanges(Array.from(selectedPages));
     setPageRanges(ranges);
+    setLastValidPageRanges(ranges);
   }, [selectedPages]);
 
   async function handleSelectInput() {
@@ -278,6 +289,8 @@ export function ExtractPagesPage() {
       setHasCompleted(false);
       setLastOutputPath('');
       setSelectedPages(new Set());
+      setPageRanges('');
+      setLastValidPageRanges('');
       setIsDropzoneCollapsed(true);
       setStatus({ tone: 'neutral', message: 'Idle' });
       queueMicrotask(() => pageRangesInputRef.current?.focus());
@@ -304,6 +317,8 @@ export function ExtractPagesPage() {
     setFiles([]);
     setThumbnails([]);
     setSelectedPages(new Set());
+    setPageRanges('');
+    setLastValidPageRanges('');
     setIsDropzoneCollapsed(false);
     setHasCompleted(false);
     setLastOutputPath('');
@@ -314,6 +329,7 @@ export function ExtractPagesPage() {
     setFiles([]);
     setThumbnails([]);
     setSelectedPages(new Set());
+    setLastValidPageRanges('');
     setIsDropzoneCollapsed(false);
     setHasCompleted(false);
     setLastOutputPath('');
@@ -336,7 +352,7 @@ export function ExtractPagesPage() {
     setStatus({ tone: 'info', message: 'Extracting...' });
     try {
       const outputPath = joinPath(outputDirectory, outputName.trim(), pathSeparator);
-      const result = await extractPages(files[0].path, outputPath, pageRanges.trim());
+      const result = await extractPages(files[0].path, outputPath, compactPagesToRanges(Array.from(selectedPages)));
       setHasCompleted(true);
       setLastOutputPath(result.output_path);
       setStatus({ tone: 'success', message: 'Done: pages extracted' });
@@ -409,18 +425,52 @@ export function ExtractPagesPage() {
     setStatus({ tone: 'info', message: 'Selected first page' });
   }
 
-  function handleLoadRangesFromInput() {
+  function applyPageRangesInput(nextValue: string, options?: { revertOnError?: boolean; fromInputEdit?: boolean }) {
     if (pageCount <= 0) {
       return;
     }
-    try {
-      const pages = parseRangesInput(pageRanges, pageCount);
-      setSelectedPages(new Set(pages));
-      setStatus({ tone: 'info', message: pages.length ? 'Applied ranges to page selection' : 'No ranges to apply' });
-    } catch (error) {
-      const reason = readErrorMessage(error);
-      setStatus({ tone: 'error', message: reason });
+
+    const revertOnError = options?.revertOnError ?? false;
+    const fromInputEdit = options?.fromInputEdit ?? false;
+    const cleaned = nextValue.trim();
+
+    if (!cleaned) {
+      isRangesSyncFromInputRef.current = fromInputEdit;
+      setSelectedPages(new Set());
+      setPageRanges('');
+      setLastValidPageRanges('');
+      if (fromInputEdit) {
+        setStatus({ tone: 'info', message: 'Page selection cleared' });
+      }
+      return;
     }
+
+    try {
+      const pages = parseRangesInput(cleaned, pageCount);
+      const normalized = compactPagesToRanges(pages);
+      isRangesSyncFromInputRef.current = fromInputEdit;
+      setSelectedPages(new Set(pages));
+      if (fromInputEdit) {
+        setPageRanges(nextValue);
+        setLastValidPageRanges(nextValue);
+      } else {
+        setPageRanges(normalized);
+        setLastValidPageRanges(normalized);
+      }
+      if (fromInputEdit) {
+        setStatus({ tone: 'info', message: pages.length ? 'Applied ranges to page selection' : 'No ranges to apply' });
+      }
+    } catch (error) {
+      if (revertOnError) {
+        setPageRanges(lastValidPageRanges);
+        const reason = readErrorMessage(error);
+        setStatus({ tone: 'error', message: reason });
+      }
+    }
+  }
+
+  function handleLoadRangesFromInput() {
+    applyPageRangesInput(pageRanges, { revertOnError: true, fromInputEdit: true });
   }
 
   const destinationFriendlyLabel = !outputDirectory
@@ -562,6 +612,7 @@ export function ExtractPagesPage() {
           outputInputRef={outputInputRef}
           pageRanges={pageRanges}
           pageRangesInputRef={pageRangesInputRef}
+          isPageRangesDisabled={files.length !== 1 || isLoadingFiles || isRenderingPreviews}
           destinationLabel={destinationFriendlyLabel}
           destinationPath={outputDirectory}
           canRun={canRun}
@@ -569,7 +620,12 @@ export function ExtractPagesPage() {
           hasCompleted={hasCompleted}
           actionLabel={actionLabel}
           onOutputNameChange={setOutputName}
-          onPageRangesChange={setPageRanges}
+          onPageRangesChange={(next) => {
+            setPageRanges(next);
+            applyPageRangesInput(next, { fromInputEdit: true });
+          }}
+          onPageRangesBlur={() => applyPageRangesInput(pageRanges, { revertOnError: true })}
+          onPageRangesSubmit={() => applyPageRangesInput(pageRanges, { revertOnError: true })}
           onChooseDestination={() => void handleChooseOutputDirectory()}
           onRun={() => void handleExtract()}
           onNewExtract={startNewExtract}

@@ -6,7 +6,8 @@ import { ResultStateBlock } from './ResultStateBlock';
 type ReorderOutputPanelProps = {
   outputName: string;
   outputInputRef?: RefObject<HTMLInputElement>;
-  pageOrderLabel: string;
+  pageOrderValue: string;
+  pageOrderInputRef?: RefObject<HTMLInputElement>;
   destinationLabel: string;
   destinationPath?: string;
   canRun: boolean;
@@ -14,6 +15,10 @@ type ReorderOutputPanelProps = {
   hasCompleted: boolean;
   actionLabel: string;
   onOutputNameChange: (next: string) => void;
+  onPageOrderChange: (next: string) => void;
+  onPageOrderBlur: () => void;
+  onPageOrderSubmit: () => void;
+  isPageOrderDisabled?: boolean;
   onChooseDestination: () => void;
   onRun: () => void;
   onNewReorder: () => void;
@@ -24,7 +29,8 @@ type ReorderOutputPanelProps = {
 export function ReorderOutputPanel({
   outputName,
   outputInputRef,
-  pageOrderLabel,
+  pageOrderValue,
+  pageOrderInputRef,
   destinationLabel,
   destinationPath,
   canRun,
@@ -32,6 +38,10 @@ export function ReorderOutputPanel({
   hasCompleted,
   actionLabel,
   onOutputNameChange,
+  onPageOrderChange,
+  onPageOrderBlur,
+  onPageOrderSubmit,
+  isPageOrderDisabled = false,
   onChooseDestination,
   onRun,
   onNewReorder,
@@ -44,8 +54,28 @@ export function ReorderOutputPanel({
     <div className="output-panel">
       <section className="output-panel-top output-panel-section">
         <h2>Reorder settings</h2>
+        <label className="output-label" htmlFor="reorder-page-order">
+          Current order
+        </label>
+        <input
+          id="reorder-page-order"
+          type="text"
+          ref={pageOrderInputRef}
+          value={pageOrderValue}
+          placeholder="Example: 1,2,3,4"
+          onChange={(event) => onPageOrderChange(event.target.value)}
+          onBlur={onPageOrderBlur}
+          onKeyDown={(event) => {
+            if (event.key !== 'Enter') {
+              return;
+            }
+            event.preventDefault();
+            onPageOrderSubmit();
+          }}
+          disabled={isPageOrderDisabled}
+          className="output-input"
+        />
         <p className="output-helper-text">Drag page cards in the grid to set the new order.</p>
-        <p className="output-helper-text output-helper-order">Current order: {pageOrderLabel || '-'}</p>
       </section>
 
       <div className="output-panel-divider" />

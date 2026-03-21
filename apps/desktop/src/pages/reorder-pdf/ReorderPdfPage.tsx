@@ -69,6 +69,41 @@ function createDefaultOutputName(): string {
   return 'reordered.pdf';
 }
 
+function parsePageOrderInput(value: string, pageCount: number): number[] {
+  const cleaned = value.trim();
+  if (!cleaned) {
+    throw new Error('Page order is required.');
+  }
+  if (pageCount <= 0) {
+    throw new Error('No pages available to reorder.');
+  }
+
+  const tokens = cleaned
+    .split(',')
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0);
+
+  if (tokens.length !== pageCount) {
+    throw new Error(`Provide exactly ${pageCount} pages in the new order.`);
+  }
+
+  const pages = tokens.map((token) => {
+    if (!/^\d+$/.test(token)) {
+      throw new Error('Page order must contain numbers separated by commas.');
+    }
+    return Number(token);
+  });
+
+  const unique = new Set(pages);
+  if (unique.size !== pages.length) {
+    throw new Error('Page order contains duplicate page numbers.');
+  }
+  if (pages.some((page) => page < 1 || page > pageCount)) {
+    throw new Error(`Page order must stay within 1-${pageCount}.`);
+  }
+  return pages;
+}
+
 export function ReorderPdfPage() {
   const [files, setFiles] = useState<ReorderFile[]>([]);
   const [thumbnails, setThumbnails] = useState<ReorderThumbnailItem[]>([]);
@@ -76,6 +111,8 @@ export function ReorderPdfPage() {
   const [outputDirectory, setOutputDirectory] = useState('');
   const [defaultDownloadDirectory, setDefaultDownloadDirectory] = useState('');
   const [outputName, setOutputName] = useState(createDefaultOutputName());
+  const [pageOrderInput, setPageOrderInput] = useState('');
+  const [lastValidPageOrderInput, setLastValidPageOrderInput] = useState('');
   const [pathSeparator, setPathSeparator] = useState<'/' | '\\'>('/');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isLoadingFiles, setIsLoadingFiles] = useState(false);
@@ -85,15 +122,13 @@ export function ReorderPdfPage() {
   const [lastOutputPath, setLastOutputPath] = useState('');
   const [status, setStatus] = useState<StatusState>({ tone: 'neutral', message: 'Idle' });
   const outputInputRef = useRef<HTMLInputElement>(null);
+  const pageOrderInputRef = useRef<HTMLInputElement>(null);
 
   const selectedFile = files[0] ?? null;
   const parsedPageOrder = useMemo(() => thumbnails.map((item) => item.pageNumber), [thumbnails]);
   const expectedPageCount = selectedFile?.pageCount ?? null;
   const hasMatchingPageOrderCount = expectedPageCount ? parsedPageOrder.length === expectedPageCount : parsedPageOrder.length > 0;
-  const pageOrderLabel = useMemo(() => {
-    const full = parsedPageOrder.join(',');
-    return full.length > 80 ? `${full.slice(0, 80)}...` : full;
-  }, [parsedPageOrder]);
+  const pageOrderLabel = useMemo(() => parsedPageOrder.join(','), [parsedPageOrder]);
   const canRestoreOrder = useMemo(() => {
     if (parsedPageOrder.length === 0 || originalPageOrder.length === 0) {
       return false;
@@ -147,6 +182,8 @@ export function ReorderPdfPage() {
     if (files.length !== 1) {
       setThumbnails([]);
       setOriginalPageOrder([]);
+      setPageOrderInput('');
+      setLastValidPageOrderInput('');
       return;
     }
 
@@ -155,6 +192,8 @@ export function ReorderPdfPage() {
     if (totalPages <= 0) {
       setThumbnails([]);
       setOriginalPageOrder([]);
+      setPageOrderInput('');
+      setLastValidPageOrderInput('');
       return;
     }
 
@@ -171,6 +210,9 @@ export function ReorderPdfPage() {
         }
         setThumbnails(previews);
         setOriginalPageOrder(previews.map((preview) => preview.pageNumber));
+        const initialOrder = previews.map((preview) => preview.pageNumber).join(',');
+        setPageOrderInput(initialOrder);
+        setLastValidPageOrderInput(initialOrder);
         setStatus({ tone: 'neutral', message: 'Idle' });
       } catch (error) {
         if (cancelled) {
@@ -179,6 +221,8 @@ export function ReorderPdfPage() {
         const reason = readErrorMessage(error);
         setThumbnails([]);
         setOriginalPageOrder([]);
+        setPageOrderInput('');
+        setLastValidPageOrderInput('');
         setStatus({ tone: 'error', message: `Preview rendering failed: ${reason}` });
       } finally {
         if (!cancelled) {
@@ -213,6 +257,8 @@ export function ReorderPdfPage() {
       ]);
       setThumbnails([]);
       setOriginalPageOrder([]);
+      setPageOrderInput('');
+      setLastValidPageOrderInput('');
       setHasCompleted(false);
       setLastOutputPath('');
       setIsDropzoneCollapsed(true);
@@ -241,6 +287,8 @@ export function ReorderPdfPage() {
     setFiles([]);
     setThumbnails([]);
     setOriginalPageOrder([]);
+    setPageOrderInput('');
+    setLastValidPageOrderInput('');
     setIsDropzoneCollapsed(false);
     setHasCompleted(false);
     setLastOutputPath('');
@@ -251,6 +299,8 @@ export function ReorderPdfPage() {
     setFiles([]);
     setThumbnails([]);
     setOriginalPageOrder([]);
+    setPageOrderInput('');
+    setLastValidPageOrderInput('');
     setIsDropzoneCollapsed(false);
     setHasCompleted(false);
     setLastOutputPath('');
@@ -302,11 +352,43 @@ export function ReorderPdfPage() {
       const next = [...current];
       const [item] = next.splice(fromIndex, 1);
       next.splice(toIndex, 0, item);
+      const nextOrder = next.map((entry) => entry.pageNumber).join(',');
+      setPageOrderInput(nextOrder);
+      setLastValidPageOrderInput(nextOrder);
       return next;
     });
     setHasCompleted(false);
     setLastOutputPath('');
     setStatus({ tone: 'info', message: 'Page order updated' });
+  }
+
+  function applyPageOrderInput(nextValue: string, options?: { revertOnError?: boolean; fromInputEdit?: boolean }) {
+    const revertOnError = options?.revertOnError ?? false;
+    const fromInputEdit = options?.fromInputEdit ?? false;
+    const totalPages = selectedFile?.pageCount ?? 0;
+
+    try {
+      const orderedPages = parsePageOrderInput(nextValue, totalPages);
+      setThumbnails((current) => {
+        const byPage = new Map(current.map((item) => [item.pageNumber, item]));
+        const reordered = orderedPages
+          .map((pageNumber) => byPage.get(pageNumber))
+          .filter((item): item is ReorderThumbnailItem => item !== undefined);
+        return reordered.length === current.length ? reordered : current;
+      });
+      const normalized = orderedPages.join(',');
+      setPageOrderInput(normalized);
+      setLastValidPageOrderInput(normalized);
+      if (fromInputEdit) {
+        setStatus({ tone: 'info', message: 'Page order updated' });
+      }
+      setHasCompleted(false);
+      setLastOutputPath('');
+    } catch {
+      if (revertOnError) {
+        setPageOrderInput(lastValidPageOrderInput);
+      }
+    }
   }
 
   function restoreOriginalOrder() {
@@ -318,6 +400,9 @@ export function ReorderPdfPage() {
       const restored = originalPageOrder
         .map((pageNumber) => byPage.get(pageNumber))
         .filter((item): item is ReorderThumbnailItem => item !== undefined);
+      const restoredOrder = restored.map((entry) => entry.pageNumber).join(',');
+      setPageOrderInput(restoredOrder);
+      setLastValidPageOrderInput(restoredOrder);
       return restored.length === current.length ? restored : current;
     });
     setHasCompleted(false);
@@ -412,7 +497,8 @@ export function ReorderPdfPage() {
         <ReorderOutputPanel
           outputName={outputName}
           outputInputRef={outputInputRef}
-          pageOrderLabel={pageOrderLabel}
+          pageOrderValue={pageOrderInput || pageOrderLabel}
+          pageOrderInputRef={pageOrderInputRef}
           destinationLabel={destinationFriendlyLabel}
           destinationPath={outputDirectory}
           canRun={canRun}
@@ -420,6 +506,13 @@ export function ReorderPdfPage() {
           hasCompleted={hasCompleted}
           actionLabel={actionLabel}
           onOutputNameChange={setOutputName}
+          onPageOrderChange={(next) => {
+            setPageOrderInput(next);
+            applyPageOrderInput(next, { fromInputEdit: true });
+          }}
+          onPageOrderBlur={() => applyPageOrderInput(pageOrderInput, { revertOnError: true })}
+          onPageOrderSubmit={() => applyPageOrderInput(pageOrderInput, { revertOnError: true })}
+          isPageOrderDisabled={files.length !== 1 || isLoadingFiles || isRenderingPreviews}
           onChooseDestination={() => void handleChooseOutputDirectory()}
           onRun={() => void handleReorder()}
           onNewReorder={startNewReorder}

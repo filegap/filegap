@@ -8,6 +8,7 @@ type ExtractOutputPanelProps = {
   outputInputRef?: RefObject<HTMLInputElement>;
   pageRanges: string;
   pageRangesInputRef?: RefObject<HTMLInputElement>;
+  isPageRangesDisabled?: boolean;
   destinationLabel: string;
   destinationPath?: string;
   canRun: boolean;
@@ -16,6 +17,8 @@ type ExtractOutputPanelProps = {
   actionLabel: string;
   onOutputNameChange: (next: string) => void;
   onPageRangesChange: (next: string) => void;
+  onPageRangesBlur: () => void;
+  onPageRangesSubmit: () => void;
   onChooseDestination: () => void;
   onRun: () => void;
   onNewExtract: () => void;
@@ -28,6 +31,7 @@ export function ExtractOutputPanel({
   outputInputRef,
   pageRanges,
   pageRangesInputRef,
+  isPageRangesDisabled = false,
   destinationLabel,
   destinationPath,
   canRun,
@@ -36,6 +40,8 @@ export function ExtractOutputPanel({
   actionLabel,
   onOutputNameChange,
   onPageRangesChange,
+  onPageRangesBlur,
+  onPageRangesSubmit,
   onChooseDestination,
   onRun,
   onNewExtract,
@@ -58,6 +64,15 @@ export function ExtractOutputPanel({
           value={pageRanges}
           placeholder="Example: 1,3,5-8"
           onChange={(event) => onPageRangesChange(event.target.value)}
+          onBlur={onPageRangesBlur}
+          onKeyDown={(event) => {
+            if (event.key !== 'Enter') {
+              return;
+            }
+            event.preventDefault();
+            onPageRangesSubmit();
+          }}
+          disabled={isPageRangesDisabled}
           className="output-input"
         />
         <p className="output-helper-text">Use commas and ranges, for example: 1,3,5-8.</p>
