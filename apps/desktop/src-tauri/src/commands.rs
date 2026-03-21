@@ -103,6 +103,7 @@ pub async fn split_pdf(
     output_dir: String,
     output_base_name: String,
     pages_per_file: u32,
+    page_ranges: Option<String>,
 ) -> Result<SplitResult, String> {
     tauri::async_runtime::spawn_blocking(move || {
         if input_path.trim().is_empty() {
@@ -116,9 +117,16 @@ pub async fn split_pdf(
         }
 
         let input_bytes = fs::read(&input_path).map_err(|_| "Failed to read input PDF file.".to_string())?;
+        let split_mode = page_ranges
+            .as_ref()
+            .map(|value| value.trim())
+            .filter(|value| !value.is_empty())
+            .map(|value| SplitMode::ByPageRanges(value.to_string()))
+            .unwrap_or(SplitMode::EveryNPages(pages_per_file));
+
         let parts = core_split_pdf(&SplitRequest {
             document: input_bytes,
-            mode: SplitMode::EveryNPages(pages_per_file),
+            mode: split_mode,
         })
         .map_err(map_core_error)?;
 

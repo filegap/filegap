@@ -82,12 +82,19 @@ export async function mergePdfs(inputPaths: string[], outputPath: string): Promi
   });
 }
 
-export async function splitPdf(inputPath: string, outputDir: string, outputBaseName: string, pagesPerFile: number): Promise<SplitResult> {
+export async function splitPdf(
+  inputPath: string,
+  outputDir: string,
+  outputBaseName: string,
+  pagesPerFile: number,
+  pageRanges?: string
+): Promise<SplitResult> {
   return invoke<SplitResult>('split_pdf', {
     inputPath,
     outputDir,
     outputBaseName,
     pagesPerFile,
+    pageRanges: pageRanges?.trim() || null,
   });
 }
 

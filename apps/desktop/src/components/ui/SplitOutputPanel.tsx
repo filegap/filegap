@@ -4,9 +4,12 @@ import { Button } from './Button';
 import { ResultStateBlock } from './ResultStateBlock';
 
 type SplitOutputPanelProps = {
+  splitMode: 'pages' | 'ranges';
   outputBaseName: string;
   outputInputRef?: RefObject<HTMLInputElement>;
   pagesPerFile: number;
+  pageRanges: string;
+  pageRangesInputRef?: RefObject<HTMLInputElement>;
   destinationLabel: string;
   destinationPath?: string;
   canRun: boolean;
@@ -14,8 +17,13 @@ type SplitOutputPanelProps = {
   hasCompleted: boolean;
   completedOutputCount: number | null;
   actionLabel: string;
+  onSplitModeChange: (next: 'pages' | 'ranges') => void;
   onOutputBaseNameChange: (next: string) => void;
   onPagesPerFileChange: (next: number) => void;
+  onPageRangesChange: (next: string) => void;
+  onPageRangesBlur: () => void;
+  onPageRangesSubmit: () => void;
+  isPageRangesDisabled?: boolean;
   onChooseDestination: () => void;
   onRun: () => void;
   onNewSplit: () => void;
@@ -24,9 +32,12 @@ type SplitOutputPanelProps = {
 };
 
 export function SplitOutputPanel({
+  splitMode,
   outputBaseName,
   outputInputRef,
   pagesPerFile,
+  pageRanges,
+  pageRangesInputRef,
   destinationLabel,
   destinationPath,
   canRun,
@@ -34,8 +45,13 @@ export function SplitOutputPanel({
   hasCompleted,
   completedOutputCount,
   actionLabel,
+  onSplitModeChange,
   onOutputBaseNameChange,
   onPagesPerFileChange,
+  onPageRangesChange,
+  onPageRangesBlur,
+  onPageRangesSubmit,
+  isPageRangesDisabled = false,
   onChooseDestination,
   onRun,
   onNewSplit,
@@ -49,19 +65,64 @@ export function SplitOutputPanel({
     <div className="output-panel">
       <section className="output-panel-top output-panel-section">
         <h2>Split settings</h2>
-        <label className="output-label" htmlFor="split-pages-per-file">
-          Pages per file
-        </label>
-        <input
-          id="split-pages-per-file"
-          type="number"
-          min={1}
-          step={1}
-          value={pagesPerFile}
-          onChange={(event) => onPagesPerFileChange(Number(event.target.value) || 1)}
-          className="output-input"
-        />
-        <p className="output-helper-text">Each output file will contain {pagesPerFile} {pageWord}.</p>
+        <div className="stack-row">
+          <Button
+            variant={splitMode === 'pages' ? 'secondary' : 'ghost'}
+            onClick={() => onSplitModeChange('pages')}
+            disabled={isProcessing}
+          >
+            By size
+          </Button>
+          <Button
+            variant={splitMode === 'ranges' ? 'secondary' : 'ghost'}
+            onClick={() => onSplitModeChange('ranges')}
+            disabled={isProcessing}
+          >
+            By ranges
+          </Button>
+        </div>
+        {splitMode === 'pages' ? (
+          <>
+            <label className="output-label" htmlFor="split-pages-per-file">
+              Pages per file
+            </label>
+            <input
+              id="split-pages-per-file"
+              type="number"
+              min={1}
+              step={1}
+              value={pagesPerFile}
+              onChange={(event) => onPagesPerFileChange(Number(event.target.value) || 1)}
+              className="output-input"
+            />
+            <p className="output-helper-text">Each output file will contain {pagesPerFile} {pageWord}.</p>
+          </>
+        ) : (
+          <>
+            <label className="output-label" htmlFor="split-page-ranges">
+              Page ranges
+            </label>
+            <input
+              id="split-page-ranges"
+              type="text"
+              ref={pageRangesInputRef}
+              value={pageRanges}
+              placeholder="Example: 1-3,4,5-10"
+              onChange={(event) => onPageRangesChange(event.target.value)}
+              onBlur={onPageRangesBlur}
+              onKeyDown={(event) => {
+                if (event.key !== 'Enter') {
+                  return;
+                }
+                event.preventDefault();
+                onPageRangesSubmit();
+              }}
+              disabled={isPageRangesDisabled}
+              className="output-input"
+            />
+            <p className="output-helper-text">Create one output file per range, for example: 1-3,4,5-10.</p>
+          </>
+        )}
       </section>
 
       <div className="output-panel-divider" />
