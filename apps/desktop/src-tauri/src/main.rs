@@ -11,6 +11,7 @@ pub fn run() {
             commands::extract_pages,
             commands::reorder_pdf,
             commands::inspect_pdf_files,
+            commands::read_pdf_bytes,
             commands::show_in_folder,
             commands::open_file
         ])

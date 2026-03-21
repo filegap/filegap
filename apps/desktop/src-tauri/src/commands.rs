@@ -216,6 +216,18 @@ pub async fn inspect_pdf_files(paths: Vec<String>) -> Result<Vec<PdfFileInfo>, S
 }
 
 #[tauri::command]
+pub async fn read_pdf_bytes(path: String) -> Result<Vec<u8>, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        if path.trim().is_empty() {
+            return Err("Select a valid input PDF file.".to_string());
+        }
+        fs::read(path).map_err(|_| "Failed to read input PDF file.".to_string())
+    })
+    .await
+    .map_err(|_| "Failed to read input PDF file.".to_string())?
+}
+
+#[tauri::command]
 pub fn show_in_folder(path: String) -> Result<(), String> {
     let target = Path::new(&path);
     if !target.exists() {

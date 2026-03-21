@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { ChevronLeft, ChevronsDownUp, Trash2, Upload } from 'lucide-react';
+import { GlobalWorkerOptions, getDocument } from 'pdfjs-dist';
+import workerSrc from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import { ToolLayout } from '../../components/layout/ToolLayout';
 import { Button } from '../../components/ui/Button';
 import { Dropzone } from '../../components/ui/Dropzone';
 import { ExtractOutputPanel } from '../../components/ui/ExtractOutputPanel';
-import { FileTable } from '../../components/ui/FileTable';
+import { PdfThumbnailGrid } from '../../components/ui/PdfThumbnailGrid';
 import {
   chooseOutputDirectory,
   chooseSinglePdfInput,
@@ -11,6 +14,7 @@ import {
   getDownloadDirectory,
   inspectPdfFiles,
   openFile,
+  readPdfBytes,
   revealInFolder,
 } from '../../lib/desktop';
 import { fileNameFromPath } from '../../lib/pathUtils';
@@ -28,6 +32,15 @@ type ExtractFile = {
   sizeBytes: number;
   pageCount: number | null;
 };
+
+type PageThumbnail = {
+  pageNumber: number;
+  imageDataUrl: string;
+};
+
+GlobalWorkerOptions.workerSrc = workerSrc;
+
+const MAX_PREVIEW_PAGES = 60;
 
 function readErrorMessage(error: unknown): string {
   if (typeof error === 'string' && error.trim().length > 0) {
@@ -73,6 +86,91 @@ function createDefaultExtractOutputName(): string {
   return 'extracted-pages.pdf';
 }
 
+function compactPagesToRanges(pages: number[]): string {
+  if (pages.length === 0) {
+    return '';
+  }
+  const sorted = [...new Set(pages)].sort((a, b) => a - b);
+  const ranges: string[] = [];
+  let start = sorted[0];
+  let previous = sorted[0];
+
+  for (let index = 1; index < sorted.length; index += 1) {
+    const current = sorted[index];
+    if (current === previous + 1) {
+      previous = current;
+      continue;
+    }
+    ranges.push(start === previous ? String(start) : `${start}-${previous}`);
+    start = current;
+    previous = current;
+  }
+
+  ranges.push(start === previous ? String(start) : `${start}-${previous}`);
+  return ranges.join(',');
+}
+
+function parseRangesInput(value: string, maxPage: number): number[] {
+  const cleaned = value.trim();
+  if (!cleaned) {
+    return [];
+  }
+
+  const pages: number[] = [];
+  for (const token of cleaned.split(',').map((item) => item.trim()).filter((item) => item.length > 0)) {
+    const singleMatch = /^(\d+)$/.exec(token);
+    const rangeMatch = /^(\d+)\s*-\s*(\d+)$/.exec(token);
+    if (!singleMatch && !rangeMatch) {
+      throw new Error(`Invalid range "${token}".`);
+    }
+
+    if (singleMatch) {
+      const page = Number(singleMatch[1]);
+      if (page < 1 || page > maxPage) {
+        throw new Error(`Page "${page}" is out of bounds (1-${maxPage}).`);
+      }
+      pages.push(page);
+      continue;
+    }
+
+    const start = Number(rangeMatch?.[1]);
+    const end = Number(rangeMatch?.[2]);
+    if (start < 1 || end < 1 || start > end || end > maxPage) {
+      throw new Error(`Invalid range "${token}".`);
+    }
+    for (let page = start; page <= end; page += 1) {
+      pages.push(page);
+    }
+  }
+
+  return [...new Set(pages)].sort((a, b) => a - b);
+}
+
+async function renderPdfThumbnails(fileBytes: Uint8Array, pageCount: number): Promise<PageThumbnail[]> {
+  const pdfDocument = await getDocument({ data: fileBytes }).promise;
+  const maxPages = Math.min(pageCount, MAX_PREVIEW_PAGES);
+  const previews: PageThumbnail[] = [];
+
+  for (let pageNumber = 1; pageNumber <= maxPages; pageNumber += 1) {
+    const page = await pdfDocument.getPage(pageNumber);
+    const viewport = page.getViewport({ scale: 0.22 });
+    const canvas = globalThis.document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    if (!context) {
+      continue;
+    }
+    canvas.width = Math.max(1, Math.floor(viewport.width));
+    canvas.height = Math.max(1, Math.floor(viewport.height));
+    await page.render({ canvasContext: context, viewport, canvas }).promise;
+    previews.push({
+      pageNumber,
+      imageDataUrl: canvas.toDataURL('image/jpeg', 0.72),
+    });
+  }
+
+  return previews;
+}
+
 export function ExtractPagesPage() {
   const [files, setFiles] = useState<ExtractFile[]>([]);
   const [outputDirectory, setOutputDirectory] = useState('');
@@ -82,11 +180,16 @@ export function ExtractPagesPage() {
   const [pathSeparator, setPathSeparator] = useState<'/' | '\\'>('/');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isLoadingFiles, setIsLoadingFiles] = useState(false);
+  const [isRenderingPreviews, setIsRenderingPreviews] = useState(false);
+  const [isDropzoneCollapsed, setIsDropzoneCollapsed] = useState(false);
+  const [thumbnails, setThumbnails] = useState<PageThumbnail[]>([]);
+  const [selectedPages, setSelectedPages] = useState<Set<number>>(new Set());
   const [hasCompleted, setHasCompleted] = useState(false);
   const [lastOutputPath, setLastOutputPath] = useState('');
   const [status, setStatus] = useState<StatusState>({ tone: 'neutral', message: 'Idle' });
   const outputInputRef = useRef<HTMLInputElement>(null);
   const pageRangesInputRef = useRef<HTMLInputElement>(null);
+  const pageCount = files[0]?.pageCount ?? 0;
 
   const canRun = useMemo(
     () =>
@@ -116,6 +219,54 @@ export function ExtractPagesPage() {
     };
   }, []);
 
+  useEffect(() => {
+    if (files.length !== 1) {
+      setThumbnails([]);
+      setSelectedPages(new Set());
+      return;
+    }
+
+    const selected = files[0];
+    const totalPages = selected.pageCount ?? 0;
+    if (totalPages <= 0) {
+      setThumbnails([]);
+      setSelectedPages(new Set());
+      return;
+    }
+
+    let cancelled = false;
+    setIsRenderingPreviews(true);
+    setStatus({ tone: 'info', message: 'Rendering page previews...' });
+
+    void (async () => {
+      try {
+        const bytes = await readPdfBytes(selected.path);
+        const previews = await renderPdfThumbnails(bytes, totalPages);
+        if (cancelled) {
+          return;
+        }
+        setThumbnails(previews);
+        setSelectedPages(new Set());
+        setStatus({ tone: 'neutral', message: 'Idle' });
+      } catch (error) {
+        if (cancelled) {
+          return;
+        }
+        const reason = readErrorMessage(error);
+        setThumbnails([]);
+        setStatus({ tone: 'error', message: `Preview rendering failed: ${reason}` });
+      } finally {
+        if (!cancelled) {
+          setIsRenderingPreviews(false);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [files]);
+
   async function handleSelectInput() {
     const selected = await chooseSinglePdfInput();
     if (!selected) {
@@ -136,6 +287,8 @@ export function ExtractPagesPage() {
       ]);
       setHasCompleted(false);
       setLastOutputPath('');
+      setSelectedPages(new Set());
+      setIsDropzoneCollapsed(true);
       setStatus({ tone: 'neutral', message: 'Idle' });
       queueMicrotask(() => pageRangesInputRef.current?.focus());
     } catch (error) {
@@ -159,6 +312,9 @@ export function ExtractPagesPage() {
 
   function clearSelectedFile() {
     setFiles([]);
+    setThumbnails([]);
+    setSelectedPages(new Set());
+    setIsDropzoneCollapsed(false);
     setHasCompleted(false);
     setLastOutputPath('');
     setStatus({ tone: 'info', message: 'Files cleared' });
@@ -166,6 +322,9 @@ export function ExtractPagesPage() {
 
   function startNewExtract() {
     setFiles([]);
+    setThumbnails([]);
+    setSelectedPages(new Set());
+    setIsDropzoneCollapsed(false);
     setHasCompleted(false);
     setLastOutputPath('');
     setOutputName(createDefaultExtractOutputName());
@@ -209,12 +368,42 @@ export function ExtractPagesPage() {
     await revealInFolder(lastOutputPath);
   }
 
-  const rows = files.map((file) => ({
-    id: file.id,
-    filename: fileNameFromPath(file.path),
-    sizeLabel: formatSize(file.sizeBytes),
-    pagesLabel: file.pageCount ? String(file.pageCount) : '-',
-  }));
+  function toggleSelectedPage(pageNumber: number) {
+    setSelectedPages((current) => {
+      const next = new Set(current);
+      if (next.has(pageNumber)) {
+        next.delete(pageNumber);
+      } else {
+        next.add(pageNumber);
+      }
+      return next;
+    });
+  }
+
+  function handleUseSelectedPages() {
+    const pageRangesFromSelection = compactPagesToRanges(Array.from(selectedPages));
+    setPageRanges(pageRangesFromSelection);
+    setStatus({ tone: 'info', message: pageRangesFromSelection ? 'Applied selected pages to range input' : 'No pages selected' });
+  }
+
+  function handleClearSelectedPages() {
+    setSelectedPages(new Set());
+    setStatus({ tone: 'info', message: 'Page selection cleared' });
+  }
+
+  function handleLoadRangesFromInput() {
+    if (pageCount <= 0) {
+      return;
+    }
+    try {
+      const pages = parseRangesInput(pageRanges, pageCount);
+      setSelectedPages(new Set(pages));
+      setStatus({ tone: 'info', message: pages.length ? 'Applied ranges to page selection' : 'No ranges to apply' });
+    } catch (error) {
+      const reason = readErrorMessage(error);
+      setStatus({ tone: 'error', message: reason });
+    }
+  }
 
   const destinationFriendlyLabel = !outputDirectory
     ? 'No destination selected'
@@ -222,7 +411,11 @@ export function ExtractPagesPage() {
     ? 'Downloads'
     : fileNameFromPath(outputDirectory);
 
-  const footerMessage = isLoadingFiles ? 'Processing file...' : status.tone === 'neutral' ? 'Ready' : status.message;
+  const footerMessage = isLoadingFiles || isRenderingPreviews
+    ? 'Processing file...'
+    : status.tone === 'neutral'
+      ? 'Ready'
+      : status.message;
 
   return (
     <ToolLayout
@@ -231,21 +424,96 @@ export function ExtractPagesPage() {
       footerMessage={footerMessage}
       leftPanel={
         <div className="merge-left-panel">
-          <Dropzone disabled={isProcessing || isLoadingFiles} fileCount={files.length} onSelectFiles={() => void handleSelectInput()} />
+          {files.length === 0 ? (
+            <Dropzone disabled={isProcessing || isLoadingFiles} fileCount={files.length} onSelectFiles={() => void handleSelectInput()} />
+          ) : isDropzoneCollapsed ? (
+            <button
+              type="button"
+              className="extract-picker-collapsed-bar"
+              onClick={() => setIsDropzoneCollapsed(false)}
+              aria-label="Show file picker"
+              title="Show file picker"
+            >
+              <span className="extract-picker-collapsed-left" aria-hidden="true">
+                <Upload />
+              </span>
+              <span className="extract-picker-collapsed-right" aria-hidden="true">
+                <ChevronLeft />
+              </span>
+            </button>
+          ) : (
+            <div className="extract-dropzone-shell">
+              <button
+                type="button"
+                className="extract-dropzone-collapse-btn"
+                onClick={() => setIsDropzoneCollapsed(true)}
+                aria-label="Hide file picker"
+                title="Hide file picker"
+              >
+                <ChevronsDownUp />
+              </button>
+              <Dropzone disabled={isProcessing || isLoadingFiles} fileCount={files.length} onSelectFiles={() => void handleSelectInput()} />
+            </div>
+          )}
           {files.length > 0 ? (
             <div className="uploaded-files-header">
-              <p>Selected files ({files.length})</p>
-              <Button variant="ghost" onClick={clearSelectedFile} disabled={isProcessing || isLoadingFiles}>
-                Clear all
-              </Button>
+              <p className="uploaded-file-name" title={fileNameFromPath(files[0].path)}>
+                {fileNameFromPath(files[0].path)}
+              </p>
+              <div className="stack-row">
+                <Button
+                  variant="ghost"
+                  onClick={handleUseSelectedPages}
+                  disabled={isProcessing || isLoadingFiles || isRenderingPreviews || selectedPages.size === 0}
+                >
+                  Use selected pages ({selectedPages.size})
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={handleClearSelectedPages}
+                  disabled={isProcessing || isLoadingFiles || isRenderingPreviews || selectedPages.size === 0}
+                >
+                  Deselect all
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={handleLoadRangesFromInput}
+                  disabled={
+                    isProcessing ||
+                    isLoadingFiles ||
+                    isRenderingPreviews ||
+                    pageCount <= 0 ||
+                    pageRanges.trim().length === 0
+                  }
+                >
+                  Load ranges
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="extract-delete-file-btn"
+                  onClick={clearSelectedFile}
+                  disabled={isProcessing || isLoadingFiles}
+                  aria-label="Delete file"
+                  title="Delete file"
+                >
+                  <Trash2 aria-hidden="true" />
+                </Button>
+              </div>
             </div>
           ) : null}
           {isLoadingFiles ? <p className="file-loading-hint">Processing file...</p> : null}
-          <FileTable
-            rows={isLoadingFiles ? [] : rows}
-            onRemove={() => clearSelectedFile()}
-            onReorder={() => {}}
-            isLoading={isLoadingFiles}
+          {files.length === 1 && files[0].pageCount && files[0].pageCount > MAX_PREVIEW_PAGES ? (
+            <p className="file-loading-hint">
+              Showing first {MAX_PREVIEW_PAGES} pages for preview (of {files[0].pageCount}).
+            </p>
+          ) : null}
+          <PdfThumbnailGrid
+            thumbnails={thumbnails}
+            selectedPages={selectedPages}
+            isLoading={isLoadingFiles || isRenderingPreviews}
+            emptyTitle="No files selected"
+            emptyHint="Drag & drop PDFs or click to browse"
+            onTogglePage={toggleSelectedPage}
           />
         </div>
       }

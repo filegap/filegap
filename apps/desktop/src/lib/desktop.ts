@@ -111,6 +111,11 @@ export async function inspectPdfFiles(paths: string[]): Promise<PdfFileInfo[]> {
   return invoke<PdfFileInfo[]>('inspect_pdf_files', { paths });
 }
 
+export async function readPdfBytes(path: string): Promise<Uint8Array> {
+  const bytes = await invoke<number[]>('read_pdf_bytes', { path });
+  return new Uint8Array(bytes);
+}
+
 export async function openFile(path: string): Promise<void> {
   await invoke('open_file', { path });
 }
