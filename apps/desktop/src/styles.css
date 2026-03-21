@@ -796,15 +796,55 @@ p {
 .reorder-thumbnail-card {
   align-items: flex-start;
   cursor: grab;
+  user-select: none;
+  -webkit-user-drag: element;
 }
 
 .reorder-thumbnail-card:active {
   cursor: grabbing;
 }
 
+.reorder-thumbnail-card[draggable="true"]:active {
+  opacity: 0.96;
+}
+
 .reorder-thumbnail-card-over {
   border-color: color-mix(in srgb, var(--accent) 70%, var(--border));
   background: color-mix(in srgb, var(--accent) 10%, white);
+}
+
+.reorder-thumbnail-card-dragging {
+  opacity: 0.85;
+  cursor: grabbing;
+}
+
+.reorder-drag-preview {
+  position: fixed;
+  width: 108px;
+  padding: 6px;
+  border: 1px solid color-mix(in srgb, var(--accent) 60%, var(--border));
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--accent) 8%, white);
+  box-shadow: 0 8px 18px rgba(17, 24, 39, 0.18);
+  pointer-events: none;
+  z-index: 999;
+}
+
+.reorder-drag-preview img {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  background: #ffffff;
+}
+
+.reorder-drag-preview span {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text);
 }
 
 .reorder-position-badge {
