@@ -127,8 +127,10 @@ Current desktop MVP includes:
 
 - Desktop home page
 - Merge PDF tool
+- Split PDF tool
+- Extract Pages tool
 - Local file picker + save dialog
-- Rust-side merge command powered by `filegap_core`
+- Rust-side PDF commands powered by `filegap_core`
 
 ## Status
 

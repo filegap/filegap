@@ -1,4 +1,5 @@
 import { createHashRouter } from 'react-router-dom';
+import { ExtractPagesPage } from '../pages/extract-pages/ExtractPagesPage';
 import { HomePage } from '../pages/home/HomePage';
 import { MergePdfPage } from '../pages/merge-pdf/MergePdfPage';
 import { NotFoundPage } from '../pages/not-found/NotFoundPage';
@@ -16,6 +17,10 @@ export const router = createHashRouter([
   {
     path: '/split-pdf',
     element: <SplitPdfPage />,
+  },
+  {
+    path: '/extract-pages',
+    element: <ExtractPagesPage />,
   },
   {
     path: '*',

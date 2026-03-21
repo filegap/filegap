@@ -23,7 +23,7 @@ const TOOLS = [
     description: 'Extract specific pages from a PDF and save only the pages you need.',
     href: '/extract-pages',
     icon: <Scissors />,
-    enabled: false,
+    enabled: true,
   },
   {
     name: 'Reorder PDF',

@@ -2,7 +2,13 @@ use std::fs;
 use std::path::Path;
 use std::process::Command;
 
-use filegap_core::{ops::{merge_pdfs as core_merge_pdfs, split_pdf as core_split_pdf}, CoreError, MergeRequest, SplitMode, SplitRequest};
+use filegap_core::{
+    ops::{
+        extract_pages as core_extract_pages, merge_pdfs as core_merge_pdfs,
+        split_pdf as core_split_pdf,
+    },
+    CoreError, ExtractRequest, MergeRequest, SplitMode, SplitRequest,
+};
 use lopdf::Document;
 use serde::Serialize;
 
@@ -17,6 +23,11 @@ pub struct SplitResult {
     pub output_dir: String,
     pub output_count: usize,
     pub first_output_path: String,
+}
+
+#[derive(Debug, Serialize)]
+pub struct ExtractResult {
+    pub output_path: String,
 }
 
 #[derive(Debug, Serialize)]
@@ -126,6 +137,35 @@ pub async fn split_pdf(
     })
     .await
     .map_err(|_| "Failed to complete split operation.".to_string())?
+}
+
+#[tauri::command]
+pub async fn extract_pages(
+    input_path: String,
+    output_path: String,
+    page_ranges: String,
+) -> Result<ExtractResult, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        if input_path.trim().is_empty() {
+            return Err("Select a valid input PDF file.".to_string());
+        }
+        if output_path.trim().is_empty() {
+            return Err("Select a valid output destination.".to_string());
+        }
+
+        let input_bytes = fs::read(&input_path).map_err(|_| "Failed to read input PDF file.".to_string())?;
+        let extracted = core_extract_pages(&ExtractRequest {
+            document: input_bytes,
+            page_ranges,
+        })
+        .map_err(map_core_error)?;
+
+        fs::write(&output_path, extracted).map_err(|_| "Failed to write extracted PDF.".to_string())?;
+
+        Ok(ExtractResult { output_path })
+    })
+    .await
+    .map_err(|_| "Failed to complete extract operation.".to_string())?
 }
 
 #[tauri::command]

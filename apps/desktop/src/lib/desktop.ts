@@ -13,6 +13,10 @@ export type SplitResult = {
   first_output_path: string;
 };
 
+export type ExtractResult = {
+  output_path: string;
+};
+
 export type PdfFileInfo = {
   path: string;
   size_bytes: number;
@@ -80,6 +84,14 @@ export async function splitPdf(inputPath: string, outputDir: string, outputBaseN
     outputDir,
     outputBaseName,
     pagesPerFile,
+  });
+}
+
+export async function extractPages(inputPath: string, outputPath: string, pageRanges: string): Promise<ExtractResult> {
+  return invoke<ExtractResult>('extract_pages', {
+    inputPath,
+    outputPath,
+    pageRanges,
   });
 }
 

@@ -8,6 +8,8 @@ MVP includes:
 
 - App shell (home + routing)
 - Merge PDF flow
+- Split PDF flow
+- Extract Pages flow
 - Tauri command boundary
 - Direct `filegap_core` integration (no CLI subprocess)
 
@@ -16,9 +18,9 @@ MVP includes:
 Desktop execution path:
 
 1. React UI gathers local file paths and output destination.
-2. UI invokes Tauri command `merge_pdfs`.
-3. Rust command reads local files, calls `filegap_core::ops::merge_pdfs`.
-4. Rust command writes merged output to selected destination.
+2. UI invokes a Tauri command (`merge_pdfs`, `split_pdf`, `extract_pages`).
+3. Rust command reads local files, calls `filegap_core` operation.
+4. Rust command writes output to selected destination.
 
 No server-side processing and no network dependency are required for PDF operations.
 
@@ -39,21 +41,21 @@ No server-side processing and no network dependency are required for PDF operati
 - Error messages returned to UI remain generic.
 - Processing remains local-only.
 
-## Merge Tool Overview (Finalized Baseline)
+## Tool Overview (Current)
 
 Purpose:
 
-- Combine multiple PDF documents into a single output file using only local processing.
-- Provide a desktop-native flow optimized for repeated operations (merge, verify result, start new merge).
+- Run local PDF operations (`Merge`, `Split`, `Extract Pages`) with desktop-native UX.
+- Keep repetitive workflows efficient: run tool, verify result, start new operation.
 
 User flow:
 
 1. Select local files via file picker.
 2. Review and reorder files in the left working area.
 3. Configure export options in the right sidebar (`File name`, `Location`, `Change`).
-4. Run merge from primary CTA (`Merge PDF` / `Merge again`).
+4. Run operation from primary CTA (`Merge PDF`, `Split PDF`, `Extract pages`).
 5. Inspect completion result in sidebar result block.
-6. Use post-merge actions (`Open`, `Reveal`) or reset with `New merge`.
+6. Use post-operation actions (`Open`, `Reveal`) or reset with `New ...`.
 
 Key UX decisions:
 
@@ -73,7 +75,7 @@ Key UX decisions:
 
 - Idle: no active operation.
 - Processing files: selected file metadata inspection is running.
-- Merging: merge operation is running.
+- Processing: operation is running.
 - Completed: result block is visible with completion details and follow-up actions.
 - Error: generic error message in footer/system feedback channel.
 
@@ -131,6 +133,6 @@ Use local-first terminology consistently:
 
 ## Next Steps
 
+- Add `reorder` flow.
 - Add `info` command and route for metadata inspection.
-- Add `extract`, `reorder`, and `split` flows.
 - Add desktop integration tests around command success/failure boundaries.
