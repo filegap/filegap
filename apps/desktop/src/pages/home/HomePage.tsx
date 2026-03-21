@@ -16,7 +16,7 @@ const TOOLS = [
     description: 'Split one PDF into smaller PDF files without uploading it anywhere.',
     href: '/split-pdf',
     icon: <Split />,
-    enabled: false,
+    enabled: true,
   },
   {
     name: 'Extract Pages',

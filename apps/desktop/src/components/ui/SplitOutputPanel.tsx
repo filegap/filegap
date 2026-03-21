@@ -3,57 +3,72 @@ import { Folder, Lock, RotateCcw } from 'lucide-react';
 import { Button } from './Button';
 import { ResultStateBlock } from './ResultStateBlock';
 
-type OutputPanelProps = {
-  outputName: string;
+type SplitOutputPanelProps = {
+  outputBaseName: string;
   outputInputRef?: RefObject<HTMLInputElement>;
+  pagesPerFile: number;
   destinationLabel: string;
   destinationPath?: string;
   canRun: boolean;
   isProcessing: boolean;
   hasCompleted: boolean;
-  completedMergeCount: number | null;
-  mergeActionLabel: string;
-  onOutputNameChange: (next: string) => void;
+  completedOutputCount: number | null;
+  actionLabel: string;
+  onOutputBaseNameChange: (next: string) => void;
+  onPagesPerFileChange: (next: number) => void;
   onChooseDestination: () => void;
   onRun: () => void;
-  onNewMerge: () => void;
+  onNewSplit: () => void;
   onOpenFile: () => void;
   onShowInFolder: () => void;
 };
 
-export function OutputPanel({
-  outputName,
+export function SplitOutputPanel({
+  outputBaseName,
   outputInputRef,
+  pagesPerFile,
   destinationLabel,
   destinationPath,
   canRun,
   isProcessing,
   hasCompleted,
-  completedMergeCount,
-  mergeActionLabel,
-  onOutputNameChange,
+  completedOutputCount,
+  actionLabel,
+  onOutputBaseNameChange,
+  onPagesPerFileChange,
   onChooseDestination,
   onRun,
-  onNewMerge,
+  onNewSplit,
   onOpenFile,
   onShowInFolder,
-}: OutputPanelProps) {
-  const showCompletionState = hasCompleted && !isProcessing && completedMergeCount !== null;
-  const showResultActions = showCompletionState;
+}: SplitOutputPanelProps) {
+  const showCompletionState = hasCompleted && !isProcessing && completedOutputCount !== null;
 
   return (
     <div className="output-panel">
       <section className="output-panel-top output-panel-section">
         <h2>Export</h2>
-        <label className="output-label" htmlFor="output-file-name">
+        <label className="output-label" htmlFor="output-base-name">
           File name
         </label>
         <input
-          id="output-file-name"
+          id="output-base-name"
           type="text"
           ref={outputInputRef}
-          value={outputName}
-          onChange={(event) => onOutputNameChange(event.target.value)}
+          value={outputBaseName}
+          onChange={(event) => onOutputBaseNameChange(event.target.value)}
+          className="output-input"
+        />
+        <label className="output-label" htmlFor="split-pages-per-file">
+          Pages per file
+        </label>
+        <input
+          id="split-pages-per-file"
+          type="number"
+          min={1}
+          step={1}
+          value={pagesPerFile}
+          onChange={(event) => onPagesPerFileChange(Number(event.target.value) || 1)}
           className="output-input"
         />
         <div className="output-location-row">
@@ -73,28 +88,22 @@ export function OutputPanel({
       <div className="output-panel-divider" />
 
       <section className="output-actions-block output-panel-section">
-        <Button
-          onClick={onRun}
-          loading={isProcessing}
-          loadingLabel="Merging..."
-          disabled={!canRun}
-          className="merge-primary-btn"
-        >
-          {mergeActionLabel}
+        <Button onClick={onRun} loading={isProcessing} loadingLabel="Splitting..." disabled={!canRun} className="merge-primary-btn">
+          {actionLabel}
         </Button>
-        {isProcessing ? <p className="output-merge-progress">Merging...</p> : null}
+        {isProcessing ? <p className="output-merge-progress">Splitting...</p> : null}
 
         {showCompletionState ? (
           <>
             <ResultStateBlock
-              title="Merge completed"
-              details={`${completedMergeCount} files merged`}
+              title="Split completed"
+              details={`${completedOutputCount} files created`}
               onOpen={onOpenFile}
               onReveal={onShowInFolder}
             />
-            <Button variant="ghost" className="output-new-merge-btn" onClick={onNewMerge}>
+            <Button variant="ghost" className="output-new-merge-btn" onClick={onNewSplit}>
               <RotateCcw aria-hidden="true" />
-              <span>New merge</span>
+              <span>New split</span>
             </Button>
           </>
         ) : null}
@@ -107,3 +116,4 @@ export function OutputPanel({
     </div>
   );
 }
+

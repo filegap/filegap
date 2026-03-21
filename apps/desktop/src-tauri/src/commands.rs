@@ -2,7 +2,7 @@ use std::fs;
 use std::path::Path;
 use std::process::Command;
 
-use filegap_core::{ops::merge_pdfs as core_merge_pdfs, CoreError, MergeRequest};
+use filegap_core::{ops::{merge_pdfs as core_merge_pdfs, split_pdf as core_split_pdf}, CoreError, MergeRequest, SplitMode, SplitRequest};
 use lopdf::Document;
 use serde::Serialize;
 
@@ -10,6 +10,13 @@ use serde::Serialize;
 pub struct MergeResult {
     pub output_path: String,
     pub input_count: usize,
+}
+
+#[derive(Debug, Serialize)]
+pub struct SplitResult {
+    pub output_dir: String,
+    pub output_count: usize,
+    pub first_output_path: String,
 }
 
 #[derive(Debug, Serialize)]
@@ -71,6 +78,54 @@ pub async fn merge_pdfs(input_paths: Vec<String>, output_path: String) -> Result
     })
     .await
     .map_err(|_| "Failed to complete merge operation.".to_string())?
+}
+
+#[tauri::command]
+pub async fn split_pdf(
+    input_path: String,
+    output_dir: String,
+    output_base_name: String,
+    pages_per_file: u32,
+) -> Result<SplitResult, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        if input_path.trim().is_empty() {
+            return Err("Select a valid input PDF file.".to_string());
+        }
+        if output_dir.trim().is_empty() {
+            return Err("Select a valid output destination.".to_string());
+        }
+        if output_base_name.trim().is_empty() {
+            return Err("Provide a valid output file name.".to_string());
+        }
+
+        let input_bytes = fs::read(&input_path).map_err(|_| "Failed to read input PDF file.".to_string())?;
+        let parts = core_split_pdf(&SplitRequest {
+            document: input_bytes,
+            mode: SplitMode::EveryNPages(pages_per_file),
+        })
+        .map_err(map_core_error)?;
+
+        let base_name = output_base_name.trim().trim_end_matches(".pdf");
+        let mut first_output_path = String::new();
+        for (index, part) in parts.iter().enumerate() {
+            let part_path = Path::new(&output_dir)
+                .join(format!("{base_name}-part-{}.pdf", index + 1))
+                .to_string_lossy()
+                .to_string();
+            fs::write(&part_path, part).map_err(|_| "Failed to write split output PDF.".to_string())?;
+            if index == 0 {
+                first_output_path = part_path;
+            }
+        }
+
+        Ok(SplitResult {
+            output_dir,
+            output_count: parts.len(),
+            first_output_path,
+        })
+    })
+    .await
+    .map_err(|_| "Failed to complete split operation.".to_string())?
 }
 
 #[tauri::command]

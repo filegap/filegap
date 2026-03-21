@@ -2,6 +2,7 @@ import { createHashRouter } from 'react-router-dom';
 import { HomePage } from '../pages/home/HomePage';
 import { MergePdfPage } from '../pages/merge-pdf/MergePdfPage';
 import { NotFoundPage } from '../pages/not-found/NotFoundPage';
+import { SplitPdfPage } from '../pages/split-pdf/SplitPdfPage';
 
 export const router = createHashRouter([
   {
@@ -11,6 +12,10 @@ export const router = createHashRouter([
   {
     path: '/merge-pdf',
     element: <MergePdfPage />,
+  },
+  {
+    path: '/split-pdf',
+    element: <SplitPdfPage />,
   },
   {
     path: '*',

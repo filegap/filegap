@@ -7,6 +7,12 @@ export type MergeResult = {
   input_count: number;
 };
 
+export type SplitResult = {
+  output_dir: string;
+  output_count: number;
+  first_output_path: string;
+};
+
 export type PdfFileInfo = {
   path: string;
   size_bytes: number;
@@ -32,6 +38,17 @@ export async function choosePdfInputs(): Promise<string[]> {
   return selection.filter((path): path is string => typeof path === 'string');
 }
 
+export async function chooseSinglePdfInput(): Promise<string | null> {
+  const selection = await open({
+    multiple: false,
+    directory: false,
+    title: 'Select PDF file',
+    filters: [{ name: 'PDF', extensions: ['pdf'] }],
+  });
+
+  return typeof selection === 'string' ? selection : null;
+}
+
 export async function chooseOutputDirectory(): Promise<string | null> {
   const output = await open({
     title: 'Choose destination folder',
@@ -54,6 +71,15 @@ export async function mergePdfs(inputPaths: string[], outputPath: string): Promi
   return invoke<MergeResult>('merge_pdfs', {
     inputPaths,
     outputPath,
+  });
+}
+
+export async function splitPdf(inputPath: string, outputDir: string, outputBaseName: string, pagesPerFile: number): Promise<SplitResult> {
+  return invoke<SplitResult>('split_pdf', {
+    inputPath,
+    outputDir,
+    outputBaseName,
+    pagesPerFile,
   });
 }
 

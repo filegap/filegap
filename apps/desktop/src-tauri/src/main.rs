@@ -7,6 +7,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
             commands::merge_pdfs,
+            commands::split_pdf,
             commands::inspect_pdf_files,
             commands::show_in_folder,
             commands::open_file
