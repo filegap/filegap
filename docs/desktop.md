@@ -19,9 +19,10 @@ MVP includes:
 Desktop execution path:
 
 1. React UI gathers local file paths and output destination.
-2. UI invokes a Tauri command (`merge_pdfs`, `split_pdf`, `extract_pages`, `reorder_pdf`).
+2. UI invokes a Tauri command (`merge_pdfs`, `split_pdf`, `extract_pages`, `reorder_pdf`, `read_pdf_bytes`).
 3. Rust command reads local files, calls `filegap_core` operation.
 4. Rust command writes output to selected destination.
+5. For Extract preview, UI renders thumbnails in-memory via bundled `pdf.js` worker (no network).
 
 No server-side processing and no network dependency are required for PDF operations.
 
@@ -68,7 +69,7 @@ Key UX decisions:
 
 ### Layout
 
-- Left panel: working surface (dropzone, selected files list, table actions).
+- Left panel: working surface (dropzone, selected files list/table actions, or thumbnail grid for Extract).
 - Right panel: persistent control sidebar (export configuration, run action, result actions, trust note).
 - Footer: system feedback area for transient operational messages.
 
@@ -100,6 +101,10 @@ These components and patterns are reused across desktop tools (`Merge`, `Split`,
   - Export/configuration section.
   - Action section (primary CTA + completion/reset flow).
   - Trust/privacy section anchored to sidebar bottom.
+- Thumbnail grid (Extract):
+  - In-memory page previews.
+  - Direct page selection with range-assist actions (`Select all`, `Odd`, `Even`, `First page`).
+  - Local-only rendering; no file upload and no remote fetch.
 - Button variants:
   - Primary (`Merge`)
   - Secondary (supporting actions)

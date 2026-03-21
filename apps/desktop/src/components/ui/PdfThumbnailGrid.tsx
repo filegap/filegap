@@ -1,3 +1,5 @@
+import { Check } from 'lucide-react';
+
 type PdfThumbnail = {
   pageNumber: number;
   imageDataUrl: string;
@@ -48,6 +50,9 @@ export function PdfThumbnailGrid({
             aria-label={`Select page ${thumbnail.pageNumber}`}
             aria-pressed={isSelected}
           >
+            <span className={`thumbnail-selected-flag ${isSelected ? 'thumbnail-selected-flag-visible' : ''}`.trim()} aria-hidden="true">
+              <Check />
+            </span>
             <img src={thumbnail.imageDataUrl} alt={`Page ${thumbnail.pageNumber} preview`} loading="lazy" />
             <span className="thumbnail-page-label">Page {thumbnail.pageNumber}</span>
           </button>

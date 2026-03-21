@@ -767,6 +767,7 @@ p {
 }
 
 .thumbnail-card {
+  position: relative;
   border: 1px solid var(--border);
   border-radius: 10px;
   background: var(--surface);
@@ -806,6 +807,34 @@ p {
   color: var(--muted);
   font-weight: 600;
   text-align: left;
+}
+
+.thumbnail-selected-flag {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--accent) 65%, #111827);
+  background: color-mix(in srgb, var(--accent) 78%, #111827);
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: scale(0.94);
+  transition: opacity 120ms ease, transform 120ms ease;
+}
+
+.thumbnail-selected-flag-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.thumbnail-selected-flag svg {
+  width: 13px;
+  height: 13px;
 }
 
 .file-table-head {

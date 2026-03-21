@@ -202,7 +202,25 @@ export function ExtractPagesPage() {
     [isLoadingFiles, isProcessing, files.length, outputDirectory, outputName, pageRanges]
   );
 
-  const actionLabel = isProcessing ? 'Extracting...' : hasCompleted ? 'Extract again' : 'Extract pages';
+  const selectedPageCount = useMemo(() => {
+    if (selectedPages.size > 0) {
+      return selectedPages.size;
+    }
+    if (pageCount <= 0) {
+      return 0;
+    }
+    try {
+      return parseRangesInput(pageRanges, pageCount).length;
+    } catch {
+      return 0;
+    }
+  }, [selectedPages, pageCount, pageRanges]);
+
+  const actionLabel = isProcessing
+    ? 'Extracting...'
+    : selectedPageCount > 0
+      ? `Extract ${selectedPageCount} ${selectedPageCount === 1 ? 'page' : 'pages'}`
+      : 'Extract pages';
 
   useEffect(() => {
     let cancelled = false;
@@ -266,6 +284,11 @@ export function ExtractPagesPage() {
       cancelled = true;
     };
   }, [files]);
+
+  useEffect(() => {
+    const ranges = compactPagesToRanges(Array.from(selectedPages));
+    setPageRanges(ranges);
+  }, [selectedPages]);
 
   async function handleSelectInput() {
     const selected = await chooseSinglePdfInput();
@@ -380,15 +403,43 @@ export function ExtractPagesPage() {
     });
   }
 
-  function handleUseSelectedPages() {
-    const pageRangesFromSelection = compactPagesToRanges(Array.from(selectedPages));
-    setPageRanges(pageRangesFromSelection);
-    setStatus({ tone: 'info', message: pageRangesFromSelection ? 'Applied selected pages to range input' : 'No pages selected' });
-  }
-
   function handleClearSelectedPages() {
     setSelectedPages(new Set());
     setStatus({ tone: 'info', message: 'Page selection cleared' });
+  }
+
+  function handleSelectAllPages() {
+    if (pageCount <= 0) {
+      return;
+    }
+    setSelectedPages(new Set(Array.from({ length: pageCount }, (_, index) => index + 1)));
+    setStatus({ tone: 'info', message: 'Selected all pages' });
+  }
+
+  function handleSelectOddPages() {
+    if (pageCount <= 0) {
+      return;
+    }
+    const oddPages = Array.from({ length: pageCount }, (_, index) => index + 1).filter((page) => page % 2 === 1);
+    setSelectedPages(new Set(oddPages));
+    setStatus({ tone: 'info', message: 'Selected odd pages' });
+  }
+
+  function handleSelectEvenPages() {
+    if (pageCount <= 0) {
+      return;
+    }
+    const evenPages = Array.from({ length: pageCount }, (_, index) => index + 1).filter((page) => page % 2 === 0);
+    setSelectedPages(new Set(evenPages));
+    setStatus({ tone: 'info', message: 'Selected even pages' });
+  }
+
+  function handleSelectFirstPage() {
+    if (pageCount <= 0) {
+      return;
+    }
+    setSelectedPages(new Set([1]));
+    setStatus({ tone: 'info', message: 'Selected first page' });
   }
 
   function handleLoadRangesFromInput() {
@@ -463,10 +514,31 @@ export function ExtractPagesPage() {
               <div className="stack-row">
                 <Button
                   variant="ghost"
-                  onClick={handleUseSelectedPages}
-                  disabled={isProcessing || isLoadingFiles || isRenderingPreviews || selectedPages.size === 0}
+                  onClick={handleSelectAllPages}
+                  disabled={isProcessing || isLoadingFiles || isRenderingPreviews || pageCount <= 0}
                 >
-                  Use selected pages ({selectedPages.size})
+                  Select all
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={handleSelectOddPages}
+                  disabled={isProcessing || isLoadingFiles || isRenderingPreviews || pageCount <= 0}
+                >
+                  Odd
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={handleSelectEvenPages}
+                  disabled={isProcessing || isLoadingFiles || isRenderingPreviews || pageCount <= 0}
+                >
+                  Even
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={handleSelectFirstPage}
+                  disabled={isProcessing || isLoadingFiles || isRenderingPreviews || pageCount <= 0}
+                >
+                  First page
                 </Button>
                 <Button
                   variant="ghost"

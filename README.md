@@ -131,6 +131,7 @@ Current desktop MVP includes:
 - Merge PDF tool
 - Split PDF tool
 - Extract Pages tool
+- In-memory Extract page thumbnails and assisted selection (Select all, Odd, Even, First page)
 - Reorder PDF tool
 - Local file picker + save dialog
 - Rust-side PDF commands powered by `filegap_core`
