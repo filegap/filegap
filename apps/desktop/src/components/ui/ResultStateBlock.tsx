@@ -28,8 +28,8 @@ export function ResultStateBlock({ title, details, onOpen, onReveal }: ResultSta
             type="button"
             className="output-inline-action"
             onClick={onReveal}
-            title="Show in folder"
-            aria-label="Show in folder"
+            title="Reveal in folder"
+            aria-label="Reveal in folder"
           >
             <Folder aria-hidden="true" />
             <span>Reveal</span>
@@ -39,4 +39,3 @@ export function ResultStateBlock({ title, details, onOpen, onReveal }: ResultSta
     </div>
   );
 }
-

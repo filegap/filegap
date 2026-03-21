@@ -10,6 +10,7 @@ type DropzoneProps = {
 
 export function Dropzone({ disabled = false, fileCount, onSelectFiles }: DropzoneProps) {
   const [dragActive, setDragActive] = useState(false);
+  const fileCountLabel = fileCount === 1 ? '1 file' : `${fileCount} files`;
 
   return (
     <section
@@ -38,7 +39,7 @@ export function Dropzone({ disabled = false, fileCount, onSelectFiles }: Dropzon
         Select PDF files
       </Button>
       <p className="dropzone-hint">Shortcut: Cmd/Ctrl + O</p>
-      <p className="dropzone-count">{fileCount} file(s)</p>
+      <p className="dropzone-count">{fileCountLabel}</p>
     </section>
   );
 }

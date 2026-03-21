@@ -43,9 +43,29 @@ export function SplitOutputPanel({
   onShowInFolder,
 }: SplitOutputPanelProps) {
   const showCompletionState = hasCompleted && !isProcessing && completedOutputCount !== null;
+  const pageWord = pagesPerFile === 1 ? 'page' : 'pages';
 
   return (
     <div className="output-panel">
+      <section className="output-panel-top output-panel-section">
+        <h2>Split settings</h2>
+        <label className="output-label" htmlFor="split-pages-per-file">
+          Pages per file
+        </label>
+        <input
+          id="split-pages-per-file"
+          type="number"
+          min={1}
+          step={1}
+          value={pagesPerFile}
+          onChange={(event) => onPagesPerFileChange(Number(event.target.value) || 1)}
+          className="output-input"
+        />
+        <p className="output-helper-text">Each output file will contain {pagesPerFile} {pageWord}.</p>
+      </section>
+
+      <div className="output-panel-divider" />
+
       <section className="output-panel-top output-panel-section">
         <h2>Export</h2>
         <label className="output-label" htmlFor="output-base-name">
@@ -57,18 +77,6 @@ export function SplitOutputPanel({
           ref={outputInputRef}
           value={outputBaseName}
           onChange={(event) => onOutputBaseNameChange(event.target.value)}
-          className="output-input"
-        />
-        <label className="output-label" htmlFor="split-pages-per-file">
-          Pages per file
-        </label>
-        <input
-          id="split-pages-per-file"
-          type="number"
-          min={1}
-          step={1}
-          value={pagesPerFile}
-          onChange={(event) => onPagesPerFileChange(Number(event.target.value) || 1)}
           className="output-input"
         />
         <div className="output-location-row">
@@ -96,7 +104,7 @@ export function SplitOutputPanel({
         {showCompletionState ? (
           <>
             <ResultStateBlock
-              title="Split completed"
+              title="✓ Split completed"
               details={`${completedOutputCount} files created`}
               onOpen={onOpenFile}
               onReveal={onShowInFolder}
@@ -116,4 +124,3 @@ export function SplitOutputPanel({
     </div>
   );
 }
-
