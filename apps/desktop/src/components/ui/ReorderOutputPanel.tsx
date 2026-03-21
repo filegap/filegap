@@ -47,18 +47,7 @@ export function ReorderOutputPanel({
   return (
     <div className="output-panel">
       <section className="output-panel-top output-panel-section">
-        <h2>Export</h2>
-        <label className="output-label" htmlFor="reorder-output-file-name">
-          File name
-        </label>
-        <input
-          id="reorder-output-file-name"
-          type="text"
-          ref={outputInputRef}
-          value={outputName}
-          onChange={(event) => onOutputNameChange(event.target.value)}
-          className="output-input"
-        />
+        <h2>Reorder settings</h2>
         <label className="output-label" htmlFor="reorder-page-order">
           Page order
         </label>
@@ -69,6 +58,24 @@ export function ReorderOutputPanel({
           value={pageOrder}
           placeholder="Example: 3,1,2,4"
           onChange={(event) => onPageOrderChange(event.target.value)}
+          className="output-input"
+        />
+        <p className="output-helper-text">Include all pages once, for example: 3,1,2,4.</p>
+      </section>
+
+      <div className="output-panel-divider" />
+
+      <section className="output-panel-top output-panel-section">
+        <h2>Export</h2>
+        <label className="output-label" htmlFor="reorder-output-file-name">
+          File name
+        </label>
+        <input
+          id="reorder-output-file-name"
+          type="text"
+          ref={outputInputRef}
+          value={outputName}
+          onChange={(event) => onOutputNameChange(event.target.value)}
           className="output-input"
         />
         <div className="output-location-row">
@@ -102,7 +109,7 @@ export function ReorderOutputPanel({
         {showCompletionState ? (
           <>
             <ResultStateBlock
-              title="Reorder completed"
+              title="✓ Reorder completed"
               details="Your PDF is ready"
               onOpen={onOpenFile}
               onReveal={onShowInFolder}

@@ -47,18 +47,7 @@ export function ExtractOutputPanel({
   return (
     <div className="output-panel">
       <section className="output-panel-top output-panel-section">
-        <h2>Export</h2>
-        <label className="output-label" htmlFor="extract-output-file-name">
-          File name
-        </label>
-        <input
-          id="extract-output-file-name"
-          type="text"
-          ref={outputInputRef}
-          value={outputName}
-          onChange={(event) => onOutputNameChange(event.target.value)}
-          className="output-input"
-        />
+        <h2>Extract settings</h2>
         <label className="output-label" htmlFor="extract-page-ranges">
           Page ranges
         </label>
@@ -69,6 +58,24 @@ export function ExtractOutputPanel({
           value={pageRanges}
           placeholder="Example: 1,3,5-8"
           onChange={(event) => onPageRangesChange(event.target.value)}
+          className="output-input"
+        />
+        <p className="output-helper-text">Use commas and ranges, for example: 1,3,5-8.</p>
+      </section>
+
+      <div className="output-panel-divider" />
+
+      <section className="output-panel-top output-panel-section">
+        <h2>Export</h2>
+        <label className="output-label" htmlFor="extract-output-file-name">
+          File name
+        </label>
+        <input
+          id="extract-output-file-name"
+          type="text"
+          ref={outputInputRef}
+          value={outputName}
+          onChange={(event) => onOutputNameChange(event.target.value)}
           className="output-input"
         />
         <div className="output-location-row">
@@ -101,7 +108,7 @@ export function ExtractOutputPanel({
 
         {showCompletionState ? (
           <>
-            <ResultStateBlock title="Extract completed" details="Your PDF is ready" onOpen={onOpenFile} onReveal={onShowInFolder} />
+            <ResultStateBlock title="✓ Extract completed" details="Your PDF is ready" onOpen={onOpenFile} onReveal={onShowInFolder} />
             <Button variant="ghost" className="output-new-merge-btn" onClick={onNewExtract}>
               <RotateCcw aria-hidden="true" />
               <span>New extract</span>
