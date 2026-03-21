@@ -9,6 +9,7 @@ pub fn run() {
             commands::merge_pdfs,
             commands::split_pdf,
             commands::extract_pages,
+            commands::reorder_pdf,
             commands::inspect_pdf_files,
             commands::show_in_folder,
             commands::open_file

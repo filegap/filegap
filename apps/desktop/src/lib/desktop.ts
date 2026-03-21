@@ -17,6 +17,10 @@ export type ExtractResult = {
   output_path: string;
 };
 
+export type ReorderResult = {
+  output_path: string;
+};
+
 export type PdfFileInfo = {
   path: string;
   size_bytes: number;
@@ -92,6 +96,14 @@ export async function extractPages(inputPath: string, outputPath: string, pageRa
     inputPath,
     outputPath,
     pageRanges,
+  });
+}
+
+export async function reorderPdf(inputPath: string, outputPath: string, pageOrder: number[]): Promise<ReorderResult> {
+  return invoke<ReorderResult>('reorder_pdf', {
+    inputPath,
+    outputPath,
+    pageOrder,
   });
 }
 

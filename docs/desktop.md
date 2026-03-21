@@ -10,6 +10,7 @@ MVP includes:
 - Merge PDF flow
 - Split PDF flow
 - Extract Pages flow
+- Reorder PDF flow
 - Tauri command boundary
 - Direct `filegap_core` integration (no CLI subprocess)
 
@@ -18,7 +19,7 @@ MVP includes:
 Desktop execution path:
 
 1. React UI gathers local file paths and output destination.
-2. UI invokes a Tauri command (`merge_pdfs`, `split_pdf`, `extract_pages`).
+2. UI invokes a Tauri command (`merge_pdfs`, `split_pdf`, `extract_pages`, `reorder_pdf`).
 3. Rust command reads local files, calls `filegap_core` operation.
 4. Rust command writes output to selected destination.
 
@@ -45,7 +46,7 @@ No server-side processing and no network dependency are required for PDF operati
 
 Purpose:
 
-- Run local PDF operations (`Merge`, `Split`, `Extract Pages`) with desktop-native UX.
+- Run local PDF operations (`Merge`, `Split`, `Extract Pages`, `Reorder`) with desktop-native UX.
 - Keep repetitive workflows efficient: run tool, verify result, start new operation.
 
 User flow:
@@ -53,7 +54,7 @@ User flow:
 1. Select local files via file picker.
 2. Review and reorder files in the left working area.
 3. Configure export options in the right sidebar (`File name`, `Location`, `Change`).
-4. Run operation from primary CTA (`Merge PDF`, `Split PDF`, `Extract pages`).
+4. Run operation from primary CTA (`Merge PDF`, `Split PDF`, `Extract pages`, `Reorder PDF`).
 5. Inspect completion result in sidebar result block.
 6. Use post-operation actions (`Open`, `Reveal`) or reset with `New ...`.
 
@@ -133,6 +134,5 @@ Use local-first terminology consistently:
 
 ## Next Steps
 
-- Add `reorder` flow.
 - Add `info` command and route for metadata inspection.
 - Add desktop integration tests around command success/failure boundaries.

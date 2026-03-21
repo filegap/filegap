@@ -131,10 +131,11 @@ Current desktop MVP includes:
 - Merge PDF tool
 - Split PDF tool
 - Extract Pages tool
+- Reorder PDF tool
 - Local file picker + save dialog
 - Rust-side PDF commands powered by `filegap_core`
 
 ## Status
 
 `v0.1` feature-complete on CLI (`merge`, `extract`, `split`, `reorder`, `info`) with automated tests.
-Desktop app has an MVP scaffold with the first production flow (`merge`) running through Tauri -> Rust core.
+Desktop app has local production flows for `merge`, `split`, `extract`, and `reorder` running through Tauri -> Rust core.

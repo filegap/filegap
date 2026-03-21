@@ -5,9 +5,10 @@ use std::process::Command;
 use filegap_core::{
     ops::{
         extract_pages as core_extract_pages, merge_pdfs as core_merge_pdfs,
-        split_pdf as core_split_pdf,
+        reorder_pages as core_reorder_pages, split_pdf as core_split_pdf,
     },
-    CoreError, ExtractRequest, MergeRequest, SplitMode, SplitRequest,
+    CoreError, ExtractRequest, MergeRequest, ReorderRequest, SplitMode,
+    SplitRequest,
 };
 use lopdf::Document;
 use serde::Serialize;
@@ -27,6 +28,11 @@ pub struct SplitResult {
 
 #[derive(Debug, Serialize)]
 pub struct ExtractResult {
+    pub output_path: String,
+}
+
+#[derive(Debug, Serialize)]
+pub struct ReorderResult {
     pub output_path: String,
 }
 
@@ -166,6 +172,35 @@ pub async fn extract_pages(
     })
     .await
     .map_err(|_| "Failed to complete extract operation.".to_string())?
+}
+
+#[tauri::command]
+pub async fn reorder_pdf(
+    input_path: String,
+    output_path: String,
+    page_order: Vec<u32>,
+) -> Result<ReorderResult, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        if input_path.trim().is_empty() {
+            return Err("Select a valid input PDF file.".to_string());
+        }
+        if output_path.trim().is_empty() {
+            return Err("Select a valid output destination.".to_string());
+        }
+
+        let input_bytes = fs::read(&input_path).map_err(|_| "Failed to read input PDF file.".to_string())?;
+        let reordered = core_reorder_pages(&ReorderRequest {
+            document: input_bytes,
+            page_order,
+        })
+        .map_err(map_core_error)?;
+
+        fs::write(&output_path, reordered).map_err(|_| "Failed to write reordered PDF.".to_string())?;
+
+        Ok(ReorderResult { output_path })
+    })
+    .await
+    .map_err(|_| "Failed to complete reorder operation.".to_string())?
 }
 
 #[tauri::command]

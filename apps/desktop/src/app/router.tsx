@@ -3,6 +3,7 @@ import { ExtractPagesPage } from '../pages/extract-pages/ExtractPagesPage';
 import { HomePage } from '../pages/home/HomePage';
 import { MergePdfPage } from '../pages/merge-pdf/MergePdfPage';
 import { NotFoundPage } from '../pages/not-found/NotFoundPage';
+import { ReorderPdfPage } from '../pages/reorder-pdf/ReorderPdfPage';
 import { SplitPdfPage } from '../pages/split-pdf/SplitPdfPage';
 
 export const router = createHashRouter([
@@ -21,6 +22,10 @@ export const router = createHashRouter([
   {
     path: '/extract-pages',
     element: <ExtractPagesPage />,
+  },
+  {
+    path: '/reorder-pdf',
+    element: <ReorderPdfPage />,
   },
   {
     path: '*',

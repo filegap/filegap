@@ -30,7 +30,7 @@ const TOOLS = [
     description: 'Rearrange PDF pages visually and export a new file in seconds.',
     href: '/reorder-pdf',
     icon: <ArrowUpDown />,
-    enabled: false,
+    enabled: true,
   },
 ];
 
