@@ -165,6 +165,19 @@ export function HomePage() {
           </div>
         </section>
 
+        <section data-testid='home-tool-grid' className='mt-16 grid gap-4 md:mt-20 md:grid-cols-2'>
+          {TOOLS.map((tool) => (
+            <HomeToolCard
+              key={tool.href}
+              name={tool.name}
+              description={tool.description}
+              href={tool.href}
+              ctaLabel={tool.ctaLabel}
+              icon={tool.icon}
+            />
+          ))}
+        </section>
+
         <section className='mt-10 space-y-4'>
           <h2 className='font-heading text-2xl font-semibold text-ui-text'>More ways to use Filegap</h2>
           <div className='grid gap-4 md:grid-cols-2'>
@@ -215,19 +228,6 @@ export function HomePage() {
               </div>
             </a>
           </div>
-        </section>
-
-        <section data-testid='home-tool-grid' className='mt-16 grid gap-4 md:mt-20 md:grid-cols-2'>
-          {TOOLS.map((tool) => (
-            <HomeToolCard
-              key={tool.href}
-              name={tool.name}
-              description={tool.description}
-              href={tool.href}
-              ctaLabel={tool.ctaLabel}
-              icon={tool.icon}
-            />
-          ))}
         </section>
 
         <section className='mt-10 rounded-xl border border-ui-border bg-ui-surface p-6'>

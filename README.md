@@ -1,5 +1,7 @@
 # filegap
 
+![CI](https://github.com/filegap/filegap/actions/workflows/ci.yml/badge.svg)
+
 Private PDF tools that run locally.
 
 Core promise: **your files never leave your device**.
