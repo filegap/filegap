@@ -39,6 +39,46 @@ brew install filegap`}</code>
 filegap --help`}</code>
             </pre>
           </div>
+          <section className='space-y-4'>
+            <h2 className='font-heading text-base font-semibold text-ui-text'>Examples</h2>
+
+            <div className='space-y-2'>
+              <h3 className='font-heading text-sm font-semibold text-ui-text'>Basic usage</h3>
+              <p className='text-xs'>Simple commands to get started quickly.</p>
+              <pre className='overflow-x-auto rounded-lg border border-ui-border bg-ui-bg p-3 text-xs text-ui-text'>
+                <code>{`filegap merge a.pdf b.pdf -o merged.pdf
+filegap split document.pdf --pages 1-5
+filegap extract report.pdf --pages 2,4,6 -o extracted.pdf
+filegap reorder input.pdf --order 3,1,2 -o reordered.pdf`}</code>
+              </pre>
+            </div>
+
+            <div className='space-y-2'>
+              <h3 className='font-heading text-sm font-semibold text-ui-text'>
+                Pipe-first workflows
+              </h3>
+              <p className='text-xs'>Use Filegap in pipelines to integrate with other CLI tools.</p>
+              <pre className='overflow-x-auto rounded-lg border border-ui-border bg-ui-bg p-3 text-xs text-ui-text'>
+                <code>{`cat input.pdf | filegap extract --pages 1-3 > output.pdf
+
+filegap merge a.pdf b.pdf | filegap reorder --order 2,1 > final.pdf
+
+ls *.pdf | xargs filegap merge -o combined.pdf`}</code>
+              </pre>
+            </div>
+
+            <div className='space-y-2'>
+              <h3 className='font-heading text-sm font-semibold text-ui-text'>Chaining commands</h3>
+              <p className='text-xs'>Combine multiple operations in a single workflow.</p>
+              <pre className='overflow-x-auto rounded-lg border border-ui-border bg-ui-bg p-3 text-xs text-ui-text'>
+                <code>{`filegap merge a.pdf b.pdf -o temp.pdf && \\
+filegap extract temp.pdf --pages 1-3 -o final.pdf
+
+filegap split big.pdf --pages 1-10 -o part.pdf && \\
+filegap reorder part.pdf --order 10,9,8,7,6,5,4,3,2,1 -o reversed.pdf`}</code>
+              </pre>
+            </div>
+          </section>
           <p>
             Source code and releases:{' '}
             <a
