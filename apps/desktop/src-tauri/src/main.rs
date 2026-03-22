@@ -13,7 +13,8 @@ pub fn run() {
             commands::inspect_pdf_files,
             commands::read_pdf_bytes,
             commands::show_in_folder,
-            commands::open_file
+            commands::open_file,
+            commands::path_exists
         ])
         .run(tauri::generate_context!())
         .expect("error while running filegap desktop app");

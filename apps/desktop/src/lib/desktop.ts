@@ -130,3 +130,7 @@ export async function openFile(path: string): Promise<void> {
 export async function revealInFolder(path: string): Promise<void> {
   await invoke('show_in_folder', { path });
 }
+
+export async function pathExists(path: string): Promise<boolean> {
+  return invoke<boolean>('path_exists', { path });
+}

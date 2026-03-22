@@ -11,11 +11,13 @@ import {
   inspectPdfFiles,
   mergePdfs,
   openFile,
+  pathExists,
   revealInFolder,
   type PdfFileInfo,
 } from '../../lib/desktop';
+import { renderFilenameTemplate, resolveOutputPathByOverwrite } from '../../lib/outputSettings';
 import { fileNameFromPath } from '../../lib/pathUtils';
-import { useDefaultOutputDirectorySetting } from '../../lib/settings';
+import { useDesktopSettings } from '../../lib/settings';
 
 type StatusTone = 'neutral' | 'info' | 'error' | 'success';
 
@@ -75,11 +77,8 @@ function toInfoMap(list: PdfFileInfo[]): Map<string, PdfFileInfo> {
   return new Map(list.map((item) => [item.path, item]));
 }
 
-function createDefaultOutputName(fileCount: number): string {
-  if (fileCount >= 2) {
-    return `merged-${fileCount}-files.pdf`;
-  }
-  return 'merged.pdf';
+function createDefaultOutputName(fileCount: number, template: string): string {
+  return renderFilenameTemplate(template, { n: fileCount >= 2 ? fileCount : 1 });
 }
 
 function waitForNextFrame(): Promise<void> {
@@ -89,11 +88,11 @@ function waitForNextFrame(): Promise<void> {
 }
 
 export function MergePdfPage() {
-  const defaultOutputDirectory = useDefaultOutputDirectorySetting();
+  const [settings] = useDesktopSettings();
   const [files, setFiles] = useState<MergeFile[]>([]);
   const [outputDirectory, setOutputDirectory] = useState('');
   const [defaultDownloadDirectory, setDefaultDownloadDirectory] = useState('');
-  const [outputName, setOutputName] = useState('merged.pdf');
+  const [outputName, setOutputName] = useState(createDefaultOutputName(0, settings.mergeFilenameTemplate));
   const [isOutputNameDirty, setIsOutputNameDirty] = useState(false);
   const [pathSeparator, setPathSeparator] = useState<'/' | '\\'>('/');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -112,8 +111,12 @@ export function MergePdfPage() {
     : 'Processing files...';
 
   const canMerge = useMemo(
-    () => !isLoadingFiles && files.length >= 2 && outputDirectory.trim().length > 0 && outputName.trim().length > 0,
-    [files, outputDirectory, outputName, isLoadingFiles]
+    () =>
+      !isLoadingFiles &&
+      files.length >= 2 &&
+      (settings.askDestinationEveryTime || outputDirectory.trim().length > 0) &&
+      outputName.trim().length > 0,
+    [files, outputDirectory, outputName, isLoadingFiles, settings.askDestinationEveryTime]
   );
 
   const mergeActionLabel = isProcessing ? 'Merging...' : hasCompleted ? 'Merge again' : 'Merge PDF';
@@ -125,7 +128,7 @@ export function MergePdfPage() {
       if (cancelled) {
         return;
       }
-      const fallbackDirectory = defaultOutputDirectory ?? downloads;
+      const fallbackDirectory = settings.askDestinationEveryTime ? null : settings.defaultOutputDirectory ?? downloads;
       setDefaultDownloadDirectory(downloads ?? '');
       if (!fallbackDirectory) {
         return;
@@ -138,14 +141,14 @@ export function MergePdfPage() {
     return () => {
       cancelled = true;
     };
-  }, [defaultOutputDirectory]);
+  }, [settings.askDestinationEveryTime, settings.defaultOutputDirectory]);
 
   useEffect(() => {
     if (isOutputNameDirty) {
       return;
     }
-    setOutputName(createDefaultOutputName(files.length));
-  }, [files.length, isOutputNameDirty]);
+    setOutputName(createDefaultOutputName(files.length, settings.mergeFilenameTemplate));
+  }, [files.length, isOutputNameDirty, settings.mergeFilenameTemplate]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -266,7 +269,7 @@ export function MergePdfPage() {
     setHasCompleted(false);
     setCompletedMergeCount(null);
     setLastOutputPath('');
-    setOutputName(createDefaultOutputName(0));
+    setOutputName(createDefaultOutputName(0, settings.mergeFilenameTemplate));
     setIsOutputNameDirty(false);
     setStatus({ tone: 'neutral', message: 'Idle' });
   }
@@ -283,12 +286,40 @@ export function MergePdfPage() {
       await waitForNextFrame();
     }
 
-    setIsProcessing(true);
-    setCompletedMergeCount(null);
-    setStatus({ tone: 'info', message: 'Merging...' });
-
     try {
-      const outputPath = joinPath(outputDirectory, outputName.trim(), pathSeparator);
+      let runDirectory = outputDirectory;
+      if (settings.askDestinationEveryTime) {
+        const chosen = await chooseOutputDirectory();
+        if (!chosen) {
+          return;
+        }
+        runDirectory = chosen;
+        const parsed = parsePath(chosen);
+        setPathSeparator(parsed.sep);
+        setOutputDirectory(chosen);
+      }
+
+      if (runDirectory.trim().length === 0) {
+        setStatus({ tone: 'error', message: 'Select a valid output destination.' });
+        return;
+      }
+
+      setIsProcessing(true);
+      setCompletedMergeCount(null);
+      setStatus({ tone: 'info', message: 'Merging...' });
+
+      const candidateOutputPath = joinPath(runDirectory, outputName.trim(), pathSeparator);
+      const outputPath = await resolveOutputPathByOverwrite(
+        candidateOutputPath,
+        settings.overwriteBehavior,
+        pathExists,
+        async (message) => window.confirm(message)
+      );
+      if (!outputPath) {
+        setStatus({ tone: 'info', message: 'Merge cancelled.' });
+        return;
+      }
+
       const result = await mergePdfs(
         files.map((file) => file.path),
         outputPath
@@ -300,6 +331,20 @@ export function MergePdfPage() {
         tone: 'success',
         message: `Done: ${result.input_count} files merged`,
       });
+      if (settings.openFileAfterExport) {
+        try {
+          await openFile(outputPath);
+        } catch {
+          // Non-blocking post action.
+        }
+      }
+      if (settings.revealInFolderAfterExport) {
+        try {
+          await revealInFolder(outputPath);
+        } catch {
+          // Non-blocking post action.
+        }
+      }
     } catch (error) {
       const reason = readErrorMessage(error);
       console.error('[desktop.merge] command failed:', reason);
@@ -330,7 +375,9 @@ export function MergePdfPage() {
   }));
   const tableRows = isLoadingFiles ? [] : rows;
 
-  const destinationFriendlyLabel = !outputDirectory
+  const destinationFriendlyLabel = settings.askDestinationEveryTime
+    ? 'Ask every time'
+    : !outputDirectory
     ? 'No destination selected'
     : outputDirectory === defaultDownloadDirectory
     ? 'Downloads'

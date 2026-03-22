@@ -11,13 +11,15 @@ import {
   getDownloadDirectory,
   inspectPdfFiles,
   openFile,
+  pathExists,
   readPdfBytes,
   revealInFolder,
   splitPdf,
 } from '../../lib/desktop';
+import { renderFilenameTemplate, resolveOutputPathByOverwrite } from '../../lib/outputSettings';
 import { renderPdfThumbnails, type PageThumbnail } from '../../lib/pdfPreview';
 import { fileNameFromPath } from '../../lib/pathUtils';
-import { useDefaultOutputDirectorySetting } from '../../lib/settings';
+import { useDesktopSettings } from '../../lib/settings';
 
 type StatusTone = 'neutral' | 'info' | 'error' | 'success';
 
@@ -114,11 +116,11 @@ function buildSplitRangesFromStarts(starts: Set<number>, maxPage: number): Split
 }
 
 export function SplitPdfPage() {
-  const defaultOutputDirectory = useDefaultOutputDirectorySetting();
+  const [settings] = useDesktopSettings();
   const [files, setFiles] = useState<SplitFile[]>([]);
   const [outputDirectory, setOutputDirectory] = useState('');
   const [defaultDownloadDirectory, setDefaultDownloadDirectory] = useState('');
-  const [outputBaseName, setOutputBaseName] = useState('split');
+  const [outputBaseName, setOutputBaseName] = useState(renderFilenameTemplate(settings.splitFilenameTemplate, { n: 1 }));
   const [splitMode, setSplitMode] = useState<SplitMode>('pages');
   const [pagesPerFile, setPagesPerFile] = useState(1);
   const [pageRanges, setPageRanges] = useState('');
@@ -174,10 +176,20 @@ export function SplitPdfPage() {
       !isLoadingFiles &&
       !isProcessing &&
       files.length === 1 &&
-      outputDirectory.trim().length > 0 &&
+      (settings.askDestinationEveryTime || outputDirectory.trim().length > 0) &&
       outputBaseName.trim().length > 0 &&
       (splitMode === 'pages' ? pagesPerFile > 0 : parsedRangeSegments !== null && parsedRangeSegments.length > 0),
-    [isLoadingFiles, isProcessing, files.length, outputDirectory, outputBaseName, splitMode, pagesPerFile, parsedRangeSegments]
+    [
+      isLoadingFiles,
+      isProcessing,
+      files.length,
+      outputDirectory,
+      outputBaseName,
+      splitMode,
+      pagesPerFile,
+      parsedRangeSegments,
+      settings.askDestinationEveryTime,
+    ]
   );
 
   const actionLabel = isProcessing ? 'Splitting...' : hasCompleted ? 'Split again' : 'Split PDF';
@@ -259,7 +271,7 @@ export function SplitPdfPage() {
       if (cancelled) {
         return;
       }
-      const fallbackDirectory = defaultOutputDirectory ?? downloads;
+      const fallbackDirectory = settings.askDestinationEveryTime ? null : settings.defaultOutputDirectory ?? downloads;
       setDefaultDownloadDirectory(downloads ?? '');
       if (!fallbackDirectory) {
         return;
@@ -269,7 +281,19 @@ export function SplitPdfPage() {
     return () => {
       cancelled = true;
     };
-  }, [defaultOutputDirectory]);
+  }, [settings.askDestinationEveryTime, settings.defaultOutputDirectory]);
+
+  useEffect(() => {
+    const pageRef = pageCount > 0 ? pageCount : 1;
+    setOutputBaseName((current) => {
+      const fallbackA = renderFilenameTemplate(settings.splitFilenameTemplate, { n: pageRef });
+      const fallbackB = renderFilenameTemplate('split-{date}', { n: pageRef });
+      if (current === 'split' || current === fallbackB) {
+        return fallbackA;
+      }
+      return current;
+    });
+  }, [settings.splitFilenameTemplate, pageCount]);
 
   async function handleSelectInput() {
     const selected = await chooseSinglePdfInput();
@@ -339,7 +363,7 @@ export function SplitPdfPage() {
     setHasCompleted(false);
     setCompletedOutputCount(null);
     setLastOutputPath('');
-    setOutputBaseName('split');
+    setOutputBaseName(renderFilenameTemplate(settings.splitFilenameTemplate, { n: pageCount > 0 ? pageCount : 1 }));
     setPagesPerFile(1);
     setStatus({ tone: 'neutral', message: 'Idle' });
   }
@@ -355,13 +379,43 @@ export function SplitPdfPage() {
       setLastOutputPath('');
     }
 
-    setIsProcessing(true);
-      setStatus({ tone: 'info', message: 'Splitting...' });
     try {
+      let runDirectory = outputDirectory;
+      if (settings.askDestinationEveryTime) {
+        const chosen = await chooseOutputDirectory();
+        if (!chosen) {
+          return;
+        }
+        runDirectory = chosen;
+        setOutputDirectory(chosen);
+      }
+
+      if (runDirectory.trim().length === 0) {
+        setStatus({ tone: 'error', message: 'Select a valid output destination.' });
+        return;
+      }
+
+      const sanitizedBaseName = outputBaseName.trim().replace(/\.pdf$/i, '');
+      const separator = runDirectory.includes('\\') ? '\\' : '/';
+      const firstOutputCandidate = `${runDirectory}${separator}${sanitizedBaseName}-part-1.pdf`;
+      const resolvedFirstOutputPath = await resolveOutputPathByOverwrite(
+        firstOutputCandidate,
+        settings.overwriteBehavior,
+        pathExists,
+        async (message) => window.confirm(message)
+      );
+      if (!resolvedFirstOutputPath) {
+        setStatus({ tone: 'info', message: 'Split cancelled.' });
+        return;
+      }
+      const resolvedBaseName = fileNameFromPath(resolvedFirstOutputPath).replace(/-part-1\.pdf$/i, '');
+
+      setIsProcessing(true);
+      setStatus({ tone: 'info', message: 'Splitting...' });
       const result = await splitPdf(
         files[0].path,
-        outputDirectory,
-        outputBaseName.trim(),
+        runDirectory,
+        resolvedBaseName,
         pagesPerFile,
         splitMode === 'ranges' ? pageRanges : undefined
       );
@@ -369,6 +423,20 @@ export function SplitPdfPage() {
       setCompletedOutputCount(result.output_count);
       setLastOutputPath(result.first_output_path || result.output_dir);
       setStatus({ tone: 'success', message: `Done: ${result.output_count} files created` });
+      if (settings.openFileAfterExport && result.first_output_path) {
+        try {
+          await openFile(result.first_output_path);
+        } catch {
+          // Non-blocking post action.
+        }
+      }
+      if (settings.revealInFolderAfterExport && result.first_output_path) {
+        try {
+          await revealInFolder(result.first_output_path);
+        } catch {
+          // Non-blocking post action.
+        }
+      }
     } catch (error) {
       const reason = readErrorMessage(error);
       setStatus({ tone: 'error', message: `Split failed: ${reason}` });
@@ -463,10 +531,12 @@ export function SplitPdfPage() {
   }
 
   const destinationFriendlyLabel = !outputDirectory
-    ? 'No destination selected'
+    ? settings.askDestinationEveryTime
+      ? 'Ask every time'
+      : 'No destination selected'
     : outputDirectory === defaultDownloadDirectory
-    ? 'Downloads'
-    : fileNameFromPath(outputDirectory);
+      ? 'Downloads'
+      : fileNameFromPath(outputDirectory);
 
   const footerMessage =
     isLoadingFiles || isRenderingPreviews ? 'Processing file...' : status.tone === 'neutral' ? 'Ready' : status.message;

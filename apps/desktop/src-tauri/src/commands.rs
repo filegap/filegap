@@ -311,3 +311,8 @@ pub fn open_file(path: String) -> Result<(), String> {
 
     Ok(())
 }
+
+#[tauri::command]
+pub fn path_exists(path: String) -> bool {
+    Path::new(&path).exists()
+}
