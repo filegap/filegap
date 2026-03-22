@@ -1,0 +1,56 @@
+name: Update Homebrew Formula
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  update-tap-formula:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Prepare release metadata
+        run: |
+          echo "TAG=${GITHUB_REF_NAME}" >> "${GITHUB_ENV}"
+          echo "TARBALL_URL=https://github.com/filegap/filegap/archive/refs/tags/${GITHUB_REF_NAME}.tar.gz" >> "${GITHUB_ENV}"
+
+      - name: Compute tarball SHA256
+        run: |
+          curl -L "${TARBALL_URL}" -o source.tar.gz
+          echo "SHA256=$(sha256sum source.tar.gz | awk '{print $1}')" >> "${GITHUB_ENV}"
+
+      - name: Checkout tap repository
+        uses: actions/checkout@v4
+        with:
+          repository: filegap/homebrew-filegap
+          token: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
+          path: tap
+
+      - name: Update Formula/filegap.rb
+        run: |
+          FORMULA_PATH="tap/Formula/filegap.rb"
+
+          if [ ! -f "${FORMULA_PATH}" ]; then
+            echo "Formula file not found: ${FORMULA_PATH}" >&2
+            exit 1
+          fi
+
+          sed -i "s|^  url \".*\"|  url \"${TARBALL_URL}\"|" "${FORMULA_PATH}"
+          sed -i "s|^  sha256 \".*\"|  sha256 \"${SHA256}\"|" "${FORMULA_PATH}"
+
+      - name: Commit and push if changed
+        run: |
+          if git -C tap diff --quiet; then
+            echo "No formula changes to commit."
+            exit 0
+          fi
+
+          git -C tap config user.name "filegap-bot"
+          git -C tap config user.email "actions@github.com"
+          git -C tap add Formula/filegap.rb
+          git -C tap commit -m "chore(formula): bump filegap ${TAG}"
+          git -C tap push

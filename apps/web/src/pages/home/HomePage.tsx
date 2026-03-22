@@ -116,7 +116,7 @@ export function HomePage() {
 
           <p className='text-sm text-ui-muted'>
             <a
-              href='https://github.com/your-org/filegap'
+              href='https://github.com/filegap/filegap'
               target='_blank'
               rel='noreferrer'
               className='inline-flex items-center gap-1.5 transition hover:text-ui-text'

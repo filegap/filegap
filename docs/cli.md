@@ -2,6 +2,44 @@
 
 Binary: `filegap`
 
+Repository: https://github.com/filegap/filegap
+
+## Installation (Homebrew)
+
+Install directly from tap:
+
+```bash
+brew install filegap/filegap/filegap
+```
+
+Or:
+
+```bash
+brew tap filegap/filegap
+brew install filegap
+```
+
+Check installation:
+
+```bash
+filegap --version
+filegap --help
+```
+
+## Homebrew Tap Automation
+
+Workflow: `.github/workflows/update-homebrew-formula.yml`
+
+On each pushed tag (`v*`), CI:
+
+- computes the `sha256` for `https://github.com/filegap/filegap/archive/refs/tags/<tag>.tar.gz`
+- updates `Formula/filegap.rb` in `filegap/homebrew-filegap`
+- commits and pushes the formula update
+
+Required secret in this repository:
+
+- `HOMEBREW_TAP_GITHUB_TOKEN` (token with write access to `filegap/homebrew-filegap`)
+
 ## Design
 
 - Pipe-first and composable

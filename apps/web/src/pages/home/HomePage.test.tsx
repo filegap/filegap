@@ -22,7 +22,7 @@ describe('HomePage', () => {
     ).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Open source on GitHub' })).toHaveAttribute(
       'href',
-      'https://github.com/your-org/filegap'
+      'https://github.com/filegap/filegap'
     );
     expect(
       screen.getByText((_, element) => element?.textContent === 'Use the CLI or download the app')

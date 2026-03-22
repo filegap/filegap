@@ -6,6 +6,8 @@ Private PDF tools that run locally.
 
 Core promise: **your files never leave your device**.
 
+Repository: https://github.com/filegap/filegap
+
 ## Vision
 
 `filegap` is an open-source PDF tools suite distributed through:
@@ -73,6 +75,28 @@ Run CLI:
 
 ```bash
 cargo run -p filegap-cli --bin filegap -- --help
+```
+
+## Install CLI (Homebrew)
+
+Install directly from the public tap:
+
+```bash
+brew install filegap/filegap/filegap
+```
+
+Or tap first and then install:
+
+```bash
+brew tap filegap/filegap
+brew install filegap
+```
+
+Quick sanity checks:
+
+```bash
+filegap --version
+filegap --help
 ```
 
 Pipe-first examples:
