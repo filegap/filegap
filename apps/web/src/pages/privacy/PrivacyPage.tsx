@@ -46,7 +46,7 @@ export function PrivacyPage() {
           <section className='space-y-2'>
             <h2 className='font-heading text-lg font-semibold text-ui-text'>Analytics</h2>
             <p>
-              Filegap is privacy-first by design. We use SimpleAnalytics and collect only anonymous
+              Filegap is privacy-first by design. We use <a href="https://simpleanalytics.com">SimpleAnalytics</a> and collect only anonymous
               high-level usage signals to understand which features are useful.
             </p>
             <p>
@@ -58,6 +58,13 @@ export function PrivacyPage() {
               Analytics helps us improve the product, not track people. We do not track users
               across sessions and we do not build user profiles.
             </p>
+            <p>
+              We do not collect any information that can identify your documents, such as file names, paths, or content.
+            </p>
+            <p>
+              We may collect minimal, non-identifying metrics (e.g. number of pages processed) to understand feature usage.
+              These cannot be linked to you or your files.
+            </p>
             <p>What we do not collect through analytics:</p>
             <ul className='list-disc space-y-1 pl-5'>
               <li>No personal data</li>
@@ -66,9 +73,7 @@ export function PrivacyPage() {
               <li>No fingerprinting</li>
               <li>No cross-site tracking</li>
               <li>No file content tracking</li>
-              <li>
-                No file names, file paths, page order, or other document-specific metadata
-              </li>
+              <li>No file names, file paths, or page order</li>
               <li>
                 No IP-based user tracking (and where IP data is technically handled by
                 infrastructure, it is not used to identify users)
