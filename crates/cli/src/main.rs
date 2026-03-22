@@ -15,6 +15,7 @@ use zip::write::{SimpleFileOptions, ZipWriter};
 #[derive(Debug, Parser)]
 #[command(name = "filegap")]
 #[command(about = "Private PDF tools that run locally")]
+#[command(version)]
 struct Cli {
     #[command(subcommand)]
     command: Commands,
@@ -192,9 +193,10 @@ impl CliError {
 fn main() -> ExitCode {
     let cli = match Cli::try_parse() {
         Ok(cli) => cli,
-        Err(_) => {
-            eprintln!("Error: invalid CLI arguments");
-            return ExitCode::from(2);
+        Err(err) => {
+            let exit_code = u8::try_from(err.exit_code()).unwrap_or(2);
+            let _ = err.print();
+            return ExitCode::from(exit_code);
         }
     };
 
