@@ -57,9 +57,9 @@ export async function chooseSinglePdfInput(): Promise<string | null> {
   return typeof selection === 'string' ? selection : null;
 }
 
-export async function chooseOutputDirectory(): Promise<string | null> {
+export async function chooseOutputDirectory(title = 'Choose destination folder'): Promise<string | null> {
   const output = await open({
-    title: 'Choose destination folder',
+    title,
     directory: true,
     multiple: false,
   });

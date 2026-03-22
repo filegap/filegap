@@ -15,6 +15,7 @@ import {
   type PdfFileInfo,
 } from '../../lib/desktop';
 import { fileNameFromPath } from '../../lib/pathUtils';
+import { useDefaultOutputDirectorySetting } from '../../lib/settings';
 
 type StatusTone = 'neutral' | 'info' | 'error' | 'success';
 
@@ -88,6 +89,7 @@ function waitForNextFrame(): Promise<void> {
 }
 
 export function MergePdfPage() {
+  const defaultOutputDirectory = useDefaultOutputDirectorySetting();
   const [files, setFiles] = useState<MergeFile[]>([]);
   const [outputDirectory, setOutputDirectory] = useState('');
   const [defaultDownloadDirectory, setDefaultDownloadDirectory] = useState('');
@@ -120,17 +122,23 @@ export function MergePdfPage() {
     let cancelled = false;
     void (async () => {
       const downloads = await getDownloadDirectory();
-      if (!downloads || cancelled) {
+      if (cancelled) {
         return;
       }
-      setDefaultDownloadDirectory(downloads);
-      setOutputDirectory((current) => (current.trim().length === 0 ? downloads : current));
+      const fallbackDirectory = defaultOutputDirectory ?? downloads;
+      setDefaultDownloadDirectory(downloads ?? '');
+      if (!fallbackDirectory) {
+        return;
+      }
+      const parsed = parsePath(fallbackDirectory);
+      setPathSeparator(parsed.sep);
+      setOutputDirectory((current) => (current.trim().length === 0 ? fallbackDirectory : current));
     })();
 
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [defaultOutputDirectory]);
 
   useEffect(() => {
     if (isOutputNameDirty) {

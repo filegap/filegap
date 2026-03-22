@@ -17,6 +17,7 @@ import {
 } from '../../lib/desktop';
 import { renderPdfThumbnails, type PageThumbnail } from '../../lib/pdfPreview';
 import { fileNameFromPath } from '../../lib/pathUtils';
+import { useDefaultOutputDirectorySetting } from '../../lib/settings';
 
 type StatusTone = 'neutral' | 'info' | 'error' | 'success';
 
@@ -113,6 +114,7 @@ function buildSplitRangesFromStarts(starts: Set<number>, maxPage: number): Split
 }
 
 export function SplitPdfPage() {
+  const defaultOutputDirectory = useDefaultOutputDirectorySetting();
   const [files, setFiles] = useState<SplitFile[]>([]);
   const [outputDirectory, setOutputDirectory] = useState('');
   const [defaultDownloadDirectory, setDefaultDownloadDirectory] = useState('');
@@ -254,16 +256,20 @@ export function SplitPdfPage() {
     let cancelled = false;
     void (async () => {
       const downloads = await getDownloadDirectory();
-      if (!downloads || cancelled) {
+      if (cancelled) {
         return;
       }
-      setDefaultDownloadDirectory(downloads);
-      setOutputDirectory((current) => (current.trim().length === 0 ? downloads : current));
+      const fallbackDirectory = defaultOutputDirectory ?? downloads;
+      setDefaultDownloadDirectory(downloads ?? '');
+      if (!fallbackDirectory) {
+        return;
+      }
+      setOutputDirectory((current) => (current.trim().length === 0 ? fallbackDirectory : current));
     })();
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [defaultOutputDirectory]);
 
   async function handleSelectInput() {
     const selected = await chooseSinglePdfInput();

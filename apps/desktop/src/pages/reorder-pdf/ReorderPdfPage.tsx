@@ -17,6 +17,7 @@ import {
 } from '../../lib/desktop';
 import { renderPdfThumbnails } from '../../lib/pdfPreview';
 import { fileNameFromPath } from '../../lib/pathUtils';
+import { useDefaultOutputDirectorySetting } from '../../lib/settings';
 
 type StatusTone = 'neutral' | 'info' | 'error' | 'success';
 
@@ -105,6 +106,7 @@ function parsePageOrderInput(value: string, pageCount: number): number[] {
 }
 
 export function ReorderPdfPage() {
+  const defaultOutputDirectory = useDefaultOutputDirectorySetting();
   const [files, setFiles] = useState<ReorderFile[]>([]);
   const [thumbnails, setThumbnails] = useState<ReorderThumbnailItem[]>([]);
   const [originalPageOrder, setOriginalPageOrder] = useState<number[]>([]);
@@ -167,16 +169,22 @@ export function ReorderPdfPage() {
     let cancelled = false;
     void (async () => {
       const downloads = await getDownloadDirectory();
-      if (!downloads || cancelled) {
+      if (cancelled) {
         return;
       }
-      setDefaultDownloadDirectory(downloads);
-      setOutputDirectory((current) => (current.trim().length === 0 ? downloads : current));
+      const fallbackDirectory = defaultOutputDirectory ?? downloads;
+      setDefaultDownloadDirectory(downloads ?? '');
+      if (!fallbackDirectory) {
+        return;
+      }
+      const parsed = parsePath(fallbackDirectory);
+      setPathSeparator(parsed.sep);
+      setOutputDirectory((current) => (current.trim().length === 0 ? fallbackDirectory : current));
     })();
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [defaultOutputDirectory]);
 
   useEffect(() => {
     if (files.length !== 1) {
