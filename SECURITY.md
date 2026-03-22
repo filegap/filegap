@@ -6,8 +6,7 @@
 
 Please report vulnerabilities privately:
 
-- Open a **private security advisory** on GitHub (preferred)
-- Or email: `security@filegap.dev`
+- Open a **private security advisory** on GitHub
 
 Do not open public issues for unpatched vulnerabilities.
 

@@ -55,7 +55,8 @@ an individual is officially representing the community in public spaces.
 ## Reporting
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be
-reported to the community leaders at `conduct@filegap.dev`.
+reported by opening a GitHub issue and requesting private follow-up with the
+maintainers.
 
 All complaints will be reviewed and investigated promptly and fairly.
 
