@@ -230,13 +230,22 @@ p {
   min-height: 0;
   display: grid;
   align-content: center;
-  gap: 16px;
+  gap: 12px;
 }
 
-.home-label {
-  color: var(--muted);
-  font-size: 0.78rem;
-  letter-spacing: 0.015em;
+.home-title {
+  width: min(980px, 100%);
+  margin: 0 auto 2px;
+  color: color-mix(in srgb, var(--text) 82%, #334155);
+  font-size: 2rem;
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.home-trust-banner {
+  width: min(980px, 100%);
+  margin: 0 auto;
 }
 
 .tool-grid {
@@ -249,9 +258,11 @@ p {
 
 .tool-card-link {
   display: block;
+  cursor: pointer;
 }
 
 .tool-card {
+  position: relative;
   min-height: 230px;
   display: grid;
   grid-template-columns: auto 1fr;
@@ -283,19 +294,46 @@ p {
 .tool-card-content {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  align-items: flex-start;
+  gap: 0;
 }
 
 .tool-card-content h2 {
   font-size: 2rem;
   font-weight: 700;
   line-height: 1.15;
+  margin-bottom: 14px;
 }
 
 .tool-card-content p {
   color: var(--muted);
   font-size: 1rem;
   line-height: 1.45;
+  margin-bottom: 8px;
+}
+
+.tool-card-badge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  border-color: color-mix(in srgb, #bfdbfe 72%, white);
+  background: color-mix(in srgb, #eff6ff 72%, white);
+  color: color-mix(in srgb, #1f4fbf 66%, #64748b);
+  opacity: 0.9;
+}
+
+.tool-card-link .tool-card-cta-btn,
+.tool-card .tool-card-cta-btn {
+  margin-top: 2px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  line-height: 1;
+  font-weight: 600;
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+  background: color-mix(in srgb, var(--accent) 8%, white);
+  color: var(--accent);
+  transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
 }
 
 .tool-card-enabled {
@@ -304,14 +342,20 @@ p {
 }
 
 .tool-card-link:hover .tool-card {
-  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
-  background: color-mix(in srgb, var(--accent) 16%, white);
-  box-shadow: 0 8px 18px rgba(33, 42, 64, 0.08);
-  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--accent) 48%, var(--border));
+  background: color-mix(in srgb, var(--accent) 12%, white);
+  box-shadow: 0 10px 20px rgba(33, 42, 64, 0.09);
+  transform: translateY(-2px);
+}
+
+.tool-card-link .tool-card-cta-btn:hover:enabled {
+  color: #ffffff;
+  border-color: var(--accent);
+  background: var(--accent);
 }
 
 .tool-card-link:active .tool-card {
-  transform: scale(0.992);
+  transform: scale(0.994);
   background: var(--accent-soft);
 }
 
@@ -1346,11 +1390,10 @@ p {
   transform: scale(1);
 }
 
-.output-panel-trust {
+.trust-notice {
   display: flex;
   gap: 8px;
   align-items: center;
-  margin-top: auto;
   color: #1f4fbf;
   font-size: 0.76rem;
   font-weight: 600;
@@ -1360,9 +1403,33 @@ p {
   padding: 8px 10px;
 }
 
-.output-panel-trust svg {
+.trust-notice svg {
   width: 14px;
   height: 14px;
+}
+
+.trust-notice p {
+  line-height: 1.25;
+}
+
+.trust-notice-badge {
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+}
+
+.trust-notice-badge svg {
+  width: 11px;
+  height: 11px;
+}
+
+.trust-notice-badge p {
+  line-height: 1;
+}
+
+.output-panel-trust {
+  margin-top: auto;
 }
 
 .btn-loading {
@@ -1381,6 +1448,10 @@ p {
 }
 
 @media (max-width: 860px) {
+  .home-title {
+    font-size: 1.65rem;
+  }
+
   .tool-grid {
     grid-template-columns: 1fr;
   }

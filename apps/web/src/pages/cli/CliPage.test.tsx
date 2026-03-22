@@ -8,6 +8,7 @@ describe('CliPage', () => {
     render(<CliPage />);
 
     expect(screen.getByRole('heading', { level: 1, name: 'Filegap CLI' })).toBeInTheDocument();
+    expect(screen.getByText(/brew tap filegap\/filegap\s+brew install filegap/)).toBeInTheDocument();
     expect(screen.getByText('brew install filegap/filegap/filegap')).toBeInTheDocument();
     expect(screen.getByText(/filegap --version\s+filegap --help/)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'github.com/filegap/filegap' })).toHaveAttribute(

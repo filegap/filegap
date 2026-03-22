@@ -25,8 +25,12 @@ export function CliPage() {
               Install with Homebrew
             </h2>
             <pre className='overflow-x-auto rounded-lg border border-ui-border bg-ui-bg p-3 text-xs text-ui-text'>
-              <code>brew install filegap/filegap/filegap</code>
+              <code>{`brew tap filegap/filegap
+brew install filegap`}</code>
             </pre>
+            <p className='text-xs'>
+              Direct install also works: <code>brew install filegap/filegap/filegap</code>
+            </p>
           </div>
           <div className='space-y-2'>
             <h2 className='font-heading text-base font-semibold text-ui-text'>Quick checks</h2>

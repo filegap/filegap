@@ -79,17 +79,17 @@ cargo run -p filegap-cli --bin filegap -- --help
 
 ## Install CLI (Homebrew)
 
-Install directly from the public tap:
-
-```bash
-brew install filegap/filegap/filegap
-```
-
-Or tap first and then install:
+Tap first and then install:
 
 ```bash
 brew tap filegap/filegap
 brew install filegap
+```
+
+Or install directly from tap without a separate tap step:
+
+```bash
+brew install filegap/filegap/filegap
 ```
 
 Quick sanity checks:

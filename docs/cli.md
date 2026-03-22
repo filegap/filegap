@@ -6,17 +6,17 @@ Repository: https://github.com/filegap/filegap
 
 ## Installation (Homebrew)
 
-Install directly from tap:
-
-```bash
-brew install filegap/filegap/filegap
-```
-
-Or:
+Tap first and then install:
 
 ```bash
 brew tap filegap/filegap
 brew install filegap
+```
+
+Or install directly from tap:
+
+```bash
+brew install filegap/filegap/filegap
 ```
 
 Check installation:

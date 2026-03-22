@@ -1,7 +1,8 @@
 import type { RefObject } from 'react';
-import { Folder, Lock, RotateCcw } from 'lucide-react';
+import { Folder, RotateCcw } from 'lucide-react';
 import { Button } from './Button';
 import { ResultStateBlock } from './ResultStateBlock';
+import { TrustNotice } from './TrustNotice';
 
 type ReorderOutputPanelProps = {
   outputName: string;
@@ -137,10 +138,7 @@ export function ReorderOutputPanel({
         ) : null}
       </section>
 
-      <section className="output-panel-trust">
-        <Lock aria-hidden="true" />
-        <p>Processed locally on your device — no uploads</p>
-      </section>
+      <TrustNotice className="output-panel-trust" />
     </div>
   );
 }
