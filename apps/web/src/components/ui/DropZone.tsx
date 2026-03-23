@@ -26,6 +26,9 @@ export function DropZone({
       ? 'Add more PDF files'
       : 'Replace PDF file'
     : 'Select PDF files';
+  const ctaClassName = disabled
+    ? 'mt-5 rounded-lg border border-ui-border bg-ui-bg px-4 py-2.5 text-xs font-semibold text-ui-muted'
+    : 'mt-5 rounded-lg border border-brand-primary/30 bg-brand-primary/10 px-4 py-2.5 text-xs font-semibold text-brand-primary transition-colors duration-150 group-hover:border-brand-primary-dark group-hover:bg-brand-primary-dark group-hover:text-white';
 
   function applyFiles(fileList: FileList | null): void {
     if (!fileList) {
@@ -75,7 +78,7 @@ export function DropZone({
         setDragActive(false);
         applyFiles(event.dataTransfer.files);
       }}
-      className={`flex min-h-[220px] cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed px-7 py-11 text-center transition-all duration-200 ${
+      className={`group flex min-h-[220px] cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed px-7 py-11 text-center transition-all duration-200 ${
         disabled
           ? 'cursor-not-allowed border-ui-border bg-ui-bg opacity-70'
           : dragActive
@@ -85,9 +88,7 @@ export function DropZone({
     >
       <p className='font-heading text-2xl font-semibold text-ui-text md:text-3xl'>{headingText}</p>
       <p className='mt-2 max-w-xl text-sm text-ui-muted'>{supportText}</p>
-      <p className='mt-5 rounded-lg border border-brand-primary/30 bg-brand-primary/10 px-4 py-2.5 text-xs font-semibold text-brand-primary'>
-        {ctaText}
-      </p>
+      <p className={ctaClassName}>{ctaText}</p>
 
       <input
         ref={fileInputRef}

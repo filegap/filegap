@@ -7,13 +7,13 @@ type TrustNoticeProps = {
 };
 
 export function TrustNotice({
-  message = 'Local processing only — your files never leave your device',
+  message = 'Processed locally on your device — no uploads',
   className = '',
   textClassName = '',
 }: TrustNoticeProps) {
   return (
     <div
-      className={`inline-flex items-center gap-2 rounded-lg border border-brand-trust-border bg-brand-trust-soft px-3 py-2 ${className}`.trim()}
+      className={`inline-flex items-center gap-2 rounded-full border border-brand-trust-border bg-brand-trust-soft px-3 py-2 ${className}`.trim()}
     >
       <span className='text-brand-trust' aria-hidden='true'>
         <Lock className='h-4 w-4' />

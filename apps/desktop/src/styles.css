@@ -9,7 +9,7 @@
   --border-strong: #d1d5db;
   --accent: #ff2e8b;
   --accent-hover: #e62079;
-  --accent-soft: #fff1f7;
+  --accent-soft: #ffeaf3;
   --trust: #2563eb;
   --success: #136f41;
   --warning: #8a5a00;
@@ -761,7 +761,7 @@ p {
 
 .btn {
   border: 1px solid transparent;
-  border-radius: 9px;
+  border-radius: 12px;
   font-size: 0.82rem;
   line-height: 1;
   font-weight: 600;
@@ -776,15 +776,15 @@ p {
 }
 
 .btn-primary {
-  color: var(--text);
-  border-color: var(--border);
-  background: #ffffff;
+  color: #ffffff;
+  border-color: var(--accent);
+  background: var(--accent);
 }
 
 .btn-primary:hover:enabled {
   color: #ffffff;
-  border-color: var(--accent);
-  background: var(--accent);
+  border-color: var(--accent-hover);
+  background: var(--accent-hover);
 }
 
 .btn-secondary {
@@ -956,15 +956,20 @@ p {
 
 .dropzone .btn {
   margin-top: 4px;
-  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+  border-radius: 8px;
+  border-color: rgba(255, 46, 139, 0.3);
   color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 8%, white);
+  background: rgba(255, 46, 139, 0.1);
+  font-size: 0.75rem;
+  line-height: 1.2;
+  font-weight: 600;
+  padding: 10px 16px;
 }
 
 .dropzone .btn:hover:enabled {
   color: #ffffff;
-  border-color: var(--accent);
-  background: var(--accent);
+  border-color: var(--accent-hover);
+  background: var(--accent-hover);
 }
 
 .dropzone-hint {
@@ -1715,11 +1720,11 @@ p {
   display: flex;
   gap: 8px;
   align-items: center;
-  color: #1f4fbf;
+  color: #2563eb;
   font-size: 0.76rem;
-  font-weight: 600;
+  font-weight: 500;
   border: 1px solid #bfdbfe;
-  border-radius: 10px;
+  border-radius: 999px;
   background: #eff6ff;
   padding: 8px 10px;
 }

@@ -18,7 +18,7 @@ describe('HomePage', () => {
     const mergeCtas = screen.getAllByRole('link', { name: 'Merge PDFs instantly' });
     expect(mergeCtas[0]).toHaveAttribute('href', '/merge-pdf');
     expect(
-      screen.getByText('Local processing only — your files never leave your device')
+      screen.getByText('Processed locally on your device — no uploads')
     ).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Open source on GitHub' })).toHaveAttribute(
       'href',
