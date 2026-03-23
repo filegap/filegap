@@ -30,17 +30,35 @@ jobs:
           token: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
           path: tap
 
-      - name: Update Formula/filegap.rb
+      - name: Create or update Formula/filegap.rb
         run: |
           FORMULA_PATH="tap/Formula/filegap.rb"
+          mkdir -p "$(dirname "${FORMULA_PATH}")"
 
           if [ ! -f "${FORMULA_PATH}" ]; then
-            echo "Formula file not found: ${FORMULA_PATH}" >&2
-            exit 1
-          fi
+            cat > "${FORMULA_PATH}" <<FORMULA
+class Filegap < Formula
+  desc "Privacy-first local PDF CLI"
+  homepage "https://github.com/filegap/filegap"
+  url "${TARBALL_URL}"
+  sha256 "${SHA256}"
+  license "MIT"
 
-          sed -i "s|^  url \".*\"|  url \"${TARBALL_URL}\"|" "${FORMULA_PATH}"
-          sed -i "s|^  sha256 \".*\"|  sha256 \"${SHA256}\"|" "${FORMULA_PATH}"
+  depends_on "rust" => :build
+
+  def install
+    system "cargo", "install", *std_cargo_args(path: "crates/cli")
+  end
+
+  test do
+    assert_match version.to_s, shell_output("#{bin}/filegap --version")
+  end
+end
+FORMULA
+          else
+            sed -i "s|^  url \".*\"|  url \"${TARBALL_URL}\"|" "${FORMULA_PATH}"
+            sed -i "s|^  sha256 \".*\"|  sha256 \"${SHA256}\"|" "${FORMULA_PATH}"
+          fi
 
       - name: Commit and push if changed
         run: |
