@@ -9,14 +9,25 @@ export function AppFooter() {
             <p className='text-xs text-ui-muted'>Local processing only. Your files never leave your device.</p>
           </div>
 
-          <nav className='flex items-center gap-4 text-xs font-medium text-ui-muted'>
+          <nav className='flex flex-wrap items-center gap-4 text-xs font-medium text-ui-muted'>
+            <a href='/cli' className='hover:text-ui-text'>
+              CLI
+            </a>
+            <a href='/download' className='hover:text-ui-text'>
+              App Download
+            </a>
             <a href='/privacy' className='hover:text-ui-text'>
               Privacy
             </a>
             <a href='/terms' className='hover:text-ui-text'>
               Terms
             </a>
-            <a href='https://github.com/' target='_blank' rel='noreferrer' className='hover:text-ui-text'>
+            <a
+              href='https://github.com/filegap/filegap'
+              target='_blank'
+              rel='noreferrer'
+              className='hover:text-ui-text'
+            >
               GitHub
             </a>
           </nav>

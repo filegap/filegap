@@ -27,7 +27,7 @@ describe('HomePage', () => {
     expect(
       screen.getByText((_, element) => element?.textContent === 'Use the CLI or download the app')
     ).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'CLI' })).toHaveAttribute('href', '/cli');
+    expect(screen.getAllByRole('link', { name: 'CLI' })[0]).toHaveAttribute('href', '/cli');
     expect(screen.getByRole('link', { name: 'download the app' })).toHaveAttribute(
       'href',
       '/download'
