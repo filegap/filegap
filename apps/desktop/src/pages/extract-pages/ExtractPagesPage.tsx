@@ -12,11 +12,14 @@ import {
   getDownloadDirectory,
   inspectPdfFiles,
   openFile,
+  pathExists,
   readPdfBytes,
   revealInFolder,
 } from '../../lib/desktop';
+import { renderFilenameTemplate, resolveOutputPathByOverwrite } from '../../lib/outputSettings';
 import { renderPdfThumbnails, type PageThumbnail } from '../../lib/pdfPreview';
 import { fileNameFromPath } from '../../lib/pathUtils';
+import { useDesktopSettings } from '../../lib/settings';
 
 type StatusTone = 'neutral' | 'info' | 'error' | 'success';
 
@@ -74,8 +77,8 @@ function formatSize(sizeBytes: number): string {
   return `${Math.max(1, Math.round(sizeBytes / 1024))} KB`;
 }
 
-function createDefaultExtractOutputName(): string {
-  return 'extracted-pages.pdf';
+function createDefaultExtractOutputName(template: string, pageCount = 1): string {
+  return renderFilenameTemplate(template, { n: pageCount });
 }
 
 function compactPagesToRanges(pages: number[]): string {
@@ -139,10 +142,11 @@ function parseRangesInput(value: string, maxPage: number): number[] {
 }
 
 export function ExtractPagesPage() {
+  const [settings] = useDesktopSettings();
   const [files, setFiles] = useState<ExtractFile[]>([]);
   const [outputDirectory, setOutputDirectory] = useState('');
   const [defaultDownloadDirectory, setDefaultDownloadDirectory] = useState('');
-  const [outputName, setOutputName] = useState(createDefaultExtractOutputName());
+  const [outputName, setOutputName] = useState(createDefaultExtractOutputName(settings.extractFilenameTemplate));
   const [pageRanges, setPageRanges] = useState('');
   const [lastValidPageRanges, setLastValidPageRanges] = useState('');
   const [pathSeparator, setPathSeparator] = useState<'/' | '\\'>('/');
@@ -165,10 +169,10 @@ export function ExtractPagesPage() {
       !isLoadingFiles &&
       !isProcessing &&
       files.length === 1 &&
-      outputDirectory.trim().length > 0 &&
+      (settings.askDestinationEveryTime || outputDirectory.trim().length > 0) &&
       outputName.trim().length > 0 &&
       selectedPages.size > 0,
-    [isLoadingFiles, isProcessing, files.length, outputDirectory, outputName, selectedPages]
+    [isLoadingFiles, isProcessing, files.length, outputDirectory, outputName, selectedPages, settings.askDestinationEveryTime]
   );
 
   const selectedPageCount = useMemo(() => {
@@ -195,16 +199,22 @@ export function ExtractPagesPage() {
     let cancelled = false;
     void (async () => {
       const downloads = await getDownloadDirectory();
-      if (!downloads || cancelled) {
+      if (cancelled) {
         return;
       }
-      setDefaultDownloadDirectory(downloads);
-      setOutputDirectory((current) => (current.trim().length === 0 ? downloads : current));
+      const fallbackDirectory = settings.askDestinationEveryTime ? null : settings.defaultOutputDirectory ?? downloads;
+      setDefaultDownloadDirectory(downloads ?? '');
+      if (!fallbackDirectory) {
+        return;
+      }
+      const parsed = parsePath(fallbackDirectory);
+      setPathSeparator(parsed.sep);
+      setOutputDirectory((current) => (current.trim().length === 0 ? fallbackDirectory : current));
     })();
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [settings.askDestinationEveryTime, settings.defaultOutputDirectory]);
 
   useEffect(() => {
     if (files.length !== 1) {
@@ -333,7 +343,7 @@ export function ExtractPagesPage() {
     setIsDropzoneCollapsed(false);
     setHasCompleted(false);
     setLastOutputPath('');
-    setOutputName(createDefaultExtractOutputName());
+    setOutputName(createDefaultExtractOutputName(settings.extractFilenameTemplate));
     setPageRanges('');
     setStatus({ tone: 'neutral', message: 'Idle' });
   }
@@ -348,14 +358,56 @@ export function ExtractPagesPage() {
       setLastOutputPath('');
     }
 
-    setIsProcessing(true);
-    setStatus({ tone: 'info', message: 'Extracting...' });
     try {
-      const outputPath = joinPath(outputDirectory, outputName.trim(), pathSeparator);
+      let runDirectory = outputDirectory;
+      if (settings.askDestinationEveryTime) {
+        const chosen = await chooseOutputDirectory();
+        if (!chosen) {
+          return;
+        }
+        runDirectory = chosen;
+        const parsed = parsePath(chosen);
+        setPathSeparator(parsed.sep);
+        setOutputDirectory(chosen);
+      }
+      if (runDirectory.trim().length === 0) {
+        setStatus({ tone: 'error', message: 'Select a valid output destination.' });
+        return;
+      }
+
+      setIsProcessing(true);
+      setStatus({ tone: 'info', message: 'Extracting...' });
+
+      const candidateOutputPath = joinPath(runDirectory, outputName.trim(), pathSeparator);
+      const outputPath = await resolveOutputPathByOverwrite(
+        candidateOutputPath,
+        settings.overwriteBehavior,
+        pathExists,
+        async (message) => window.confirm(message)
+      );
+      if (!outputPath) {
+        setStatus({ tone: 'info', message: 'Extract cancelled.' });
+        return;
+      }
+
       const result = await extractPages(files[0].path, outputPath, compactPagesToRanges(Array.from(selectedPages)));
       setHasCompleted(true);
       setLastOutputPath(result.output_path);
       setStatus({ tone: 'success', message: 'Done: pages extracted' });
+      if (settings.openFileAfterExport) {
+        try {
+          await openFile(result.output_path);
+        } catch {
+          // Non-blocking post action.
+        }
+      }
+      if (settings.revealInFolderAfterExport) {
+        try {
+          await revealInFolder(result.output_path);
+        } catch {
+          // Non-blocking post action.
+        }
+      }
     } catch (error) {
       const reason = readErrorMessage(error);
       setStatus({ tone: 'error', message: `Extract failed: ${reason}` });
@@ -474,7 +526,9 @@ export function ExtractPagesPage() {
   }
 
   const destinationFriendlyLabel = !outputDirectory
-    ? 'No destination selected'
+    ? settings.askDestinationEveryTime
+      ? 'Ask every time'
+      : 'No destination selected'
     : outputDirectory === defaultDownloadDirectory
     ? 'Downloads'
     : fileNameFromPath(outputDirectory);

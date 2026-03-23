@@ -72,6 +72,7 @@ Key UX decisions:
 - Left panel: working surface (dropzone, selected files list/table actions, or thumbnail grid for Extract).
 - Right panel: persistent control sidebar (export configuration, run action, result actions, trust note).
 - Footer: system feedback area for transient operational messages.
+- Footer settings: opens desktop settings modal.
 
 ### States
 
@@ -101,6 +102,16 @@ These components and patterns are reused across desktop tools (`Merge`, `Split`,
   - Export/configuration section.
   - Action section (primary CTA + completion/reset flow).
   - Trust/privacy section anchored to sidebar bottom.
+- Settings modal:
+  - `Output` settings:
+    - `Default folder` (initial export destination).
+    - `Ask destination every time` (ignores default folder and prompts on each run).
+    - `Filename templates` per tool (`Merge`, `Split`, `Extract`, `Reorder`) with `{date}` and `{n}` variables.
+    - `Overwrite behavior`: `ask`, `auto-rename`, `replace`.
+  - `Privacy` settings:
+    - `Open file after export`.
+    - `Reveal in folder after export`.
+  - If no default folder is set and `Ask destination every time` is disabled, app falls back to system Downloads directory.
 - Thumbnail grid (Extract):
   - In-memory page previews.
   - Direct page selection with range-assist actions (`Select all`, `Odd`, `Even`, `First page`).

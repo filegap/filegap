@@ -11,12 +11,15 @@ import {
   getDownloadDirectory,
   inspectPdfFiles,
   openFile,
+  pathExists,
   readPdfBytes,
   reorderPdf,
   revealInFolder,
 } from '../../lib/desktop';
+import { renderFilenameTemplate, resolveOutputPathByOverwrite } from '../../lib/outputSettings';
 import { renderPdfThumbnails } from '../../lib/pdfPreview';
 import { fileNameFromPath } from '../../lib/pathUtils';
+import { useDesktopSettings } from '../../lib/settings';
 
 type StatusTone = 'neutral' | 'info' | 'error' | 'success';
 
@@ -65,8 +68,8 @@ function joinPath(dir: string, name: string, sep: '/' | '\\'): string {
   return `${dir}${sep}${name}`;
 }
 
-function createDefaultOutputName(): string {
-  return 'reordered.pdf';
+function createDefaultOutputName(template: string, pageCount = 1): string {
+  return renderFilenameTemplate(template, { n: pageCount });
 }
 
 function parsePageOrderInput(value: string, pageCount: number): number[] {
@@ -105,12 +108,13 @@ function parsePageOrderInput(value: string, pageCount: number): number[] {
 }
 
 export function ReorderPdfPage() {
+  const [settings] = useDesktopSettings();
   const [files, setFiles] = useState<ReorderFile[]>([]);
   const [thumbnails, setThumbnails] = useState<ReorderThumbnailItem[]>([]);
   const [originalPageOrder, setOriginalPageOrder] = useState<number[]>([]);
   const [outputDirectory, setOutputDirectory] = useState('');
   const [defaultDownloadDirectory, setDefaultDownloadDirectory] = useState('');
-  const [outputName, setOutputName] = useState(createDefaultOutputName());
+  const [outputName, setOutputName] = useState(createDefaultOutputName(settings.reorderFilenameTemplate));
   const [pageOrderInput, setPageOrderInput] = useState('');
   const [lastValidPageOrderInput, setLastValidPageOrderInput] = useState('');
   const [pathSeparator, setPathSeparator] = useState<'/' | '\\'>('/');
@@ -145,7 +149,7 @@ export function ReorderPdfPage() {
       !isRenderingPreviews &&
       !isProcessing &&
       files.length === 1 &&
-      outputDirectory.trim().length > 0 &&
+      (settings.askDestinationEveryTime || outputDirectory.trim().length > 0) &&
       outputName.trim().length > 0 &&
       parsedPageOrder.length > 0 &&
       hasMatchingPageOrderCount,
@@ -158,6 +162,7 @@ export function ReorderPdfPage() {
       outputName,
       parsedPageOrder.length,
       hasMatchingPageOrderCount,
+      settings.askDestinationEveryTime,
     ]
   );
 
@@ -167,16 +172,22 @@ export function ReorderPdfPage() {
     let cancelled = false;
     void (async () => {
       const downloads = await getDownloadDirectory();
-      if (!downloads || cancelled) {
+      if (cancelled) {
         return;
       }
-      setDefaultDownloadDirectory(downloads);
-      setOutputDirectory((current) => (current.trim().length === 0 ? downloads : current));
+      const fallbackDirectory = settings.askDestinationEveryTime ? null : settings.defaultOutputDirectory ?? downloads;
+      setDefaultDownloadDirectory(downloads ?? '');
+      if (!fallbackDirectory) {
+        return;
+      }
+      const parsed = parsePath(fallbackDirectory);
+      setPathSeparator(parsed.sep);
+      setOutputDirectory((current) => (current.trim().length === 0 ? fallbackDirectory : current));
     })();
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [settings.askDestinationEveryTime, settings.defaultOutputDirectory]);
 
   useEffect(() => {
     if (files.length !== 1) {
@@ -304,7 +315,7 @@ export function ReorderPdfPage() {
     setIsDropzoneCollapsed(false);
     setHasCompleted(false);
     setLastOutputPath('');
-    setOutputName(createDefaultOutputName());
+    setOutputName(createDefaultOutputName(settings.reorderFilenameTemplate));
     setStatus({ tone: 'neutral', message: 'Idle' });
   }
 
@@ -318,14 +329,56 @@ export function ReorderPdfPage() {
       setLastOutputPath('');
     }
 
-    setIsProcessing(true);
-    setStatus({ tone: 'info', message: 'Reordering...' });
     try {
-      const outputPath = joinPath(outputDirectory, outputName.trim(), pathSeparator);
+      let runDirectory = outputDirectory;
+      if (settings.askDestinationEveryTime) {
+        const chosen = await chooseOutputDirectory();
+        if (!chosen) {
+          return;
+        }
+        runDirectory = chosen;
+        const parsed = parsePath(chosen);
+        setPathSeparator(parsed.sep);
+        setOutputDirectory(chosen);
+      }
+      if (runDirectory.trim().length === 0) {
+        setStatus({ tone: 'error', message: 'Select a valid output destination.' });
+        return;
+      }
+
+      setIsProcessing(true);
+      setStatus({ tone: 'info', message: 'Reordering...' });
+
+      const candidateOutputPath = joinPath(runDirectory, outputName.trim(), pathSeparator);
+      const outputPath = await resolveOutputPathByOverwrite(
+        candidateOutputPath,
+        settings.overwriteBehavior,
+        pathExists,
+        async (message) => window.confirm(message)
+      );
+      if (!outputPath) {
+        setStatus({ tone: 'info', message: 'Reorder cancelled.' });
+        return;
+      }
+
       const result = await reorderPdf(files[0].path, outputPath, parsedPageOrder);
       setHasCompleted(true);
       setLastOutputPath(result.output_path);
       setStatus({ tone: 'success', message: 'Done: pages reordered' });
+      if (settings.openFileAfterExport) {
+        try {
+          await openFile(result.output_path);
+        } catch {
+          // Non-blocking post action.
+        }
+      }
+      if (settings.revealInFolderAfterExport) {
+        try {
+          await revealInFolder(result.output_path);
+        } catch {
+          // Non-blocking post action.
+        }
+      }
     } catch (error) {
       const reason = readErrorMessage(error);
       setStatus({ tone: 'error', message: `Reorder failed: ${reason}` });
@@ -411,7 +464,9 @@ export function ReorderPdfPage() {
   }
 
   const destinationFriendlyLabel = !outputDirectory
-    ? 'No destination selected'
+    ? settings.askDestinationEveryTime
+      ? 'Ask every time'
+      : 'No destination selected'
     : outputDirectory === defaultDownloadDirectory
       ? 'Downloads'
       : fileNameFromPath(outputDirectory);
