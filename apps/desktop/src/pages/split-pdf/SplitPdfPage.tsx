@@ -17,6 +17,7 @@ import {
   splitPdf,
 } from '../../lib/desktop';
 import { renderFilenameTemplate, resolveOutputPathByOverwrite } from '../../lib/outputSettings';
+import { readErrorMessage } from '../../lib/pageHelpers';
 import { renderPdfThumbnails, type PageThumbnail } from '../../lib/pdfPreview';
 import { fileNameFromPath } from '../../lib/pathUtils';
 import { useDesktopSettings } from '../../lib/settings';
@@ -38,19 +39,6 @@ type SplitFile = {
 const MAX_PREVIEW_PAGES = 60;
 type SplitMode = 'pages' | 'ranges';
 type SplitRangeSegment = { start: number; end: number };
-
-function readErrorMessage(error: unknown): string {
-  if (typeof error === 'string' && error.trim().length > 0) {
-    return error;
-  }
-  if (error && typeof error === 'object' && 'message' in error) {
-    const message = String(error.message);
-    if (message.trim().length > 0) {
-      return message;
-    }
-  }
-  return 'Unknown split error.';
-}
 
 function parseSplitRangeSegments(value: string, maxPage: number): SplitRangeSegment[] {
   const cleaned = value.trim();
@@ -233,7 +221,7 @@ export function SplitPdfPage() {
         if (cancelled) {
           return;
         }
-        const reason = readErrorMessage(error);
+        const reason = readErrorMessage(error, 'Unknown split error.');
         setThumbnails([]);
         setSplitStartPages(new Set());
         setPageRanges('');
@@ -323,7 +311,7 @@ export function SplitPdfPage() {
       setStatus({ tone: 'neutral', message: 'Idle' });
       queueMicrotask(() => outputInputRef.current?.focus());
     } catch (error) {
-      const reason = readErrorMessage(error);
+      const reason = readErrorMessage(error, 'Unknown split error.');
       setStatus({ tone: 'error', message: `Failed to inspect file: ${reason}` });
     } finally {
       setIsLoadingFiles(false);
@@ -438,7 +426,7 @@ export function SplitPdfPage() {
         }
       }
     } catch (error) {
-      const reason = readErrorMessage(error);
+      const reason = readErrorMessage(error, 'Unknown split error.');
       setStatus({ tone: 'error', message: `Split failed: ${reason}` });
     } finally {
       setIsProcessing(false);
@@ -524,7 +512,7 @@ export function SplitPdfPage() {
     } catch (error) {
       if (revertOnError) {
         setPageRanges(lastValidPageRanges);
-        const reason = readErrorMessage(error);
+        const reason = readErrorMessage(error, 'Unknown split error.');
         setStatus({ tone: 'error', message: reason });
       }
     }

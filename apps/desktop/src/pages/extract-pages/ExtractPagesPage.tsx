@@ -17,6 +17,7 @@ import {
   revealInFolder,
 } from '../../lib/desktop';
 import { renderFilenameTemplate, resolveOutputPathByOverwrite } from '../../lib/outputSettings';
+import { joinPath, parsePath, readErrorMessage } from '../../lib/pageHelpers';
 import { renderPdfThumbnails, type PageThumbnail } from '../../lib/pdfPreview';
 import { fileNameFromPath } from '../../lib/pathUtils';
 import { useDesktopSettings } from '../../lib/settings';
@@ -36,46 +37,6 @@ type ExtractFile = {
 };
 
 const MAX_PREVIEW_PAGES = 60;
-
-function readErrorMessage(error: unknown): string {
-  if (typeof error === 'string' && error.trim().length > 0) {
-    return error;
-  }
-  if (error && typeof error === 'object' && 'message' in error) {
-    const message = String(error.message);
-    if (message.trim().length > 0) {
-      return message;
-    }
-  }
-  return 'Unknown extract error.';
-}
-
-function parsePath(filePath: string): { dir: string; name: string; sep: '/' | '\\' } {
-  const sep: '/' | '\\' = filePath.includes('\\') ? '\\' : '/';
-  const index = filePath.lastIndexOf(sep);
-  if (index < 0) {
-    return { dir: '', name: filePath, sep };
-  }
-  return {
-    dir: filePath.slice(0, index),
-    name: filePath.slice(index + 1),
-    sep,
-  };
-}
-
-function joinPath(dir: string, name: string, sep: '/' | '\\'): string {
-  if (!dir) {
-    return name;
-  }
-  return `${dir}${sep}${name}`;
-}
-
-function formatSize(sizeBytes: number): string {
-  if (sizeBytes <= 0) {
-    return '-';
-  }
-  return `${Math.max(1, Math.round(sizeBytes / 1024))} KB`;
-}
 
 function createDefaultExtractOutputName(template: string, pageCount = 1): string {
   return renderFilenameTemplate(template, { n: pageCount });
@@ -253,7 +214,7 @@ export function ExtractPagesPage() {
         if (cancelled) {
           return;
         }
-        const reason = readErrorMessage(error);
+        const reason = readErrorMessage(error, 'Unknown extract error.');
         setThumbnails([]);
         setStatus({ tone: 'error', message: `Preview rendering failed: ${reason}` });
       } finally {
@@ -305,7 +266,7 @@ export function ExtractPagesPage() {
       setStatus({ tone: 'neutral', message: 'Idle' });
       queueMicrotask(() => pageRangesInputRef.current?.focus());
     } catch (error) {
-      const reason = readErrorMessage(error);
+      const reason = readErrorMessage(error, 'Unknown extract error.');
       setStatus({ tone: 'error', message: `Failed to inspect file: ${reason}` });
     } finally {
       setIsLoadingFiles(false);
@@ -409,7 +370,7 @@ export function ExtractPagesPage() {
         }
       }
     } catch (error) {
-      const reason = readErrorMessage(error);
+      const reason = readErrorMessage(error, 'Unknown extract error.');
       setStatus({ tone: 'error', message: `Extract failed: ${reason}` });
     } finally {
       setIsProcessing(false);
@@ -515,7 +476,7 @@ export function ExtractPagesPage() {
     } catch (error) {
       if (revertOnError) {
         setPageRanges(lastValidPageRanges);
-        const reason = readErrorMessage(error);
+        const reason = readErrorMessage(error, 'Unknown extract error.');
         setStatus({ tone: 'error', message: reason });
       }
     }

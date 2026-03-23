@@ -16,6 +16,7 @@ import {
   type PdfFileInfo,
 } from '../../lib/desktop';
 import { renderFilenameTemplate, resolveOutputPathByOverwrite } from '../../lib/outputSettings';
+import { formatKilobytes, joinPath, parsePath, readErrorMessage } from '../../lib/pageHelpers';
 import { fileNameFromPath } from '../../lib/pathUtils';
 import { useDesktopSettings } from '../../lib/settings';
 
@@ -32,46 +33,6 @@ type MergeFile = {
   sizeBytes: number;
   pageCount: number | null;
 };
-
-function readErrorMessage(error: unknown): string {
-  if (typeof error === 'string' && error.trim().length > 0) {
-    return error;
-  }
-  if (error && typeof error === 'object' && 'message' in error) {
-    const message = String(error.message);
-    if (message.trim().length > 0) {
-      return message;
-    }
-  }
-  return 'Unknown merge error.';
-}
-
-function parsePath(filePath: string): { dir: string; name: string; sep: '/' | '\\' } {
-  const sep: '/' | '\\' = filePath.includes('\\') ? '\\' : '/';
-  const index = filePath.lastIndexOf(sep);
-  if (index < 0) {
-    return { dir: '', name: filePath, sep };
-  }
-  return {
-    dir: filePath.slice(0, index),
-    name: filePath.slice(index + 1),
-    sep,
-  };
-}
-
-function joinPath(dir: string, name: string, sep: '/' | '\\'): string {
-  if (!dir) {
-    return name;
-  }
-  return `${dir}${sep}${name}`;
-}
-
-function formatSize(sizeBytes: number): string {
-  if (sizeBytes <= 0) {
-    return '-';
-  }
-  return `${Math.max(1, Math.round(sizeBytes / 1024))} KB`;
-}
 
 function toInfoMap(list: PdfFileInfo[]): Map<string, PdfFileInfo> {
   return new Map(list.map((item) => [item.path, item]));
@@ -195,7 +156,7 @@ export function MergePdfPage() {
         setStatus({ tone: 'neutral', message: 'Idle' });
         queueMicrotask(() => outputInputRef.current?.focus());
       } catch (error) {
-        const reason = readErrorMessage(error);
+        const reason = readErrorMessage(error, 'Unknown merge error.');
         if (!cancelled) {
           setStatus({ tone: 'error', message: `Failed to inspect files: ${reason}` });
         }
@@ -368,7 +329,7 @@ export function MergePdfPage() {
   const rows = files.map((file) => ({
     id: file.id,
     filename: fileNameFromPath(file.path),
-    sizeLabel: formatSize(file.sizeBytes),
+    sizeLabel: formatKilobytes(file.sizeBytes),
     pagesLabel: file.pageCount ? String(file.pageCount) : '-',
   }));
   const tableRows = isLoadingFiles ? [] : rows;

@@ -17,6 +17,7 @@ import {
   revealInFolder,
 } from '../../lib/desktop';
 import { renderFilenameTemplate, resolveOutputPathByOverwrite } from '../../lib/outputSettings';
+import { joinPath, parsePath, readErrorMessage } from '../../lib/pageHelpers';
 import { renderPdfThumbnails } from '../../lib/pdfPreview';
 import { fileNameFromPath } from '../../lib/pathUtils';
 import { useDesktopSettings } from '../../lib/settings';
@@ -34,39 +35,6 @@ type ReorderFile = {
   sizeBytes: number;
   pageCount: number | null;
 };
-
-function readErrorMessage(error: unknown): string {
-  if (typeof error === 'string' && error.trim().length > 0) {
-    return error;
-  }
-  if (error && typeof error === 'object' && 'message' in error) {
-    const message = String(error.message);
-    if (message.trim().length > 0) {
-      return message;
-    }
-  }
-  return 'Unknown reorder error.';
-}
-
-function parsePath(filePath: string): { dir: string; name: string; sep: '/' | '\\' } {
-  const sep: '/' | '\\' = filePath.includes('\\') ? '\\' : '/';
-  const index = filePath.lastIndexOf(sep);
-  if (index < 0) {
-    return { dir: '', name: filePath, sep };
-  }
-  return {
-    dir: filePath.slice(0, index),
-    name: filePath.slice(index + 1),
-    sep,
-  };
-}
-
-function joinPath(dir: string, name: string, sep: '/' | '\\'): string {
-  if (!dir) {
-    return name;
-  }
-  return `${dir}${sep}${name}`;
-}
 
 function createDefaultOutputName(template: string, pageCount = 1): string {
   return renderFilenameTemplate(template, { n: pageCount });
@@ -229,7 +197,7 @@ export function ReorderPdfPage() {
         if (cancelled) {
           return;
         }
-        const reason = readErrorMessage(error);
+        const reason = readErrorMessage(error, 'Unknown reorder error.');
         setThumbnails([]);
         setOriginalPageOrder([]);
         setPageOrderInput('');
@@ -276,7 +244,7 @@ export function ReorderPdfPage() {
       setStatus({ tone: 'neutral', message: 'Idle' });
       queueMicrotask(() => outputInputRef.current?.focus());
     } catch (error) {
-      const reason = readErrorMessage(error);
+      const reason = readErrorMessage(error, 'Unknown reorder error.');
       setStatus({ tone: 'error', message: `Failed to inspect file: ${reason}` });
     } finally {
       setIsLoadingFiles(false);
@@ -380,7 +348,7 @@ export function ReorderPdfPage() {
         }
       }
     } catch (error) {
-      const reason = readErrorMessage(error);
+      const reason = readErrorMessage(error, 'Unknown reorder error.');
       setStatus({ tone: 'error', message: `Reorder failed: ${reason}` });
     } finally {
       setIsProcessing(false);
