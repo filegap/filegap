@@ -345,12 +345,10 @@ export function MergePdfPage() {
           // Non-blocking post action.
         }
       }
-    } catch (error) {
-      const reason = readErrorMessage(error);
-      console.error('[desktop.merge] command failed:', reason);
+    } catch {
       setStatus({
         tone: 'error',
-        message: `Merge failed: ${reason}`,
+        message: 'Merge failed. Please try again.',
       });
     } finally {
       setIsProcessing(false);
