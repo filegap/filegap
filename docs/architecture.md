@@ -8,8 +8,8 @@ Keep PDF domain logic independent from presentation layers.
 
 1. `crates/core`: typed operations and validation for PDF workflows.
 2. `crates/cli`: command parsing + filesystem I/O adapter.
-3. `apps/web`: browser UI, local-only processing path with no backend PDF service (planned).
-4. `apps/desktop`: tauri wrapper for desktop distribution (planned).
+3. `apps/web`: browser UI, local-only processing path with no backend PDF service (active).
+4. `apps/desktop`: Tauri desktop application for local distribution and execution (active).
 
 ## Core Operation Contracts
 
