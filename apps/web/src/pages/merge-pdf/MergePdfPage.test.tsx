@@ -21,7 +21,7 @@ describe('MergePdfPage', () => {
         'Combine multiple PDF files into one document directly in your browser. No uploads. No accounts. Your files never leave your device.'
       )
     ).toBeInTheDocument();
-    expect(screen.getByText('Free • No signup • Works in your browser')).toBeInTheDocument();
+    expect(screen.getByText('Processed locally on your device — no uploads')).toBeInTheDocument();
     expect(screen.getByText('How to merge PDF files')).toBeInTheDocument();
     expect(screen.getByText('Why use this Merge PDF tool')).toBeInTheDocument();
     expect(screen.getByText('Frequently asked questions')).toBeInTheDocument();

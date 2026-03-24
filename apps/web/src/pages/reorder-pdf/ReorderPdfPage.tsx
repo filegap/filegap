@@ -7,7 +7,6 @@ import { DropZone } from '../../components/ui/DropZone';
 import { Button } from '../../components/ui/Button';
 import { PreDownloadModal } from '../../components/ui/PreDownloadModal';
 import { ToolLandingSections } from '../../components/seo/ToolLandingSections';
-import { TrustNotice } from '../../components/ui/TrustNotice';
 import { ToolLayout } from '../../components/layout/ToolLayout';
 import { parsePageOrder, reorderPdfPages } from '../../adapters/pdfEngine';
 import { trackEvent, trackToolEvent } from '../../lib/analytics/trackEvent';
@@ -346,8 +345,6 @@ export function ReorderPdfPage() {
             disabled={isProcessing}
             loadedFileName={sourceFile?.name ?? null}
           />
-
-          <TrustNotice />
 
           <div className='space-y-2'>
             <h2 className='font-heading text-2xl font-semibold text-ui-text'>Uploaded files</h2>

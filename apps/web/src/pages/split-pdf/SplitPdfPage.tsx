@@ -7,7 +7,6 @@ import { DropZone } from '../../components/ui/DropZone';
 import { Button } from '../../components/ui/Button';
 import { PreDownloadModal } from '../../components/ui/PreDownloadModal';
 import { ToolLandingSections } from '../../components/seo/ToolLandingSections';
-import { TrustNotice } from '../../components/ui/TrustNotice';
 import { UploadedFilesTable } from '../../components/ui/UploadedFilesTable';
 import { ToolLayout } from '../../components/layout/ToolLayout';
 import { parseSplitRanges, splitPdfByRanges, type SplitRangeSegment } from '../../adapters/pdfEngine';
@@ -387,7 +386,6 @@ export function SplitPdfPage() {
             disabled={isProcessing}
             loadedFileName={sourceFile?.name ?? null}
           />
-          <TrustNotice />
 
           <UploadedFilesTable
             files={uploadedFiles}

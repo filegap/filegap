@@ -5,6 +5,14 @@ import { describe, expect, it, vi } from 'vitest';
 import { ExtractPagesPage } from './ExtractPagesPage';
 import { extractPdfByRanges } from '../../adapters/pdfEngine';
 
+vi.mock('../../lib/pdfPreview', () => ({
+  renderPdfThumbnails: vi.fn().mockResolvedValue([
+    { pageNumber: 1, imageDataUrl: 'data:image/jpeg;base64,page-1' },
+    { pageNumber: 2, imageDataUrl: 'data:image/jpeg;base64,page-2' },
+    { pageNumber: 3, imageDataUrl: 'data:image/jpeg;base64,page-3' },
+  ]),
+}));
+
 vi.mock('pdf-lib', () => ({
   PDFDocument: {
     load: vi.fn().mockResolvedValue({
@@ -30,11 +38,9 @@ describe('ExtractPagesPage', () => {
     expect(
       screen.getByRole('heading', { level: 1, name: 'Extract PDF pages online — fast, private, and local' })
     ).toBeInTheDocument();
-    expect(screen.getByText('Free • No signup • Works in your browser')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Extract pages' })).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('e.g. 1-3, 5, 7-9')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 2, name: 'Uploaded files' })).toBeInTheDocument();
-    expect(screen.getByText('No files selected yet.')).toBeInTheDocument();
+    expect(screen.getByText('Processed locally on your device — no uploads')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Extract pages' })).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Page range')).not.toBeInTheDocument();
     expect(
       screen.getByRole('heading', { level: 2, name: 'How to extract pages from a PDF' })
     ).toBeInTheDocument();
@@ -52,13 +58,11 @@ describe('ExtractPagesPage', () => {
     expect(extractCtas[extractCtas.length - 1]).toHaveAttribute('href', '#extract-pdf-tool');
   });
 
-  it('shows validation if extracting without selecting source file', async () => {
-    const user = userEvent.setup();
+  it('keeps the extract controls hidden until a source file is selected', () => {
     render(<ExtractPagesPage />);
 
-    await user.click(screen.getByRole('button', { name: 'Extract pages' }));
-
-    expect(screen.getByText('Select a PDF file before extracting pages.')).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { level: 2, name: 'Select pages to extract' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Extract pages' })).not.toBeInTheDocument();
   });
 
   it('extracts pages and shows result state with new extract action', async () => {
@@ -75,7 +79,7 @@ describe('ExtractPagesPage', () => {
       expect(screen.getByText(/PDF ready/i)).toBeInTheDocument();
     });
 
-    await user.type(screen.getByPlaceholderText('e.g. 1-3, 5, 7-9'), '1-2,4');
+    await user.type(screen.getByPlaceholderText('1-3, 5, 7-9'), '1-2,4');
     await user.click(screen.getByRole('button', { name: 'Extract pages' }));
 
     await waitFor(() => {
@@ -86,5 +90,46 @@ describe('ExtractPagesPage', () => {
     expect(screen.getByRole('button', { name: 'Download PDF' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'New extract' })).toBeInTheDocument();
     expect(screen.getByText('Pages 1-2,4')).toBeInTheDocument();
+  });
+
+  it('syncs thumbnail selection back into the range input', async () => {
+    const user = userEvent.setup();
+    render(<ExtractPagesPage />);
+
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const file = new File([new Uint8Array([1, 2, 3])], 'source.pdf', { type: 'application/pdf' });
+    fireEvent.change(input, { target: { files: [file] } });
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Select page 2' })).toBeInTheDocument();
+    });
+
+    expect(screen.getByRole('button', { name: 'Show file picker' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Select page 2' }));
+    await user.click(screen.getByRole('button', { name: 'Select page 3' }));
+
+    expect(screen.getByPlaceholderText('1-3, 5, 7-9')).toHaveValue('2-3');
+    expect(screen.getByText('2 pages selected')).toBeInTheDocument();
+  });
+
+  it('applies typed ranges automatically to the page selection', async () => {
+    const user = userEvent.setup();
+    render(<ExtractPagesPage />);
+
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const file = new File([new Uint8Array([1, 2, 3])], 'source.pdf', { type: 'application/pdf' });
+    fireEvent.change(input, { target: { files: [file] } });
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Select page 1' })).toBeInTheDocument();
+    });
+
+    const rangesInput = screen.getByPlaceholderText('1-3, 5, 7-9');
+    await user.clear(rangesInput);
+    await user.type(rangesInput, '1,3');
+
+    expect(screen.getByRole('button', { name: 'Select page 1' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: 'Select page 2' })).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByRole('button', { name: 'Select page 3' })).toHaveAttribute('aria-pressed', 'true');
   });
 });

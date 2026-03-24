@@ -30,7 +30,7 @@ describe('SplitPdfPage', () => {
     expect(
       screen.getByRole('heading', { level: 1, name: 'Split PDF files online — fast, private, and local' })
     ).toBeInTheDocument();
-    expect(screen.getByText('Free • No signup • Works in your browser')).toBeInTheDocument();
+    expect(screen.getByText('Processed locally on your device — no uploads')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Split PDF' })).toBeInTheDocument();
     expect(screen.getByPlaceholderText('e.g. 1-3, 4, 5-10')).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2, name: 'Uploaded files' })).toBeInTheDocument();
