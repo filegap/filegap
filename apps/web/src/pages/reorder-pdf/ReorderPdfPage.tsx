@@ -461,9 +461,6 @@ export function ReorderPdfPage() {
 
       <PreDownloadModal
         open={showDownloadGate && Boolean(output)}
-        title='Reorder completed'
-        description='Filegap runs entirely in your browser. If it helps, support the project and share it with people who need private PDF tools that run locally.'
-        confirmLabel='Continue to download'
         onConfirm={handleConfirmDownload}
         onClose={() => setShowDownloadGate(false)}
       />

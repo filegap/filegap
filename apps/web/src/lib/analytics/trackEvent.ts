@@ -24,6 +24,8 @@ const ALLOWED_EVENTS = new Set([
   'selection_made',
   'download_cli_clicked',
   'download_app_clicked',
+  'support_lynko_click',
+  'support_click',
 ]);
 
 function sanitizeNumericMetadata(

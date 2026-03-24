@@ -437,9 +437,6 @@ export function MergePdfPage() {
 
       <PreDownloadModal
         open={showDownloadGate && Boolean(mergedOutput)}
-        title='Merge completed'
-        description='Filegap runs entirely in your browser. If it helps, support the project and share it with people who need private PDF tools that run locally.'
-        confirmLabel='Continue to download'
         onConfirm={handleConfirmDownload}
         onClose={() => setShowDownloadGate(false)}
       />

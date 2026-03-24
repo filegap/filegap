@@ -139,9 +139,11 @@ describe('MergePdfPage', () => {
     });
 
     await user.click(screen.getByRole('button', { name: 'Download PDF' }));
-    expect(screen.getByRole('button', { name: 'Continue to download' })).toBeInTheDocument();
+    expect(screen.getByText('Your PDF is ready')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument();
+    const modalDownloadButton = screen.getAllByRole('button', { name: 'Download PDF' })[1];
 
-    await user.click(screen.getByRole('button', { name: 'Continue to download' }));
+    await user.click(modalDownloadButton);
     expect(createObjectURLSpy).toHaveBeenCalledTimes(1);
     expect(revokeObjectURLSpy).toHaveBeenCalledTimes(1);
 
