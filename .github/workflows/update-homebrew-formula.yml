@@ -37,24 +37,24 @@ jobs:
 
           if [ ! -f "${FORMULA_PATH}" ]; then
             cat > "${FORMULA_PATH}" <<FORMULA
-class Filegap < Formula
-  desc "Privacy-first local PDF CLI"
-  homepage "https://github.com/filegap/filegap"
-  url "${TARBALL_URL}"
-  sha256 "${SHA256}"
-  license "MIT"
+            class Filegap < Formula
+              desc "Privacy-first local PDF CLI"
+              homepage "https://github.com/filegap/filegap"
+              url "${TARBALL_URL}"
+              sha256 "${SHA256}"
+              license "MIT"
 
-  depends_on "rust" => :build
+              depends_on "rust" => :build
 
-  def install
-    system "cargo", "install", *std_cargo_args(path: "crates/cli")
-  end
+              def install
+                system "cargo", "install", *std_cargo_args(path: "crates/cli")
+              end
 
-  test do
-    assert_match version.to_s, shell_output("#{bin}/filegap --version")
-  end
-end
-FORMULA
+              test do
+                assert_match version.to_s, shell_output("#{bin}/filegap --version")
+              end
+            end
+            FORMULA
           else
             sed -i "s|^  url \".*\"|  url \"${TARBALL_URL}\"|" "${FORMULA_PATH}"
             sed -i "s|^  sha256 \".*\"|  sha256 \"${SHA256}\"|" "${FORMULA_PATH}"
