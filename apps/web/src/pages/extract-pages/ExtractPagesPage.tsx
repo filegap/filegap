@@ -225,7 +225,10 @@ export function ExtractPagesPage() {
     trackToolEvent('selection_made', 'extract', { pages_count: selectedPagesCount });
 
     setIsProcessing(true);
-    setStatus({ tone: 'info', message: 'Processing locally in your browser...' });
+    setStatus({
+      tone: 'info',
+      message: 'Processing locally in your browser... Time may vary based on file size and device performance.',
+    });
 
     const fileBuffer = await fileToArrayBuffer(sourceFile);
     const response = await new Promise<WorkerResponse>((resolve) => {

@@ -241,7 +241,10 @@ export function MergePdfPage() {
     }
 
     setIsProcessing(true);
-    setStatus({ tone: 'info', message: 'Processing locally in your browser...' });
+    setStatus({
+      tone: 'info',
+      message: 'Processing locally in your browser... Time may vary based on file size and device performance.',
+    });
 
     const buffers = await Promise.all(files.map((file) => fileToArrayBuffer(file.file)));
 
