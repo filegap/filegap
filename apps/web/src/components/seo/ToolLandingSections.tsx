@@ -1,3 +1,7 @@
+import type { ReactNode } from 'react';
+
+import { SectionBlock } from '../layout/SectionBlock';
+
 type WhyItem = {
   title: string;
   text: string;
@@ -42,18 +46,16 @@ export function ToolLandingSections({
   return (
     <>
       <section className='mt-10 grid gap-6 md:grid-cols-2'>
-        <div className='rounded-xl border border-ui-border bg-ui-surface p-6'>
-          <h2 className='font-heading text-2xl font-semibold text-ui-text'>{howItWorksTitle}</h2>
-          <ol className='mt-5 list-decimal space-y-2.5 pl-5 text-sm leading-relaxed text-ui-muted'>
+        <SectionBlock title={howItWorksTitle} className='md:flex md:h-full md:flex-col' contentClassName='md:flex-1'>
+          <ol className='list-decimal space-y-2.5 pl-5 text-sm leading-relaxed text-ui-muted'>
             {howItWorksSteps.map((step) => (
               <li key={step}>{step}</li>
             ))}
           </ol>
-        </div>
+        </SectionBlock>
 
-        <div className='rounded-xl border border-ui-border bg-ui-surface p-6'>
-          <h2 className='font-heading text-2xl font-semibold text-ui-text'>{whyTitle}</h2>
-          <ul className='mt-5 space-y-5'>
+        <SectionBlock title={whyTitle} className='md:flex md:h-full md:flex-col' contentClassName='md:flex-1'>
+          <ul className='space-y-5'>
             {whyItems.map((item) => (
               <li key={item.title}>
                 <h3 className='text-base font-semibold text-ui-text'>{item.title}</h3>
@@ -61,12 +63,11 @@ export function ToolLandingSections({
               </li>
             ))}
           </ul>
-        </div>
+        </SectionBlock>
       </section>
 
-      <section className='mt-10 rounded-xl border border-ui-border bg-ui-surface p-6'>
-        <h2 className='font-heading text-2xl font-semibold text-ui-text'>{faqTitle}</h2>
-        <ul className='mt-5 space-y-6'>
+      <SectionBlock title={faqTitle} className='mt-10'>
+        <ul className='space-y-6'>
           {faqItems.map((item) => (
             <li key={item.question}>
               <h3 className='text-base font-semibold text-ui-text'>{item.question}</h3>
@@ -74,17 +75,16 @@ export function ToolLandingSections({
             </li>
           ))}
         </ul>
-      </section>
+      </SectionBlock>
 
-      <section className='mt-10 rounded-xl border border-ui-border bg-ui-surface p-6'>
-        <h2 className='font-heading text-2xl font-semibold text-ui-text'>{seoTitle}</h2>
-        <div className='mt-5 max-w-3xl space-y-4 text-sm leading-relaxed text-ui-muted'>
+      <SectionBlock title={seoTitle} className='mt-10'>
+        <div className='max-w-3xl space-y-4 text-sm leading-relaxed text-ui-muted'>
           {seoParagraphs.map((paragraph) => (
             <p key={paragraph}>{paragraph}</p>
           ))}
           {seoSupplement}
         </div>
-      </section>
+      </SectionBlock>
 
       <section className='mt-12 space-y-4 pb-2 text-center md:space-y-5'>
         <h2 className='font-heading text-3xl font-semibold leading-tight text-ui-text md:text-4xl'>
@@ -101,4 +101,3 @@ export function ToolLandingSections({
     </>
   );
 }
-import type { ReactNode } from 'react';

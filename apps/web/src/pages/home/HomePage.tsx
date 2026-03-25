@@ -14,6 +14,7 @@ import {
 import { AppFooter } from '../../components/layout/AppFooter';
 import { AppHeader } from '../../components/layout/AppHeader';
 import { PageContainer } from '../../components/layout/PageContainer';
+import { SectionBlock } from '../../components/layout/SectionBlock';
 import { trackEvent } from '../../lib/analytics/trackEvent';
 import { TrustNotice } from '../../components/ui/TrustNotice';
 import { usePageMetadata } from '../../lib/seo/usePageMetadata';
@@ -178,8 +179,11 @@ export function HomePage() {
           ))}
         </section>
 
-        <section className='mt-10 space-y-4'>
-          <h2 className='font-heading text-2xl font-semibold text-ui-text'>More ways to use Filegap</h2>
+        <SectionBlock
+          title='More ways to use Filegap'
+          className='mt-10'
+          contentClassName='border-0 bg-transparent p-0 md:p-0'
+        >
           <div className='grid gap-4 md:grid-cols-2'>
             <a
               href='/cli'
@@ -228,11 +232,10 @@ export function HomePage() {
               </div>
             </a>
           </div>
-        </section>
+        </SectionBlock>
 
-        <section className='mt-10 rounded-xl border border-ui-border bg-ui-surface p-6'>
-          <h2 className='font-heading text-2xl font-semibold text-ui-text'>Why Filegap</h2>
-          <ul className='mt-5 space-y-4'>
+        <SectionBlock title='Why Filegap' className='mt-10'>
+          <ul className='space-y-4'>
             {WHY_ITEMS.map((item) => (
               <li key={item.title} className='flex items-start gap-3 py-1.5'>
                 <span className='mt-0.5 text-brand-primary' aria-hidden='true'>
@@ -245,11 +248,10 @@ export function HomePage() {
               </li>
             ))}
           </ul>
-        </section>
+        </SectionBlock>
 
-        <section className='mt-10 rounded-xl border border-ui-border bg-ui-surface p-6'>
-          <h2 className='font-heading text-2xl font-semibold text-ui-text'>Frequently asked questions</h2>
-          <ul className='mt-5 space-y-6'>
+        <SectionBlock title='Frequently asked questions' className='mt-10'>
+          <ul className='space-y-6'>
             {FAQ_ITEMS.map((item) => (
               <li key={item.question}>
                 <h3 className='text-base font-semibold text-ui-text'>{item.question}</h3>
@@ -257,11 +259,10 @@ export function HomePage() {
               </li>
             ))}
           </ul>
-        </section>
+        </SectionBlock>
 
-        <section className='mt-10 rounded-xl border border-ui-border bg-ui-surface p-6'>
-          <h2 className='font-heading text-2xl font-semibold text-ui-text'>Simple and private PDF tools</h2>
-          <div className='mt-5 max-w-3xl space-y-4 text-sm leading-relaxed text-ui-muted'>
+        <SectionBlock title='Simple and private PDF tools' className='mt-10'>
+          <div className='max-w-3xl space-y-4 text-sm leading-relaxed text-ui-muted'>
             <p>
               Filegap provides a set of simple and private PDF tools that run entirely in your
               browser. You can easily <a className='text-ui-text underline' href='/merge-pdf'>merge PDF files</a>,{' '}
@@ -281,7 +282,7 @@ export function HomePage() {
               securely — directly in your browser, with no signup required.
             </p>
           </div>
-        </section>
+        </SectionBlock>
 
         <section className='mt-12 space-y-4 pb-2 text-center md:space-y-5'>
           <h2 className='font-heading text-3xl font-semibold leading-tight text-ui-text md:text-4xl'>
