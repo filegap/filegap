@@ -1,16 +1,18 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { PDFDocument } from 'pdf-lib';
+import { ChevronLeft, ChevronsDownUp, FileText, Trash2, X } from 'lucide-react';
 
 import { Card } from '../../components/ui/Card';
 import { DropZone } from '../../components/ui/DropZone';
 import { Button } from '../../components/ui/Button';
 import { PreDownloadModal } from '../../components/ui/PreDownloadModal';
 import { ToolLandingSections } from '../../components/seo/ToolLandingSections';
-import { UploadedFilesTable } from '../../components/ui/UploadedFilesTable';
+import { SplitPageGallery } from '../../components/ui/SplitPageGallery';
 import { ToolLayout } from '../../components/layout/ToolLayout';
 import { parseSplitRanges, splitPdfByRanges, type SplitRangeSegment } from '../../adapters/pdfEngine';
 import { trackEvent, trackToolEvent } from '../../lib/analytics/trackEvent';
+import { renderPdfThumbnails, type PageThumbnail } from '../../lib/pdfPreview';
 import type { WorkerResponse } from '../../types';
 
 // ⚠️ Do not log user file data. This project is privacy-first.
@@ -27,6 +29,8 @@ type SplitOutput = {
   bytes: Uint8Array;
   rangeLabel: string;
 };
+
+const MAX_PREVIEW_PAGES = 40;
 
 function saveBlob(filename: string, bytes: Uint8Array): void {
   const copy = new Uint8Array(bytes.length);
@@ -72,8 +76,35 @@ function formatRangeLabel(range: SplitRangeSegment): string {
   return `${range.start}-${range.end}`;
 }
 
-function getSelectedPagesCount(ranges: SplitRangeSegment[]): number {
-  return ranges.reduce((total, range) => total + (range.end - range.start + 1), 0);
+function formatFileSize(sizeBytes: number): string {
+  return `${Math.max(1, Math.round(sizeBytes / 1024))} KB`;
+}
+
+function buildSplitRangesFromStarts(starts: Set<number>, maxPage: number): SplitRangeSegment[] {
+  if (maxPage <= 0) {
+    return [];
+  }
+
+  const sortedStarts = [...starts]
+    .filter((page) => page > 1 && page <= maxPage)
+    .sort((a, b) => a - b);
+  const effectiveStarts = [1, ...sortedStarts];
+  const segments: SplitRangeSegment[] = [];
+
+  for (let index = 0; index < effectiveStarts.length; index += 1) {
+    const start = effectiveStarts[index];
+    const nextStart = effectiveStarts[index + 1];
+    const end = nextStart ? nextStart - 1 : maxPage;
+    if (start <= end) {
+      segments.push({ start, end });
+    }
+  }
+
+  return segments;
+}
+
+function formatSplitRanges(ranges: SplitRangeSegment[]): string {
+  return ranges.map(formatRangeLabel).join(',');
 }
 
 const SPLIT_PAGE_CONTENT = {
@@ -143,13 +174,19 @@ export function SplitPdfPage() {
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [pageCount, setPageCount] = useState<number | null>(null);
   const [rangeInput, setRangeInput] = useState('');
+  const [lastValidRangeInput, setLastValidRangeInput] = useState('');
   const [outputs, setOutputs] = useState<SplitOutput[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isRenderingPreviews, setIsRenderingPreviews] = useState(false);
+  const [isDropZoneCollapsed, setIsDropZoneCollapsed] = useState(false);
+  const [thumbnails, setThumbnails] = useState<PageThumbnail[]>([]);
+  const [splitStartPages, setSplitStartPages] = useState<Set<number>>(new Set());
   const [showDownloadGate, setShowDownloadGate] = useState(false);
   const [status, setStatus] = useState<StatusState>({
     tone: 'neutral',
     message: 'Select one PDF file to start.',
   });
+  const isSyncingFromSelectionRef = useRef(false);
 
   const worker = useMemo(
     () => new Worker(new URL('../../workers/pdf.worker.ts', import.meta.url), { type: 'module' }),
@@ -170,9 +207,82 @@ export function SplitPdfPage() {
     }
   }, [rangeInput, pageCount]);
 
+  const canSplit =
+    Boolean(sourceFile) &&
+    Boolean(parsedRanges.ranges) &&
+    (parsedRanges.ranges?.length ?? 0) > 0 &&
+    !isProcessing;
+
+  const rangeStartPages = useMemo(() => {
+    const starts = new Set<number>();
+    if (pageCount && pageCount > 0) {
+      starts.add(1);
+    }
+    splitStartPages.forEach((page) => starts.add(page));
+    return starts;
+  }, [pageCount, splitStartPages]);
+
+  const selectedRangesSummary = useMemo(() => {
+    if (!parsedRanges.ranges || parsedRanges.ranges.length === 0) {
+      return [];
+    }
+    return parsedRanges.ranges;
+  }, [parsedRanges.ranges]);
+
   useEffect(() => {
     return () => worker.terminate();
   }, [worker]);
+
+  useEffect(() => {
+    if (!sourceFile || !pageCount || pageCount < 1) {
+      setThumbnails([]);
+      setSplitStartPages(new Set());
+      setIsRenderingPreviews(false);
+      return;
+    }
+
+    let cancelled = false;
+    setIsRenderingPreviews(true);
+
+    void (async () => {
+      try {
+        const bytes = new Uint8Array(await fileToArrayBuffer(sourceFile));
+        const previews = await renderPdfThumbnails(bytes, pageCount, MAX_PREVIEW_PAGES);
+        if (cancelled) {
+          return;
+        }
+        setThumbnails(previews);
+      } catch {
+        if (cancelled) {
+          return;
+        }
+        setThumbnails([]);
+        setStatus({
+          tone: 'info',
+          message: `PDF ready (${pageCount} pages). Preview unavailable, but splitting still works locally.`,
+        });
+      } finally {
+        if (!cancelled) {
+          setIsRenderingPreviews(false);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [sourceFile, pageCount]);
+
+  useEffect(() => {
+    if (isSyncingFromSelectionRef.current) {
+      isSyncingFromSelectionRef.current = false;
+      return;
+    }
+
+    const ranges = formatSplitRanges(buildSplitRangesFromStarts(splitStartPages, pageCount ?? 0));
+    setRangeInput(ranges);
+    setLastValidRangeInput(ranges);
+  }, [pageCount, splitStartPages]);
 
   async function handleSourceSelected(files: File[]): Promise<void> {
     const file = files[0];
@@ -184,6 +294,10 @@ export function SplitPdfPage() {
     setOutputs([]);
     setShowDownloadGate(false);
     setRangeInput('');
+    setLastValidRangeInput('');
+    setSplitStartPages(new Set());
+    setThumbnails([]);
+    setIsDropZoneCollapsed(false);
     setStatus({ tone: 'info', message: 'Reading PDF metadata...' });
 
     const totalPages = await getPdfPageCount(file);
@@ -200,6 +314,71 @@ export function SplitPdfPage() {
       tone: 'info',
       message: `PDF ready (${totalPages} pages). Enter split ranges like 1-3,4-7.`,
     });
+    setIsDropZoneCollapsed(true);
+  }
+
+  function applyRangesInput(
+    nextValue: string,
+    options?: { preserveInputState?: boolean; revertOnError?: boolean; updateStatusOnError?: boolean }
+  ): void {
+    if (!pageCount || pageCount < 1) {
+      setRangeInput(nextValue);
+      return;
+    }
+
+    const preserveInputState = options?.preserveInputState ?? false;
+    const revertOnError = options?.revertOnError ?? false;
+    const updateStatusOnError = options?.updateStatusOnError ?? false;
+    const cleaned = nextValue.trim();
+
+    if (!cleaned) {
+      isSyncingFromSelectionRef.current = preserveInputState;
+      setRangeInput('');
+      setLastValidRangeInput('');
+      setSplitStartPages(new Set());
+      return;
+    }
+
+    try {
+      const ranges = parseSplitRanges(cleaned, pageCount);
+      const starts = new Set<number>(ranges.map((range) => range.start).filter((page) => page > 1));
+      const normalized = formatSplitRanges(ranges);
+      isSyncingFromSelectionRef.current = preserveInputState;
+      setSplitStartPages(starts);
+      setRangeInput(preserveInputState ? normalized : nextValue);
+      setLastValidRangeInput(preserveInputState ? normalized : nextValue);
+    } catch (error) {
+      setRangeInput(nextValue);
+      if (revertOnError) {
+        setRangeInput(lastValidRangeInput);
+      }
+      if (updateStatusOnError && error instanceof Error && cleaned) {
+        setStatus({ tone: 'error', message: error.message });
+      }
+    }
+  }
+
+  function toggleSelectedPage(pageNumber: number): void {
+    if (pageNumber <= 1) {
+      return;
+    }
+
+    setSplitStartPages((current) => {
+      const next = new Set(current);
+      if (next.has(pageNumber)) {
+        next.delete(pageNumber);
+      } else {
+        next.add(pageNumber);
+      }
+      return next;
+    });
+  }
+
+  function clearPageRange(): void {
+    setRangeInput('');
+    setLastValidRangeInput('');
+    setSplitStartPages(new Set());
+    setStatus({ tone: 'info', message: 'Split ranges cleared.' });
   }
 
   async function handleSplit(): Promise<void> {
@@ -219,8 +398,7 @@ export function SplitPdfPage() {
       return;
     }
     const ranges = parsedRanges.ranges;
-    const selectedPagesCount = getSelectedPagesCount(ranges);
-    trackToolEvent('selection_made', 'split', { pages_count: selectedPagesCount });
+    trackToolEvent('selection_made', 'split');
 
     setIsProcessing(true);
     setStatus({
@@ -306,14 +484,11 @@ export function SplitPdfPage() {
       tone: 'info',
       message: `Split completed. ${nextOutputs.length} PDF files are ready to download.`,
     });
-    trackToolEvent('completed', 'split', {
-      output_files_count: nextOutputs.length,
-      pages_count: selectedPagesCount,
-    });
+    trackToolEvent('completed', 'split');
   }
 
   function handleSplitCtaClick(): void {
-    trackToolEvent('started', 'split', { ranges_count: parsedRanges.ranges?.length ?? 0 });
+    trackToolEvent('started', 'split');
     void handleSplit();
   }
 
@@ -336,6 +511,10 @@ export function SplitPdfPage() {
     setSourceFile(null);
     setPageCount(null);
     setRangeInput('');
+    setLastValidRangeInput('');
+    setSplitStartPages(new Set());
+    setThumbnails([]);
+    setIsDropZoneCollapsed(false);
     setOutputs([]);
     setShowDownloadGate(false);
     setStatus({
@@ -348,6 +527,10 @@ export function SplitPdfPage() {
     setSourceFile(null);
     setPageCount(null);
     setRangeInput('');
+    setLastValidRangeInput('');
+    setSplitStartPages(new Set());
+    setThumbnails([]);
+    setIsDropZoneCollapsed(false);
     setOutputs([]);
     setShowDownloadGate(false);
     setStatus({
@@ -356,18 +539,15 @@ export function SplitPdfPage() {
     });
   }
 
-  const statusClassName = status.tone === 'error' ? 'text-sm text-red-600' : 'text-sm text-ui-muted';
-  const uploadedFiles = sourceFile
-    ? [
-        {
-          id: 'source',
-          filename: sourceFile.name,
-          sizeBytes: sourceFile.size,
-          pages: pageCount,
-          pagesStatus: pageCount ? 'ready' : 'error',
-        } as const,
-      ]
-    : [];
+  const actionMessage =
+    status.tone === 'error'
+      ? status.message
+      : isProcessing
+        ? 'Processing happens locally in your browser. Timing depends on your device, browser, and available resources.'
+      : selectedRangesSummary.length > 0
+        ? `Ready to split into ${selectedRangesSummary.length} file${selectedRangesSummary.length === 1 ? '' : 's'}.`
+        : 'Choose split ranges from the gallery or enter them above.';
+  const actionMessageClassName = status.tone === 'error' ? 'text-sm text-red-600' : 'text-sm text-ui-muted';
 
   return (
     <ToolLayout
@@ -379,57 +559,163 @@ export function SplitPdfPage() {
       heroVariant='brand'
     >
       <Card id='split-pdf-tool'>
-        <div className='space-y-6'>
-          <DropZone
-            onFilesSelected={(files) => void handleSourceSelected(files)}
-            multiple={false}
-            disabled={isProcessing}
-            loadedFileName={sourceFile?.name ?? null}
-          />
-
-          <UploadedFilesTable
-            files={uploadedFiles}
-            reorderable={false}
-            onRemove={() => removeSourceFile()}
-          />
-
-          <div className='space-y-2'>
-            <h2 className='font-heading text-2xl font-semibold text-ui-text'>Split setup</h2>
-            <p className='text-sm text-ui-muted'>
-              Enter non-overlapping page ranges to create separate PDF files. Example: 1-3, 4, 5-10.
-            </p>
-            <input
-              type='text'
-              value={rangeInput}
-              onChange={(event) => setRangeInput(event.target.value)}
-              placeholder='e.g. 1-3, 4, 5-10'
-              className='w-full rounded-xl border border-ui-border bg-ui-surface px-4 py-3 text-sm text-ui-text outline-none transition focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20'
+        <div className='space-y-7'>
+          {!sourceFile ? (
+            <DropZone
+              onFilesSelected={(files) => void handleSourceSelected(files)}
+              multiple={false}
+              disabled={isProcessing}
+              loadedFileName={null}
             />
-            {parsedRanges.ranges ? (
-              <div className='flex flex-wrap gap-2'>
-                {parsedRanges.ranges.map((range) => (
-                  <span
-                    key={`${range.start}-${range.end}`}
-                    className='rounded-md border border-ui-border bg-ui-bg px-2 py-1 text-xs text-ui-muted'
-                  >
-                    {formatRangeLabel(range)}
-                  </span>
-                ))}
-              </div>
-            ) : null}
-            {parsedRanges.error && rangeInput.trim() ? (
-              <p className='text-xs font-medium text-red-600'>{parsedRanges.error}</p>
-            ) : null}
-          </div>
+          ) : isDropZoneCollapsed ? (
+            <div className='flex w-full items-center gap-3 rounded-xl border border-ui-border/70 bg-ui-surface px-3 py-2.5 text-left transition hover:border-brand-primary/35 hover:bg-ui-bg'>
+              <span className='inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-ui-bg text-ui-muted'>
+                <FileText className='h-4.5 w-4.5' />
+              </span>
+              <span className='min-w-0 flex-1'>
+                <span className='block truncate text-sm font-semibold text-ui-text'>{sourceFile.name}</span>
+                <span className='block text-xs text-ui-muted'>
+                  {formatFileSize(sourceFile.size)}
+                  {pageCount ? ` • ${pageCount} pages` : ''}
+                </span>
+              </span>
+              <button
+                type='button'
+                onClick={() => setIsDropZoneCollapsed(false)}
+                aria-label='Show file picker'
+                title='Show file picker'
+                className='inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-ui-muted transition hover:bg-ui-bg hover:text-ui-text'
+              >
+                <span className='hidden sm:inline'>Replace</span>
+                <ChevronLeft className='h-4 w-4' />
+              </button>
+              <button
+                type='button'
+                onClick={removeSourceFile}
+                aria-label='Remove file'
+                title='Remove file'
+                className='inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-ui-muted transition hover:bg-ui-bg hover:text-ui-text'
+              >
+                <Trash2 className='h-4 w-4' />
+              </button>
+            </div>
+          ) : (
+            <div className='relative'>
+              <button
+                type='button'
+                onClick={() => setIsDropZoneCollapsed(true)}
+                aria-label='Hide file picker'
+                title='Hide file picker'
+                className='absolute right-3 top-3 z-10 inline-flex h-9 w-9 items-center justify-center rounded-lg border border-ui-border bg-ui-surface text-ui-text transition hover:bg-ui-bg'
+              >
+                <ChevronsDownUp className='h-4 w-4' />
+              </button>
+              <DropZone
+                onFilesSelected={(files) => void handleSourceSelected(files)}
+                multiple={false}
+                disabled={isProcessing}
+                loadedFileName={sourceFile.name}
+              />
+            </div>
+          )}
 
-          <div className='flex flex-wrap items-center gap-4'>
-            {outputs.length === 0 ? (
-              <Button onClick={handleSplitCtaClick} loading={isProcessing}>
-                Split PDF
-              </Button>
-            ) : null}
-            <p className={statusClassName}>{status.message}</p>
-          </div>
+          {sourceFile ? (
+            <section className='space-y-4'>
+              <div className='space-y-1'>
+                <h2 className='font-heading text-2xl font-semibold text-ui-text'>Define split ranges</h2>
+                <p className='text-sm text-ui-muted'>
+                  Enter ranges manually or click pages to mark where a new split should start.
+                </p>
+              </div>
+
+              <div className='max-w-xl'>
+                <div className='min-w-0'>
+                  <label
+                    htmlFor='split-page-ranges'
+                    className='mb-2 block text-xs font-semibold uppercase tracking-[0.08em] text-ui-muted'
+                  >
+                    Split ranges
+                  </label>
+                  <div className='relative'>
+                    <input
+                      id='split-page-ranges'
+                      type='text'
+                      value={rangeInput}
+                      onChange={(event) =>
+                        applyRangesInput(event.target.value, {
+                          preserveInputState: true,
+                          revertOnError: false,
+                          updateStatusOnError: false,
+                        })
+                      }
+                      onBlur={() =>
+                        applyRangesInput(rangeInput, {
+                          preserveInputState: true,
+                          revertOnError: true,
+                          updateStatusOnError: true,
+                        })
+                      }
+                      placeholder='1-3, 4, 5-10'
+                      className='w-full rounded-xl border border-ui-border bg-ui-surface px-4 py-3.5 pr-12 text-sm text-ui-text outline-none transition focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20'
+                    />
+                    {rangeInput.trim().length > 0 || splitStartPages.size > 0 ? (
+                      <button
+                        type='button'
+                        onClick={clearPageRange}
+                        aria-label='Clear split range'
+                        className='absolute right-3 top-1/2 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md text-ui-muted transition hover:bg-ui-bg hover:text-ui-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/25 focus-visible:ring-offset-2'
+                      >
+                        <X className='h-4 w-4' />
+                      </button>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+
+              <SplitPageGallery
+                thumbnails={thumbnails}
+                selectedPages={splitStartPages}
+                rangeStartPages={rangeStartPages}
+                isLoading={isRenderingPreviews}
+                previewLimit={MAX_PREVIEW_PAGES}
+                totalPages={pageCount}
+                emptyHint='Upload a PDF to enable local page previews. No pages are sent anywhere.'
+                onTogglePage={toggleSelectedPage}
+              />
+
+              <div className='sticky bottom-4 z-10 pt-2'>
+                <div className='flex flex-col gap-3 rounded-2xl border border-ui-border/80 bg-ui-surface/95 px-4 py-4 shadow-[0_10px_30px_rgba(15,23,42,0.05)] backdrop-blur sm:flex-row sm:items-center sm:justify-between'>
+                  <div className='min-w-0'>
+                    <p className='text-sm font-semibold text-ui-text'>
+                      {selectedRangesSummary.length > 0
+                        ? `${selectedRangesSummary.length} split file${selectedRangesSummary.length === 1 ? '' : 's'} configured`
+                        : pageCount
+                          ? `PDF ready (${pageCount} pages)`
+                          : 'Preparing PDF'}
+                    </p>
+                    <div className='mt-2 flex flex-wrap items-center gap-2'>
+                      <p className={actionMessageClassName}>{actionMessage}</p>
+                      {selectedRangesSummary.length > 0
+                        ? selectedRangesSummary.map((range) => (
+                            <span
+                              key={`${range.start}-${range.end}`}
+                              className='rounded-full border border-ui-border bg-ui-bg/70 px-3 py-1.5 text-xs font-semibold text-ui-muted shadow-sm'
+                            >
+                              {formatRangeLabel(range)}
+                            </span>
+                          ))
+                        : null}
+                    </div>
+                  </div>
+                  {outputs.length === 0 ? (
+                    <Button onClick={handleSplitCtaClick} loading={isProcessing} disabled={!canSplit}>
+                      Split PDF
+                    </Button>
+                  ) : null}
+                </div>
+              </div>
+            </section>
+          ) : null}
 
           {outputs.length > 0 ? (
             <div className='space-y-3 rounded-2xl border border-brand-primary/35 bg-brand-primary/10 p-5'>

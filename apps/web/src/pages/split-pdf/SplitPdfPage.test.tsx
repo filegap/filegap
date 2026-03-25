@@ -5,6 +5,14 @@ import { describe, expect, it, vi } from 'vitest';
 import { SplitPdfPage } from './SplitPdfPage';
 import { splitPdfByRanges } from '../../adapters/pdfEngine';
 
+vi.mock('../../lib/pdfPreview', () => ({
+  renderPdfThumbnails: vi.fn().mockResolvedValue([
+    { pageNumber: 1, imageDataUrl: 'data:image/jpeg;base64,page-1' },
+    { pageNumber: 2, imageDataUrl: 'data:image/jpeg;base64,page-2' },
+    { pageNumber: 3, imageDataUrl: 'data:image/jpeg;base64,page-3' },
+  ]),
+}));
+
 vi.mock('pdf-lib', () => ({
   PDFDocument: {
     load: vi.fn().mockResolvedValue({
@@ -31,10 +39,8 @@ describe('SplitPdfPage', () => {
       screen.getByRole('heading', { level: 1, name: 'Split PDF files online — fast, private, and local' })
     ).toBeInTheDocument();
     expect(screen.getByText('Processed locally on your device — no uploads')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Split PDF' })).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('e.g. 1-3, 4, 5-10')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 2, name: 'Uploaded files' })).toBeInTheDocument();
-    expect(screen.getByText('No files selected yet.')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Split PDF' })).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Split ranges')).not.toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2, name: 'How to split PDF files' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2, name: 'Why use this Split PDF tool' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2, name: 'Frequently asked questions' })).toBeInTheDocument();
@@ -47,13 +53,11 @@ describe('SplitPdfPage', () => {
     expect(splitCtas[splitCtas.length - 1]).toHaveAttribute('href', '#split-pdf-tool');
   });
 
-  it('shows validation if splitting without selecting source file', async () => {
-    const user = userEvent.setup();
+  it('keeps split controls hidden until a source file is selected', () => {
     render(<SplitPdfPage />);
 
-    await user.click(screen.getByRole('button', { name: 'Split PDF' }));
-
-    expect(screen.getByText('Select a PDF file before splitting.')).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { level: 2, name: 'Define split ranges' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Split PDF' })).not.toBeInTheDocument();
   });
 
   it('splits file and renders output downloads', async () => {
@@ -74,7 +78,9 @@ describe('SplitPdfPage', () => {
       expect(screen.getByText(/PDF ready/i)).toBeInTheDocument();
     });
 
-    await user.type(screen.getByPlaceholderText('e.g. 1-3, 4, 5-10'), '1-2,3,4-4');
+    const splitRangesInput = screen.getByPlaceholderText('1-3, 4, 5-10');
+    await user.clear(splitRangesInput);
+    await user.type(splitRangesInput, '1-2,3,4-4');
     await user.click(screen.getByRole('button', { name: 'Split PDF' }));
 
     await waitFor(() => {
@@ -102,7 +108,9 @@ describe('SplitPdfPage', () => {
       expect(screen.getByText(/PDF ready/i)).toBeInTheDocument();
     });
 
-    await user.type(screen.getByPlaceholderText('e.g. 1-3, 4, 5-10'), '1');
+    const splitRangesInput = screen.getByPlaceholderText('1-3, 4, 5-10');
+    await user.clear(splitRangesInput);
+    await user.type(splitRangesInput, '1');
     await user.click(screen.getByRole('button', { name: 'Split PDF' }));
 
     await waitFor(() => {
@@ -111,8 +119,8 @@ describe('SplitPdfPage', () => {
 
     await user.click(screen.getByRole('button', { name: 'New split' }));
 
-    expect(screen.getByRole('button', { name: 'Split PDF' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Split PDF' })).not.toBeInTheDocument();
     expect(screen.queryByText('Split completed')).not.toBeInTheDocument();
-    expect(screen.getByText('No files selected yet.')).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { level: 2, name: 'Define split ranges' })).not.toBeInTheDocument();
   });
 });

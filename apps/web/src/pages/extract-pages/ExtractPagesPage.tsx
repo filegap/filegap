@@ -597,6 +597,8 @@ export function ExtractPagesPage() {
   const actionMessage =
     status.tone === 'error'
       ? status.message
+      : isProcessing
+        ? 'Processing happens locally in your browser. Timing depends on your device, browser, and available resources.'
       : selectedPages.size > 0
         ? 'Ready to extract the selected pages.'
         : 'Choose pages from the gallery or enter ranges above.';
