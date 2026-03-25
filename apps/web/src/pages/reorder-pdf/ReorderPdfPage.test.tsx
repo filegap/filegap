@@ -5,6 +5,15 @@ import { describe, expect, it, vi } from 'vitest';
 import { ReorderPdfPage } from './ReorderPdfPage';
 import { reorderPdfPages } from '../../adapters/pdfEngine';
 
+vi.mock('../../lib/pdfPreview', () => ({
+  renderPdfThumbnails: vi.fn().mockResolvedValue([
+    { pageNumber: 1, imageDataUrl: 'data:image/jpeg;base64,page-1' },
+    { pageNumber: 2, imageDataUrl: 'data:image/jpeg;base64,page-2' },
+    { pageNumber: 3, imageDataUrl: 'data:image/jpeg;base64,page-3' },
+    { pageNumber: 4, imageDataUrl: 'data:image/jpeg;base64,page-4' },
+  ]),
+}));
+
 vi.mock('pdf-lib', () => ({
   PDFDocument: {
     load: vi.fn().mockResolvedValue({
@@ -31,9 +40,8 @@ describe('ReorderPdfPage', () => {
       screen.getByRole('heading', { level: 1, name: 'Reorder PDF pages online — fast, private, and local' })
     ).toBeInTheDocument();
     expect(screen.getByText('Processed locally on your device — no uploads')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Reorder PDF' })).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('e.g. 3, 1, 2, 4-6')).toBeInTheDocument();
-    expect(screen.getByText('No files selected yet.')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Reorder PDF' })).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Page order')).not.toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2, name: 'How to reorder PDF pages' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2, name: 'Why use this Reorder PDF tool' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2, name: 'Frequently asked questions' })).toBeInTheDocument();
@@ -47,13 +55,11 @@ describe('ReorderPdfPage', () => {
     expect(reorderCtas[reorderCtas.length - 1]).toHaveAttribute('href', '#reorder-pdf-tool');
   });
 
-  it('shows validation if reorder starts without selecting source file', async () => {
-    const user = userEvent.setup();
+  it('keeps reorder controls hidden until a source file is selected', () => {
     render(<ReorderPdfPage />);
 
-    await user.click(screen.getByRole('button', { name: 'Reorder PDF' }));
-
-    expect(screen.getByText('Select a PDF file before reordering pages.')).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { level: 2, name: 'Set page order' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Reorder PDF' })).not.toBeInTheDocument();
   });
 
   it('reorders pages and shows result state', async () => {
@@ -67,11 +73,12 @@ describe('ReorderPdfPage', () => {
     fireEvent.change(input, { target: { files: [file] } });
 
     await waitFor(() => {
-      expect(screen.getByText(/PDF ready/i)).toBeInTheDocument();
+      expect(screen.getByRole('heading', { level: 2, name: 'Set page order' })).toBeInTheDocument();
     });
 
-    const orderInput = screen.getByPlaceholderText('e.g. 3, 1, 2, 4-6');
-    fireEvent.change(orderInput, { target: { value: '2,1,3,4' } });
+    const orderInput = screen.getByPlaceholderText('3, 1, 2, 4-6');
+    await user.clear(orderInput);
+    await user.type(orderInput, '2,1,3,4');
     await user.click(screen.getByRole('button', { name: 'Reorder PDF' }));
 
     await waitFor(() => {

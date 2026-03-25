@@ -1,15 +1,18 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { PDFDocument } from 'pdf-lib';
+import { ChevronLeft, ChevronsDownUp, FileText, RotateCcw, Trash2, X } from 'lucide-react';
 
 import { Card } from '../../components/ui/Card';
 import { DropZone } from '../../components/ui/DropZone';
 import { Button } from '../../components/ui/Button';
 import { PreDownloadModal } from '../../components/ui/PreDownloadModal';
 import { ToolLandingSections } from '../../components/seo/ToolLandingSections';
+import { ReorderPageGallery } from '../../components/ui/ReorderPageGallery';
 import { ToolLayout } from '../../components/layout/ToolLayout';
 import { parsePageOrder, reorderPdfPages } from '../../adapters/pdfEngine';
 import { trackEvent, trackToolEvent } from '../../lib/analytics/trackEvent';
+import { renderPdfThumbnails, type PageThumbnail } from '../../lib/pdfPreview';
 import type { WorkerResponse } from '../../types';
 
 // ⚠️ Do not log user file data. This project is privacy-first.
@@ -25,6 +28,8 @@ type ReorderOutput = {
   bytes: Uint8Array;
   orderLabel: string;
 };
+
+const MAX_PREVIEW_PAGES = 40;
 
 function saveBlob(filename: string, bytes: Uint8Array): void {
   const copy = new Uint8Array(bytes.length);
@@ -61,6 +66,18 @@ function buildReorderFilename(baseFilename: string): string {
     ? baseFilename.slice(0, -4)
     : baseFilename;
   return `${base}-reordered.pdf`;
+}
+
+function formatFileSize(sizeBytes: number): string {
+  return `${Math.max(1, Math.round(sizeBytes / 1024))} KB`;
+}
+
+function formatPageOrder(pageOrder: number[]): string {
+  return pageOrder.join(',');
+}
+
+function buildDefaultPageOrder(pageCount: number): number[] {
+  return Array.from({ length: pageCount }, (_, index) => index + 1);
 }
 
 const REORDER_PAGE_CONTENT = {
@@ -135,13 +152,19 @@ export function ReorderPdfPage() {
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [pageCount, setPageCount] = useState<number | null>(null);
   const [orderInput, setOrderInput] = useState('');
+  const [lastValidOrderInput, setLastValidOrderInput] = useState('');
   const [output, setOutput] = useState<ReorderOutput | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isRenderingPreviews, setIsRenderingPreviews] = useState(false);
+  const [isDropZoneCollapsed, setIsDropZoneCollapsed] = useState(false);
+  const [thumbnails, setThumbnails] = useState<PageThumbnail[]>([]);
+  const [pageOrderSelection, setPageOrderSelection] = useState<number[]>([]);
   const [showDownloadGate, setShowDownloadGate] = useState(false);
   const [status, setStatus] = useState<StatusState>({
     tone: 'neutral',
     message: 'Select one PDF file to start.',
   });
+  const isSyncingFromGalleryRef = useRef(false);
 
   const worker = useMemo(
     () => new Worker(new URL('../../workers/pdf.worker.ts', import.meta.url), { type: 'module' }),
@@ -162,9 +185,82 @@ export function ReorderPdfPage() {
     }
   }, [orderInput, pageCount]);
 
+  const canReorder =
+    Boolean(sourceFile) &&
+    Boolean(parsedOrder.pageOrder) &&
+    (parsedOrder.pageOrder?.length ?? 0) > 0 &&
+    !isProcessing;
+
+  const orderPreviewLabel = useMemo(() => {
+    const order = parsedOrder.pageOrder ?? pageOrderSelection;
+    if (!order || order.length === 0) {
+      return '';
+    }
+
+    const preview = order.slice(0, 8).join(', ');
+    return order.length > 8 ? `${preview}...` : preview;
+  }, [parsedOrder.pageOrder, pageOrderSelection]);
+
   useEffect(() => {
     return () => worker.terminate();
   }, [worker]);
+
+  useEffect(() => {
+    if (!sourceFile || !pageCount || pageCount < 1) {
+      setThumbnails([]);
+      setPageOrderSelection([]);
+      setIsRenderingPreviews(false);
+      return;
+    }
+
+    let cancelled = false;
+    setIsRenderingPreviews(true);
+
+    void (async () => {
+      try {
+        const bytes = new Uint8Array(await fileToArrayBuffer(sourceFile));
+        const previews = await renderPdfThumbnails(bytes, pageCount, MAX_PREVIEW_PAGES);
+        if (cancelled) {
+          return;
+        }
+        setThumbnails(previews);
+      } catch {
+        if (cancelled) {
+          return;
+        }
+        setThumbnails([]);
+        setStatus({
+          tone: 'info',
+          message: `PDF ready (${pageCount} pages). Preview unavailable, but reordering still works locally.`,
+        });
+      } finally {
+        if (!cancelled) {
+          setIsRenderingPreviews(false);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [sourceFile, pageCount]);
+
+  useEffect(() => {
+    if (isSyncingFromGalleryRef.current) {
+      isSyncingFromGalleryRef.current = false;
+      return;
+    }
+
+    if (pageOrderSelection.length === 0) {
+      setOrderInput('');
+      setLastValidOrderInput('');
+      return;
+    }
+
+    const nextInput = formatPageOrder(pageOrderSelection);
+    setOrderInput(nextInput);
+    setLastValidOrderInput(nextInput);
+  }, [pageOrderSelection]);
 
   async function handleSourceSelected(files: File[]): Promise<void> {
     const file = files[0];
@@ -176,6 +272,10 @@ export function ReorderPdfPage() {
     setOutput(null);
     setShowDownloadGate(false);
     setOrderInput('');
+    setLastValidOrderInput('');
+    setThumbnails([]);
+    setPageOrderSelection([]);
+    setIsDropZoneCollapsed(false);
     setStatus({ tone: 'info', message: 'Reading PDF metadata...' });
 
     const totalPages = await getPdfPageCount(file);
@@ -188,11 +288,98 @@ export function ReorderPdfPage() {
       return;
     }
 
-    const recommended = Array.from({ length: totalPages }, (_, index) => index + 1).join(',');
+    const recommendedOrder = buildDefaultPageOrder(totalPages);
+    const recommended = formatPageOrder(recommendedOrder);
+    setPageOrderSelection(recommendedOrder);
     setOrderInput(recommended);
+    setLastValidOrderInput(recommended);
     setStatus({
       tone: 'info',
       message: `PDF ready (${totalPages} pages). Update page order if needed.`,
+    });
+    setIsDropZoneCollapsed(true);
+  }
+
+  function applyOrderInput(
+    nextValue: string,
+    options?: { preserveInputState?: boolean; revertOnError?: boolean; updateStatusOnError?: boolean }
+  ): void {
+    if (!pageCount || pageCount < 1) {
+      setOrderInput(nextValue);
+      return;
+    }
+
+    const preserveInputState = options?.preserveInputState ?? false;
+    const revertOnError = options?.revertOnError ?? false;
+    const updateStatusOnError = options?.updateStatusOnError ?? false;
+    const cleaned = nextValue.trim();
+
+    if (!cleaned) {
+      setOrderInput('');
+      setLastValidOrderInput('');
+      setPageOrderSelection([]);
+      return;
+    }
+
+    try {
+      const pageOrder = parsePageOrder(cleaned, pageCount);
+      const normalized = formatPageOrder(pageOrder);
+      isSyncingFromGalleryRef.current = preserveInputState;
+      setPageOrderSelection(pageOrder);
+      setOrderInput(preserveInputState ? normalized : nextValue);
+      setLastValidOrderInput(preserveInputState ? normalized : nextValue);
+    } catch (error) {
+      setOrderInput(nextValue);
+      if (revertOnError) {
+        setOrderInput(lastValidOrderInput);
+      }
+      if (updateStatusOnError && error instanceof Error && cleaned) {
+        setStatus({ tone: 'error', message: error.message });
+      }
+    }
+  }
+
+  function restoreOriginalOrder(): void {
+    if (!pageCount || pageCount < 1) {
+      return;
+    }
+
+    const nextOrder = buildDefaultPageOrder(pageCount);
+    const nextInput = formatPageOrder(nextOrder);
+    isSyncingFromGalleryRef.current = true;
+    setPageOrderSelection(nextOrder);
+    setOrderInput(nextInput);
+    setLastValidOrderInput(nextInput);
+    setStatus({ tone: 'info', message: 'Original order restored.' });
+  }
+
+  function clearPageOrder(): void {
+    setOrderInput('');
+    setLastValidOrderInput('');
+    setPageOrderSelection([]);
+    setStatus({ tone: 'info', message: 'Page order cleared.' });
+  }
+
+  function reorderGalleryPages(fromIndex: number, toIndex: number): void {
+    setPageOrderSelection((current) => {
+      if (
+        fromIndex < 0 ||
+        toIndex < 0 ||
+        fromIndex >= current.length ||
+        toIndex >= current.length ||
+        fromIndex === toIndex
+      ) {
+        return current;
+      }
+
+      const next = [...current];
+      const [moved] = next.splice(fromIndex, 1);
+      next.splice(toIndex, 0, moved);
+      const nextInput = formatPageOrder(next);
+      isSyncingFromGalleryRef.current = true;
+      setOrderInput(nextInput);
+      setLastValidOrderInput(nextInput);
+      return next;
     });
   }
 
@@ -213,7 +400,7 @@ export function ReorderPdfPage() {
       return;
     }
     const pageOrder = parsedOrder.pageOrder;
-    trackToolEvent('selection_made', 'reorder', { pages_count: pageOrder.length });
+    trackToolEvent('selection_made', 'reorder');
 
     setIsProcessing(true);
     setStatus({
@@ -294,11 +481,11 @@ export function ReorderPdfPage() {
     setShowDownloadGate(false);
     setIsProcessing(false);
     setStatus({ tone: 'info', message: 'Reorder completed. Your PDF is ready to download.' });
-    trackToolEvent('completed', 'reorder', { pages_count: pageOrder.length });
+    trackToolEvent('completed', 'reorder');
   }
 
   function handleReorderCtaClick(): void {
-    trackToolEvent('started', 'reorder', { pages_count: parsedOrder.pageOrder?.length ?? 0 });
+    trackToolEvent('started', 'reorder');
     void handleReorder();
   }
 
@@ -306,6 +493,10 @@ export function ReorderPdfPage() {
     setSourceFile(null);
     setPageCount(null);
     setOrderInput('');
+    setLastValidOrderInput('');
+    setThumbnails([]);
+    setPageOrderSelection([]);
+    setIsDropZoneCollapsed(false);
     setOutput(null);
     setShowDownloadGate(false);
     setStatus({
@@ -326,7 +517,31 @@ export function ReorderPdfPage() {
     setShowDownloadGate(false);
   }
 
-  const statusClassName = status.tone === 'error' ? 'text-sm text-red-600' : 'text-sm text-ui-muted';
+  function removeSourceFile(): void {
+    setSourceFile(null);
+    setPageCount(null);
+    setOrderInput('');
+    setLastValidOrderInput('');
+    setThumbnails([]);
+    setPageOrderSelection([]);
+    setIsDropZoneCollapsed(false);
+    setOutput(null);
+    setShowDownloadGate(false);
+    setStatus({
+      tone: 'neutral',
+      message: 'Select one PDF file to start.',
+    });
+  }
+
+  const actionMessage =
+    status.tone === 'error'
+      ? status.message
+      : isProcessing
+        ? 'Processing happens locally in your browser. Timing depends on your device, browser, and available resources.'
+        : parsedOrder.pageOrder && parsedOrder.pageOrder.length > 0
+          ? 'Ready to reorder the PDF.'
+          : 'Enter the full page order or drag thumbnails to rearrange pages.';
+  const actionMessageClassName = status.tone === 'error' ? 'text-sm text-red-600' : 'text-sm text-ui-muted';
 
   return (
     <ToolLayout
@@ -338,59 +553,167 @@ export function ReorderPdfPage() {
       heroVariant='brand'
     >
       <Card id='reorder-pdf-tool'>
-        <div className='space-y-6'>
-          <DropZone
-            onFilesSelected={(files) => void handleSourceSelected(files)}
-            multiple={false}
-            disabled={isProcessing}
-            loadedFileName={sourceFile?.name ?? null}
-          />
+        <div className='space-y-7'>
+          {!sourceFile ? (
+            <DropZone
+              onFilesSelected={(files) => void handleSourceSelected(files)}
+              multiple={false}
+              disabled={isProcessing}
+              loadedFileName={null}
+            />
+          ) : isDropZoneCollapsed ? (
+            <div className='flex w-full items-center gap-3 rounded-xl border border-ui-border/70 bg-ui-surface px-3 py-2.5 text-left transition hover:border-brand-primary/35 hover:bg-ui-bg'>
+              <span className='inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-ui-bg text-ui-muted'>
+                <FileText className='h-4.5 w-4.5' />
+              </span>
+              <span className='min-w-0 flex-1'>
+                <span className='block truncate text-sm font-semibold text-ui-text'>{sourceFile.name}</span>
+                <span className='block text-xs text-ui-muted'>
+                  {formatFileSize(sourceFile.size)}
+                  {pageCount ? ` • ${pageCount} pages` : ''}
+                </span>
+              </span>
+              <button
+                type='button'
+                onClick={() => setIsDropZoneCollapsed(false)}
+                aria-label='Show file picker'
+                title='Show file picker'
+                className='inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-ui-muted transition hover:bg-ui-bg hover:text-ui-text'
+              >
+                <span className='hidden sm:inline'>Replace</span>
+                <ChevronLeft className='h-4 w-4' />
+              </button>
+              <button
+                type='button'
+                onClick={removeSourceFile}
+                aria-label='Remove file'
+                title='Remove file'
+                className='inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-ui-muted transition hover:bg-ui-bg hover:text-ui-text'
+              >
+                <Trash2 className='h-4 w-4' />
+              </button>
+            </div>
+          ) : (
+            <div className='relative'>
+              <button
+                type='button'
+                onClick={() => setIsDropZoneCollapsed(true)}
+                aria-label='Hide file picker'
+                title='Hide file picker'
+                className='absolute right-3 top-3 z-10 inline-flex h-9 w-9 items-center justify-center rounded-lg border border-ui-border bg-ui-surface text-ui-text transition hover:bg-ui-bg'
+              >
+                <ChevronsDownUp className='h-4 w-4' />
+              </button>
+              <DropZone
+                onFilesSelected={(files) => void handleSourceSelected(files)}
+                multiple={false}
+                disabled={isProcessing}
+                loadedFileName={sourceFile.name}
+              />
+            </div>
+          )}
 
-          <div className='space-y-2'>
-            <h2 className='font-heading text-2xl font-semibold text-ui-text'>Uploaded files</h2>
-            {!sourceFile ? (
-              <p className='text-sm text-ui-muted'>No files selected yet.</p>
-            ) : (
-              <div className='rounded-xl border border-ui-border bg-ui-surface px-4 py-3'>
-                <p className='text-sm font-medium text-ui-text'>{sourceFile.name}</p>
-                <p className='text-xs text-ui-muted'>
-                  {Math.max(1, Math.round(sourceFile.size / 1024))} KB
-                  {pageCount ? ` · ${pageCount} pages` : ''}
+          {sourceFile ? (
+            <section className='space-y-4'>
+              <div className='space-y-1'>
+                <h2 className='font-heading text-2xl font-semibold text-ui-text'>Set page order</h2>
+                <p className='text-sm text-ui-muted'>
+                  Enter the full order manually or drag thumbnails into the sequence you want.
                 </p>
               </div>
-            )}
-          </div>
 
-          <div className='space-y-2'>
-            <h2 className='font-heading text-2xl font-semibold text-ui-text'>Page order</h2>
-            <p className='text-sm text-ui-muted'>
-              Enter the full page order exactly once. Example: 3, 1, 2, 4-6.
-            </p>
-            <input
-              type='text'
-              value={orderInput}
-              onChange={(event) => setOrderInput(event.target.value)}
-              placeholder='e.g. 3, 1, 2, 4-6'
-              className='w-full rounded-xl border border-ui-border bg-ui-surface px-4 py-3 text-sm text-ui-text outline-none transition focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20'
-            />
-            {parsedOrder.pageOrder ? (
-              <div className='rounded-md border border-ui-border bg-ui-bg px-2 py-1 text-xs text-ui-muted'>
-                Final order: {parsedOrder.pageOrder.join(',')}
+              <div className='max-w-2xl'>
+                <div className='min-w-0'>
+                  <label
+                    htmlFor='reorder-page-order'
+                    className='mb-2 block text-xs font-semibold uppercase tracking-[0.08em] text-ui-muted'
+                  >
+                    Page order
+                  </label>
+                  <div className='relative'>
+                    <input
+                      id='reorder-page-order'
+                      type='text'
+                      value={orderInput}
+                      onChange={(event) =>
+                        applyOrderInput(event.target.value, {
+                          preserveInputState: true,
+                          revertOnError: false,
+                          updateStatusOnError: false,
+                        })
+                      }
+                      onBlur={() =>
+                        applyOrderInput(orderInput, {
+                          preserveInputState: true,
+                          revertOnError: true,
+                          updateStatusOnError: true,
+                        })
+                      }
+                      placeholder='3, 1, 2, 4-6'
+                      className='w-full rounded-xl border border-ui-border bg-ui-surface px-4 py-3.5 pr-12 text-sm text-ui-text outline-none transition focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20'
+                    />
+                    {orderInput.trim().length > 0 || pageOrderSelection.length > 0 ? (
+                      <button
+                        type='button'
+                        onClick={clearPageOrder}
+                        aria-label='Clear page order'
+                        className='absolute right-3 top-1/2 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md text-ui-muted transition hover:bg-ui-bg hover:text-ui-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/25 focus-visible:ring-offset-2'
+                      >
+                        <X className='h-4 w-4' />
+                      </button>
+                    ) : null}
+                  </div>
+                  <div className='mt-3 flex flex-wrap items-center gap-2'>
+                    <button
+                      type='button'
+                      onClick={restoreOriginalOrder}
+                      className='inline-flex items-center gap-1 rounded-lg border border-ui-border bg-ui-surface px-3 py-1.5 text-xs font-medium text-ui-muted transition hover:bg-ui-bg hover:text-ui-text'
+                    >
+                      <RotateCcw className='h-3.5 w-3.5' />
+                      Original order
+                    </button>
+                  </div>
+                </div>
               </div>
-            ) : null}
-            {parsedOrder.error && orderInput.trim() ? (
-              <p className='text-xs font-medium text-red-600'>{parsedOrder.error}</p>
-            ) : null}
-          </div>
 
-          <div className='flex flex-wrap items-center gap-4'>
-            {!output ? (
-              <Button onClick={handleReorderCtaClick} loading={isProcessing}>
-                Reorder PDF
-              </Button>
-            ) : null}
-            <p className={statusClassName}>{status.message}</p>
-          </div>
+              <ReorderPageGallery
+                thumbnails={thumbnails}
+                pageOrder={pageOrderSelection}
+                isLoading={isRenderingPreviews}
+                previewLimit={MAX_PREVIEW_PAGES}
+                totalPages={pageCount}
+                emptyHint='Upload a PDF to enable local page previews. No pages are sent anywhere.'
+                onReorder={reorderGalleryPages}
+              />
+
+              <div className='sticky bottom-4 z-10 pt-2'>
+                <div className='flex flex-col gap-3 rounded-2xl border border-ui-border/80 bg-ui-surface/95 px-4 py-4 shadow-[0_10px_30px_rgba(15,23,42,0.05)] backdrop-blur sm:flex-row sm:items-center sm:justify-between'>
+                  <div className='min-w-0'>
+                    <p className='text-sm font-semibold text-ui-text'>
+                      {parsedOrder.pageOrder && parsedOrder.pageOrder.length > 0
+                        ? `Ready to reorder ${parsedOrder.pageOrder.length} page${parsedOrder.pageOrder.length === 1 ? '' : 's'}`
+                        : pageCount
+                          ? `PDF ready (${pageCount} pages)`
+                          : 'Preparing PDF'}
+                    </p>
+                    <div className='mt-2 flex flex-wrap items-center gap-2'>
+                      <p className={actionMessageClassName}>{actionMessage}</p>
+                      {orderPreviewLabel ? (
+                        <span className='rounded-full border border-ui-border bg-ui-bg/70 px-3 py-1.5 text-xs font-semibold text-ui-muted shadow-sm'>
+                          Order {orderPreviewLabel}
+                        </span>
+                      ) : null}
+                    </div>
+                  </div>
+                  {!output ? (
+                    <Button onClick={handleReorderCtaClick} loading={isProcessing} disabled={!canReorder}>
+                      Reorder PDF
+                    </Button>
+                  ) : null}
+                </div>
+              </div>
+            </section>
+          ) : null}
 
           {output ? (
             <div className='space-y-3 rounded-2xl border border-brand-primary/35 bg-brand-primary/10 p-5'>
