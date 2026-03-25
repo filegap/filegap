@@ -546,7 +546,7 @@ export function ReorderPdfPage() {
   return (
     <ToolLayout
       title='Reorder PDF pages online — fast, private, and local'
-      description='Reorder PDF pages directly in your browser. No uploads. No accounts. Your files never leave your device.'
+      description='Reorder PDF pages directly in your browser. No account required.'
       trustLine='Free • No signup • Works in your browser'
       metaTitle='Reorder PDF Pages Online — Private, Local & Free | Filegap'
       metaDescription='Reorder PDF pages online for free with private local processing. Change page order directly in your browser with no uploads and no signup.'

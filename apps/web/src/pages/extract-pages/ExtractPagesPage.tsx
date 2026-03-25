@@ -607,7 +607,7 @@ export function ExtractPagesPage() {
   return (
     <ToolLayout
       title='Extract PDF pages online — fast, private, and local'
-      description='Extract pages from PDF files directly in your browser. No uploads. No accounts. Your files never leave your device.'
+      description='Extract pages from PDF files directly in your browser. No account required.'
       trustLine='Free • No signup • Works in your browser'
       metaTitle='Extract PDF Pages Online — Private, Local & Free | Filegap'
       metaDescription='Extract PDF pages online for free with private local processing. Keep only the pages you need directly in your browser with no uploads and no signup.'

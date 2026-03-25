@@ -345,7 +345,7 @@ export function MergePdfPage() {
   return (
     <ToolLayout
       title='Merge PDF files online — fast, private, and local'
-      description='Combine multiple PDF files into one document directly in your browser. No uploads. No accounts. Your files never leave your device.'
+      description='Combine multiple PDF files into one document directly in your browser. No account required.'
       trustLine='Free • No signup • Works in your browser'
       metaTitle='Merge PDF Files Online — Private, Local & Free | Filegap'
       metaDescription='Merge PDF files online for free with private local processing. Combine PDFs directly in your browser with no uploads and no signup.'

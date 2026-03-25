@@ -39,6 +39,7 @@ describe('ReorderPdfPage', () => {
     expect(
       screen.getByRole('heading', { level: 1, name: 'Reorder PDF pages online — fast, private, and local' })
     ).toBeInTheDocument();
+    expect(screen.getByText('Reorder PDF pages directly in your browser. No account required.')).toBeInTheDocument();
     expect(screen.getByText('Processed locally on your device — no uploads')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Reorder PDF' })).not.toBeInTheDocument();
     expect(screen.queryByLabelText('Page order')).not.toBeInTheDocument();

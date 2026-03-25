@@ -8,42 +8,38 @@ describe('HomePage', () => {
     render(<HomePage />);
 
     expect(
-      screen.getByRole('heading', { level: 1, name: /Edit PDF files online\s*No uploads\. No accounts\./ })
+      screen.getByRole('heading', { level: 1, name: 'Edit PDFs locally — fast and private' })
     ).toBeInTheDocument();
-    expect(
-      screen.getByText('Merge, split, and edit PDF files directly in your browser')
-    ).toBeInTheDocument();
-    expect(screen.getByText('Everything runs locally')).toBeInTheDocument();
+    expect(screen.getByText('Merge, split, and edit PDFs directly in your browser.')).toBeInTheDocument();
+    expect(screen.getByText('No uploads. No accounts.')).toBeInTheDocument();
+    expect(screen.getByText('Processed locally on your device — no uploads')).toBeInTheDocument();
 
-    const mergeCtas = screen.getAllByRole('link', { name: 'Merge PDFs instantly' });
+    const mergeCtas = screen.getAllByRole('link', { name: /Start with Merge PDF|Merge PDFs instantly/ });
     expect(mergeCtas[0]).toHaveAttribute('href', '/merge-pdf');
-    expect(
-      screen.getByText('Processed locally on your device — no uploads')
-    ).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Open source on GitHub' })).toHaveAttribute(
       'href',
       'https://github.com/filegap/filegap'
     );
     expect(
-      screen.getByText((_, element) => element?.textContent === 'Use the CLI or download the app')
+      screen.getByText((_, element) => element?.textContent === 'Need more control? Try the CLI or download the app.')
     ).toBeInTheDocument();
     expect(screen.getAllByRole('link', { name: 'CLI' })[0]).toHaveAttribute('href', '/cli');
     expect(screen.getByRole('link', { name: 'download the app' })).toHaveAttribute(
       'href',
       '/download'
     );
-    expect(screen.getByText('Works in all modern browsers')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 2, name: 'More ways to use Filegap' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'See all tools' })).toHaveAttribute('href', '#home-tool-grid');
+    expect(screen.getByRole('heading', { level: 2, name: 'Use Filegap your way' })).toBeInTheDocument();
     expect(screen.getByText('Use Filegap from your terminal')).toBeInTheDocument();
     expect(
       screen.getByText('Run PDF tools directly via CLI — fast, scriptable, private.')
     ).toBeInTheDocument();
-    expect(screen.getByText('Go to CLI').closest('a')).toHaveAttribute('href', '/cli');
+    expect(screen.getByText('Use the CLI').closest('a')).toHaveAttribute('href', '/cli');
     expect(screen.getByText('Download the desktop app')).toBeInTheDocument();
     expect(
       screen.getByText('Process files locally without a browser — fully offline.')
     ).toBeInTheDocument();
-    expect(screen.getByText('Download app').closest('a')).toHaveAttribute('href', '/download');
+    expect(screen.getByText('Download the app').closest('a')).toHaveAttribute('href', '/download');
 
     const grid = screen.getByTestId('home-tool-grid');
     expect(within(grid).getByRole('link', { name: /Merge PDF/i })).toHaveAttribute('href', '/merge-pdf');
@@ -54,26 +50,18 @@ describe('HomePage', () => {
     expect(within(grid).getAllByText('Split PDF')).toHaveLength(2);
     expect(within(grid).getByText('Extract pages')).toBeInTheDocument();
     expect(within(grid).getByText('Reorder pages')).toBeInTheDocument();
+    expect(within(grid).getByText('Combine multiple PDFs into one — fast and private.')).toBeInTheDocument();
+    expect(within(grid).getByText('Split a PDF into smaller files — no uploads required.')).toBeInTheDocument();
+    expect(within(grid).getByText('Extract only the pages you need from a PDF.')).toBeInTheDocument();
+    expect(within(grid).getByText('Rearrange PDF pages and export a new file in seconds.')).toBeInTheDocument();
 
     expect(screen.getByRole('heading', { level: 2, name: 'Why Filegap' })).toBeInTheDocument();
-    expect(screen.getByText('100% local processing')).toBeInTheDocument();
-    expect(
-      screen.getByText(
-        'Your PDF files are processed directly in your browser. They are never uploaded to any server.'
-      )
-    ).toBeInTheDocument();
-    expect(screen.getByText('No accounts, no file tracking')).toBeInTheDocument();
-    expect(
-      screen.getByText(
-        'Use all tools instantly without signing up. We only track high-level tool usage and never your files.'
-      )
-    ).toBeInTheDocument();
-    expect(screen.getByText('Fast and lightweight')).toBeInTheDocument();
-    expect(
-      screen.getByText(
-        'No uploads, no waiting. Everything runs locally for maximum speed and responsiveness.'
-      )
-    ).toBeInTheDocument();
+    expect(screen.getByText('Local processing')).toBeInTheDocument();
+    expect(screen.getByText('Your PDF files stay on your device while you edit them.')).toBeInTheDocument();
+    expect(screen.getByText('No tracking')).toBeInTheDocument();
+    expect(screen.getByText('No account is needed, and your files are not tracked.')).toBeInTheDocument();
+    expect(screen.getByText('Fast & lightweight')).toBeInTheDocument();
+    expect(screen.getByText('Quick tools with less waiting and a cleaner workflow.')).toBeInTheDocument();
 
     expect(screen.getByRole('heading', { level: 2, name: 'Frequently asked questions' })).toBeInTheDocument();
     expect(screen.getByText('Is Filegap really private?')).toBeInTheDocument();
@@ -102,12 +90,12 @@ describe('HomePage', () => {
     expect(screen.getByRole('heading', { level: 2, name: 'Simple and private PDF tools' })).toBeInTheDocument();
     expect(
       screen.getByText(
-        'Unlike most PDF tools, Filegap does not send your files to a server. All processing happens locally on your device, making it a safer choice if you need to handle sensitive documents.'
+        'The interface stays simple, so you can get in, make the change you need, and export the result without extra steps.'
       )
     ).toBeInTheDocument();
     expect(
       screen.getByText(
-        'Whether you need to combine PDF files into one document, split large PDFs into smaller files, or extract only specific pages, Filegap lets you do it quickly and securely — directly in your browser, with no signup required.'
+        'Whether you are combining files, splitting long documents, or fixing page order, Filegap keeps the workflow quick and easy to scan.'
       )
     ).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'merge PDF files' })).toHaveAttribute('href', '/merge-pdf');

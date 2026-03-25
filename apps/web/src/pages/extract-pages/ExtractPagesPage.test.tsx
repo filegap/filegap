@@ -38,6 +38,9 @@ describe('ExtractPagesPage', () => {
     expect(
       screen.getByRole('heading', { level: 1, name: 'Extract PDF pages online — fast, private, and local' })
     ).toBeInTheDocument();
+    expect(
+      screen.getByText('Extract pages from PDF files directly in your browser. No account required.')
+    ).toBeInTheDocument();
     expect(screen.getByText('Processed locally on your device — no uploads')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Extract pages' })).not.toBeInTheDocument();
     expect(screen.queryByLabelText('Page range')).not.toBeInTheDocument();

@@ -23,29 +23,28 @@ import { HomeToolCard } from './HomeToolCard';
 const TOOLS = [
   {
     name: 'Merge PDF',
-    description:
-      'Combine multiple PDF files into one document — fast, private, and directly in your browser.',
+    description: 'Combine multiple PDFs into one — fast and private.',
     href: '/merge-pdf',
     ctaLabel: 'Merge PDFs',
     icon: <Files />,
   },
   {
     name: 'Split PDF',
-    description: 'Split one PDF into smaller PDF files without uploading it anywhere.',
+    description: 'Split a PDF into smaller files — no uploads required.',
     href: '/split-pdf',
     ctaLabel: 'Split PDF',
     icon: <Split />,
   },
   {
     name: 'Extract Pages',
-    description: 'Extract specific pages from a PDF and save only the pages you need.',
+    description: 'Extract only the pages you need from a PDF.',
     href: '/extract-pages',
     ctaLabel: 'Extract pages',
     icon: <Scissors />,
   },
   {
     name: 'Reorder PDF',
-    description: 'Rearrange PDF pages visually and export a new file in seconds.',
+    description: 'Rearrange PDF pages and export a new file in seconds.',
     href: '/reorder-pdf',
     ctaLabel: 'Reorder pages',
     icon: <ArrowUpDown />,
@@ -55,21 +54,18 @@ const TOOLS = [
 const WHY_ITEMS = [
   {
     icon: <ShieldCheck className='h-6 w-6' />,
-    title: '100% local processing',
-    description:
-      'Your PDF files are processed directly in your browser. They are never uploaded to any server.',
+    title: 'Local processing',
+    description: 'Your PDF files stay on your device while you edit them.',
   },
   {
     icon: <Zap className='h-6 w-6' />,
-    title: 'No accounts, no file tracking',
-    description:
-      'Use all tools instantly without signing up. We only track high-level tool usage and never your files.',
+    title: 'No tracking',
+    description: 'No account is needed, and your files are not tracked.',
   },
   {
     icon: <Leaf className='h-6 w-6' />,
-    title: 'Fast and lightweight',
-    description:
-      'No uploads, no waiting. Everything runs locally for maximum speed and responsiveness.',
+    title: 'Fast & lightweight',
+    description: 'Quick tools with less waiting and a cleaner workflow.',
   },
 ];
 
@@ -103,49 +99,56 @@ export function HomePage() {
   usePageMetadata({
     title: 'Free PDF tools — private, fast, and local | Filegap',
     description:
-      'Merge, split, and edit PDF files directly in your browser. No uploads. No accounts. Private local processing with files that never leave your device.',
+      'Edit PDF files locally with fast, private tools. Merge, split, and reorder PDFs directly in your browser with no uploads or account required.',
   });
 
   return (
     <>
       <AppHeader />
       <PageContainer>
-        <section className='mx-auto max-w-4xl space-y-6 text-center md:space-y-7'>
-          <div className='flex justify-center'>
-            <TrustNotice className='px-2.5 py-1.5' textClassName='text-[11px]' />
-          </div>
-
+        <section className='mx-auto max-w-5xl space-y-7 text-center md:space-y-8'>
           <p className='text-sm text-ui-muted'>
             <a
               href='https://github.com/filegap/filegap'
               target='_blank'
               rel='noreferrer'
-              className='inline-flex items-center gap-1.5 transition hover:text-ui-text'
+              className='inline-flex items-center gap-1.5 rounded-xl border border-ui-border px-3 py-1.5 text-xs font-medium text-ui-muted transition hover:border-ui-text/15 hover:text-ui-text'
             >
               <Github className='h-4 w-4' aria-hidden='true' />
               <span>Open source on GitHub</span>
             </a>
           </p>
 
-          <h1 className='mx-auto max-w-4xl font-heading text-4xl font-bold leading-tight text-ui-text md:text-5xl'>
-            Edit PDF files online
-            <br />
-            <span className='block font-semibold'>No uploads. No accounts.</span>
-          </h1>
-          <p className='mx-auto max-w-lg text-base leading-relaxed text-ui-muted'>
-            <span className='block'>Merge, split, and edit PDF files directly in your browser</span>
-            <span className='block font-medium'>Everything runs locally</span>
-          </p>
+          <div className='space-y-3 md:space-y-4'>
+            <h1 className='mx-auto max-w-4xl font-heading text-4xl font-bold leading-[1.1] text-ui-text md:text-5xl'>
+              Edit PDFs locally — fast and private
+            </h1>
+            <p className='mx-auto max-w-xl text-base leading-relaxed text-ui-muted md:text-lg'>
+              Merge, split, and edit PDFs directly in your browser.
+            </p>
+            <p className='text-sm font-medium text-ui-muted'>No uploads. No accounts.</p>
+            <div className='pt-1.5'>
+              <TrustNotice />
+            </div>
+          </div>
 
-          <div className='space-y-2'>
-            <a
-              href='/merge-pdf'
-              className='inline-flex items-center justify-center rounded-xl bg-brand-primary px-6 py-3 text-sm font-semibold text-white transition hover:bg-brand-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/40 focus-visible:ring-offset-2'
-            >
-              Merge PDFs instantly
-            </a>
+          <div className='space-y-3'>
+            <div className='flex flex-col items-center justify-center gap-3 sm:flex-row'>
+              <a
+                href='/merge-pdf'
+                className='inline-flex min-w-[210px] items-center justify-center rounded-xl bg-brand-primary px-6 py-3 text-sm font-semibold text-white transition hover:bg-brand-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/40 focus-visible:ring-offset-2'
+              >
+                Start with Merge PDF
+              </a>
+              <a
+                href='#home-tool-grid'
+                className='inline-flex min-w-[160px] items-center justify-center rounded-xl border border-ui-border/90 bg-ui-surface px-6 py-3 text-sm font-semibold text-ui-text shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition duration-200 hover:border-ui-text/20 hover:bg-ui-bg hover:shadow-[0_6px_18px_rgba(15,23,42,0.06)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/20 focus-visible:ring-offset-2'
+              >
+                See all tools
+              </a>
+            </div>
             <p className='text-sm text-ui-muted'>
-              Use the{' '}
+              Need more control? Try the{' '}
               <a
                 className='underline hover:text-ui-text'
                 href='/cli'
@@ -161,12 +164,16 @@ export function HomePage() {
               >
                 download the app
               </a>
+              .
             </p>
-            <p className='text-[11px] text-ui-muted/75'>Works in all modern browsers</p>
           </div>
         </section>
 
-        <section data-testid='home-tool-grid' className='mt-16 grid gap-4 md:mt-20 md:grid-cols-2'>
+        <section
+          id='home-tool-grid'
+          data-testid='home-tool-grid'
+          className='mt-20 grid gap-4 md:mt-24 md:grid-cols-2'
+        >
           {TOOLS.map((tool) => (
             <HomeToolCard
               key={tool.href}
@@ -180,8 +187,8 @@ export function HomePage() {
         </section>
 
         <SectionBlock
-          title='More ways to use Filegap'
-          className='mt-10'
+          title='Use Filegap your way'
+          className='mt-16 md:mt-20'
           contentClassName='border-0 bg-transparent p-0 md:p-0'
         >
           <div className='grid gap-4 md:grid-cols-2'>
@@ -204,7 +211,7 @@ export function HomePage() {
                   <p className='mt-2 text-sm leading-relaxed text-ui-muted'>
                     Run PDF tools directly via CLI — fast, scriptable, private.
                   </p>
-                  <p className='mt-4 text-sm font-semibold text-ui-text underline'>Go to CLI</p>
+                  <p className='mt-4 text-sm font-semibold text-ui-text underline'>Use the CLI</p>
                 </div>
               </div>
             </a>
@@ -227,18 +234,18 @@ export function HomePage() {
                   <p className='mt-2 text-sm leading-relaxed text-ui-muted'>
                     Process files locally without a browser — fully offline.
                   </p>
-                  <p className='mt-4 text-sm font-semibold text-ui-text underline'>Download app</p>
+                  <p className='mt-4 text-sm font-semibold text-ui-text underline'>Download the app</p>
                 </div>
               </div>
             </a>
           </div>
         </SectionBlock>
 
-        <SectionBlock title='Why Filegap' className='mt-10'>
-          <ul className='space-y-4'>
+        <SectionBlock title='Why Filegap' className='mt-16 md:mt-20'>
+          <ul className='grid gap-6 md:grid-cols-3'>
             {WHY_ITEMS.map((item) => (
-              <li key={item.title} className='flex items-start gap-3 py-1.5'>
-                <span className='mt-0.5 text-brand-primary' aria-hidden='true'>
+              <li key={item.title} className='space-y-3'>
+                <span className='inline-flex text-brand-primary' aria-hidden='true'>
                   {item.icon}
                 </span>
                 <div>
@@ -250,7 +257,7 @@ export function HomePage() {
           </ul>
         </SectionBlock>
 
-        <SectionBlock title='Frequently asked questions' className='mt-10'>
+        <SectionBlock title='Frequently asked questions' className='mt-16 md:mt-20'>
           <ul className='space-y-6'>
             {FAQ_ITEMS.map((item) => (
               <li key={item.question}>
@@ -261,30 +268,27 @@ export function HomePage() {
           </ul>
         </SectionBlock>
 
-        <SectionBlock title='Simple and private PDF tools' className='mt-10'>
+        <SectionBlock title='Simple and private PDF tools' className='mt-16 md:mt-20'>
           <div className='max-w-3xl space-y-4 text-sm leading-relaxed text-ui-muted'>
             <p>
-              Filegap provides a set of simple and private PDF tools that run entirely in your
-              browser. You can easily <a className='text-ui-text underline' href='/merge-pdf'>merge PDF files</a>,{' '}
+              Filegap gives you a focused set of PDF tools for everyday work. You can{' '}
+              <a className='text-ui-text underline' href='/merge-pdf'>merge PDF files</a>,{' '}
               <a className='text-ui-text underline' href='/split-pdf'>split PDF documents</a>,{' '}
               <a className='text-ui-text underline' href='/extract-pages'>extract pages</a>, or{' '}
-              <a className='text-ui-text underline' href='/reorder-pdf'>reorder pages</a> without
-              uploading anything online.
+              <a className='text-ui-text underline' href='/reorder-pdf'>reorder pages</a> in a few clicks.
             </p>
             <p>
-              Unlike most PDF tools, Filegap does not send your files to a server. All processing
-              happens locally on your device, making it a safer choice if you need to handle
-              sensitive documents.
+              The interface stays simple, so you can get in, make the change you need, and export
+              the result without extra steps.
             </p>
             <p>
-              Whether you need to combine PDF files into one document, split large PDFs into
-              smaller files, or extract only specific pages, Filegap lets you do it quickly and
-              securely — directly in your browser, with no signup required.
+              Whether you are combining files, splitting long documents, or fixing page order,
+              Filegap keeps the workflow quick and easy to scan.
             </p>
           </div>
         </SectionBlock>
 
-        <section className='mt-12 space-y-4 pb-2 text-center md:space-y-5'>
+        <section className='mt-16 space-y-4 pb-2 text-center md:mt-20 md:space-y-5'>
           <h2 className='font-heading text-3xl font-semibold leading-tight text-ui-text md:text-4xl'>
             Ready to edit your PDFs privately?
           </h2>

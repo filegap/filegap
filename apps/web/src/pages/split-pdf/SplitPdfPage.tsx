@@ -552,7 +552,7 @@ export function SplitPdfPage() {
   return (
     <ToolLayout
       title='Split PDF files online — fast, private, and local'
-      description='Split PDF files into multiple documents directly in your browser. No uploads. No accounts. Your files never leave your device.'
+      description='Split PDF files into multiple documents directly in your browser. No account required.'
       trustLine='Free • No signup • Works in your browser'
       metaTitle='Split PDF Files Online — Private, Local & Free | Filegap'
       metaDescription='Split PDF files online for free with private local processing. Create separate PDF files directly in your browser with no uploads and no signup.'

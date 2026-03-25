@@ -17,9 +17,7 @@ describe('MergePdfPage', () => {
       screen.getByRole('heading', { level: 1, name: 'Merge PDF files online — fast, private, and local' })
     ).toBeInTheDocument();
     expect(
-      screen.getByText(
-        'Combine multiple PDF files into one document directly in your browser. No uploads. No accounts. Your files never leave your device.'
-      )
+      screen.getByText('Combine multiple PDF files into one document directly in your browser. No account required.')
     ).toBeInTheDocument();
     expect(screen.getByText('Processed locally on your device — no uploads')).toBeInTheDocument();
     expect(screen.getByText('How to merge PDF files')).toBeInTheDocument();
