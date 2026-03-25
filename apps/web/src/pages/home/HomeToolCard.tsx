@@ -12,10 +12,10 @@ export function HomeToolCard({ name, description, href, ctaLabel, icon }: HomeTo
   return (
     <a
       href={href}
-      className='rounded-xl border border-ui-border bg-ui-surface p-6 shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition duration-200 hover:-translate-y-0.5 hover:border-brand-primary/70 hover:bg-brand-primary/10 hover:shadow-[0_10px_24px_rgba(15,23,42,0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/30 focus-visible:ring-offset-2'
+      className='group rounded-xl border border-ui-border bg-ui-surface p-6 shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition-[transform,box-shadow,border-color] duration-200 ease-out hover:-translate-y-[3px] hover:border-brand-primary/35 hover:shadow-[0_16px_36px_rgba(15,23,42,0.1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/30 focus-visible:ring-offset-2'
     >
       <div className='flex items-start gap-4'>
-        <div className='inline-flex h-12 w-12 shrink-0 items-center justify-center text-brand-primary [&>svg]:h-8 [&>svg]:w-8'>
+        <div className='inline-flex h-12 w-12 shrink-0 items-center justify-center text-brand-primary transition-transform duration-200 ease-out group-hover:scale-110 [&>svg]:h-8 [&>svg]:w-8'>
           {icon}
         </div>
         <div className='min-w-0'>
