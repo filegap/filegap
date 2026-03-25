@@ -137,7 +137,7 @@ export function HomePage() {
             <div className='flex flex-col items-center justify-center gap-3 sm:flex-row'>
               <a
                 href='/merge-pdf'
-                className='inline-flex min-w-[210px] items-center justify-center rounded-xl bg-brand-primary px-6 py-3 text-sm font-semibold text-white transition hover:bg-brand-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/40 focus-visible:ring-offset-2'
+                className='inline-flex min-w-[210px] items-center justify-center rounded-xl bg-brand-primary px-6 py-3 text-sm font-semibold text-white shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition-[background-color,box-shadow] duration-200 ease-out hover:bg-brand-primary-dark hover:shadow-[0_6px_18px_rgba(15,23,42,0.06)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/40 focus-visible:ring-offset-2'
               >
                 Start with Merge PDF
               </a>
@@ -173,7 +173,7 @@ export function HomePage() {
         <section
           id='home-tool-grid'
           data-testid='home-tool-grid'
-          className='mt-20 grid gap-4 md:mt-24 md:grid-cols-2'
+          className='mt-20 scroll-mt-28 grid gap-4 md:mt-24 md:grid-cols-2 md:scroll-mt-32'
         >
           {TOOLS.map((tool) => (
             <HomeToolCard
