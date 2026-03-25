@@ -7,15 +7,18 @@ describe('HomePage', () => {
   it('renders hero, tool grid, why section, faq section, seo section, and final cta', () => {
     render(<HomePage />);
 
+    const heroPrimaryCta = screen.getByRole('link', { name: /Start with / });
+    expect(heroPrimaryCta).toHaveAttribute(
+      'href',
+      expect.stringMatching(/^\/(merge-pdf|split-pdf|extract-pages|reorder-pdf)$/)
+    );
+
     expect(
       screen.getByRole('heading', { level: 1, name: 'Edit PDFs locally — fast and private' })
     ).toBeInTheDocument();
     expect(screen.getByText('Merge, split, and edit PDFs directly in your browser.')).toBeInTheDocument();
     expect(screen.getByText('No uploads. No accounts.')).toBeInTheDocument();
     expect(screen.getByText('Processed locally on your device — no uploads')).toBeInTheDocument();
-
-    const mergeCtas = screen.getAllByRole('link', { name: /Start with Merge PDF|Merge PDFs instantly/ });
-    expect(mergeCtas[0]).toHaveAttribute('href', '/merge-pdf');
     expect(screen.getByRole('link', { name: 'Open source on GitHub' })).toHaveAttribute(
       'href',
       'https://github.com/filegap/filegap'
@@ -107,7 +110,6 @@ describe('HomePage', () => {
     expect(
       screen.getByText('Start using Filegap directly in your browser — no uploads, no signup.')
     ).toBeInTheDocument();
-    expect(mergeCtas).toHaveLength(2);
-    expect(mergeCtas[1]).toHaveAttribute('href', '/merge-pdf');
+    expect(screen.getByRole('link', { name: 'Merge PDFs instantly' })).toHaveAttribute('href', '/merge-pdf');
   });
 });

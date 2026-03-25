@@ -11,6 +11,7 @@ import {
   Terminal,
   Zap,
 } from 'lucide-react';
+import { useState } from 'react';
 
 import { AppFooter } from '../../components/layout/AppFooter';
 import { AppHeader } from '../../components/layout/AppHeader';
@@ -97,6 +98,8 @@ const FAQ_ITEMS = [
 ];
 
 export function HomePage() {
+  const [heroPrimaryTool] = useState(() => TOOLS[Math.floor(Math.random() * TOOLS.length)] ?? TOOLS[0]);
+
   usePageMetadata({
     title: 'Free PDF tools — private, fast, and local | Filegap',
     description:
@@ -136,10 +139,10 @@ export function HomePage() {
           <div className='space-y-3'>
             <div className='flex flex-col items-center justify-center gap-3 sm:flex-row'>
               <a
-                href='/merge-pdf'
+                href={heroPrimaryTool.href}
                 className='inline-flex min-w-[210px] items-center justify-center rounded-xl bg-brand-primary px-6 py-3 text-sm font-semibold text-white shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition-[background-color,box-shadow] duration-200 ease-out hover:bg-brand-primary-dark hover:shadow-[0_6px_18px_rgba(15,23,42,0.06)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/40 focus-visible:ring-offset-2'
               >
-                Start with Merge PDF
+                {`Start with ${heroPrimaryTool.name}`}
               </a>
               <a
                 href='#home-tool-grid'
