@@ -1,4 +1,5 @@
 import {
+  ArrowRight,
   ArrowUpDown,
   Download,
   Files,
@@ -195,11 +196,11 @@ export function HomePage() {
             <a
               href='/cli'
               onClick={() => trackEvent('download_cli_clicked')}
-              className='rounded-xl border border-ui-border bg-ui-surface p-6 transition hover:border-brand-primary/70 hover:bg-brand-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/30 focus-visible:ring-offset-2'
+              className='group rounded-xl border border-ui-border bg-ui-surface p-6 shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition-[transform,box-shadow,border-color] duration-200 ease-out hover:-translate-y-0.5 hover:border-ui-text/10 hover:shadow-[0_10px_24px_rgba(15,23,42,0.06)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/30 focus-visible:ring-offset-2'
             >
               <div className='flex items-start gap-4'>
                 <span
-                  className='inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-primary/10 text-brand-primary'
+                  className='inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-primary/10 text-brand-primary transition-transform duration-200 ease-out group-hover:scale-[1.03]'
                   aria-hidden='true'
                 >
                   <Terminal className='h-5 w-5' />
@@ -211,18 +212,24 @@ export function HomePage() {
                   <p className='mt-2 text-sm leading-relaxed text-ui-muted'>
                     Run PDF tools directly via CLI — fast, scriptable, private.
                   </p>
-                  <p className='mt-4 text-sm font-semibold text-ui-text underline'>Use the CLI</p>
+                  <span className='mt-4 inline-flex items-center rounded-lg border border-ui-border bg-ui-surface px-4 py-2 text-sm font-semibold text-ui-text shadow-[0_1px_2px_rgba(15,23,42,0.02)]'>
+                    <span>Use the CLI</span>
+                    <ArrowRight
+                      className='ml-1.5 h-3.5 w-3.5 text-current/70 transition-[transform,opacity] duration-200 ease-out group-hover:translate-x-1 group-hover:opacity-100'
+                      aria-hidden='true'
+                    />
+                  </span>
                 </div>
               </div>
             </a>
             <a
               href='/download'
               onClick={() => trackEvent('download_app_clicked')}
-              className='rounded-xl border border-ui-border bg-ui-surface p-6 transition hover:border-brand-primary/70 hover:bg-brand-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/30 focus-visible:ring-offset-2'
+              className='group rounded-xl border border-ui-border bg-ui-surface p-6 shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition-[transform,box-shadow,border-color] duration-200 ease-out hover:-translate-y-0.5 hover:border-ui-text/10 hover:shadow-[0_10px_24px_rgba(15,23,42,0.06)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/30 focus-visible:ring-offset-2'
             >
               <div className='flex items-start gap-4'>
                 <span
-                  className='inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-primary/10 text-brand-primary'
+                  className='inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-primary/10 text-brand-primary transition-transform duration-200 ease-out group-hover:scale-[1.03]'
                   aria-hidden='true'
                 >
                   <Download className='h-5 w-5' />
@@ -234,7 +241,13 @@ export function HomePage() {
                   <p className='mt-2 text-sm leading-relaxed text-ui-muted'>
                     Process files locally without a browser — fully offline.
                   </p>
-                  <p className='mt-4 text-sm font-semibold text-ui-text underline'>Download the app</p>
+                  <span className='mt-4 inline-flex items-center rounded-lg border border-ui-border bg-ui-surface px-4 py-2 text-sm font-semibold text-ui-text shadow-[0_1px_2px_rgba(15,23,42,0.02)]'>
+                    <span>Download the app</span>
+                    <ArrowRight
+                      className='ml-1.5 h-3.5 w-3.5 text-current/70 transition-[transform,opacity] duration-200 ease-out group-hover:translate-x-1 group-hover:opacity-100'
+                      aria-hidden='true'
+                    />
+                  </span>
                 </div>
               </div>
             </a>
@@ -243,8 +256,11 @@ export function HomePage() {
 
         <SectionBlock title='Why Filegap' className='mt-16 md:mt-20'>
           <ul className='grid gap-6 md:grid-cols-3'>
-            {WHY_ITEMS.map((item) => (
-              <li key={item.title} className='space-y-3'>
+            {WHY_ITEMS.map((item, index) => (
+              <li
+                key={item.title}
+                className={`space-y-3 ${index > 0 ? 'md:border-l md:border-ui-border/70 md:pl-6' : ''}`.trim()}
+              >
                 <span className='inline-flex text-brand-primary' aria-hidden='true'>
                   {item.icon}
                 </span>

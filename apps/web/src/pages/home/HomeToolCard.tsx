@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { ArrowRight } from 'lucide-react';
 
 type HomeToolCardProps = {
   name: string;
@@ -21,8 +22,12 @@ export function HomeToolCard({ name, description, href, ctaLabel, icon }: HomeTo
         <div className='min-w-0'>
           <h2 className='font-heading text-2xl font-semibold leading-tight text-ui-text'>{name}</h2>
           <p className='mt-2.5 text-sm leading-relaxed text-ui-muted'>{description}</p>
-          <p className='mt-6 inline-flex rounded-lg border border-ui-border bg-ui-bg px-4 py-2 text-sm font-semibold text-ui-text'>
-            {ctaLabel}
+          <p className='mt-6 inline-flex items-center rounded-lg border border-ui-border bg-ui-bg px-4 py-2 text-sm font-semibold text-ui-text'>
+            <span>{ctaLabel}</span>
+            <ArrowRight
+              className='ml-1.5 h-3.5 w-3.5 text-current/70 transition-[transform,opacity] duration-200 ease-out group-hover:translate-x-1 group-hover:opacity-100'
+              aria-hidden='true'
+            />
           </p>
         </div>
       </div>
