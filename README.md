@@ -36,6 +36,8 @@ filegap/
 ├─ apps/
 │  ├─ web/       # web app (browser-local processing)
 │  └─ desktop/   # tauri desktop app (Rust core integration)
+├─ shared/
+│  └─ design/    # shared design tokens and foundations for web + desktop
 ├─ docs/
 └─ testdata/
 ```
@@ -131,6 +133,8 @@ npm run dev
 ```
 
 Current web scaffold includes local merge flow via Web Worker.
+
+Design foundations for both web and desktop now share a common token source in `shared/design/tokens.css`.
 
 ## Quick Start (Desktop MVP)
 

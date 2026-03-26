@@ -29,6 +29,21 @@
   - title/subtitle directly in page flow (no hero card)
   - tool card appears immediately after heading
 
+## Shared Design System Foundations
+
+The web app uses shared design tokens from:
+
+- [`shared/design/tokens.css`](/Users/ste/Workspace/wLabs/prj/pdflo/shared/design/tokens.css)
+
+Tailwind theme colors map to those tokens in:
+
+- [`apps/web/tailwind.config.ts`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/web/tailwind.config.ts)
+
+Rule:
+
+1. Do not introduce new shared palette values directly in page components.
+2. Shared color and surface changes must start from the design tokens file.
+
 ## Implemented Tool Behaviors
 
 ### `/merge-pdf`

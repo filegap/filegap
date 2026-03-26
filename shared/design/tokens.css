@@ -1,0 +1,68 @@
+:root {
+  --color-bg-canvas: #f7f7f8;
+  --color-bg-canvas-rgb: 247 247 248;
+  --color-bg-surface: #ffffff;
+  --color-bg-surface-rgb: 255 255 255;
+  --color-bg-subtle: #f3f4f6;
+  --color-bg-subtle-rgb: 243 244 246;
+
+  --color-text-primary: #111111;
+  --color-text-primary-rgb: 17 17 17;
+  --color-text-secondary: #6b7280;
+  --color-text-secondary-rgb: 107 114 128;
+
+  --color-border-default: #e5e7eb;
+  --color-border-default-rgb: 229 231 235;
+  --color-border-strong: #d1d5db;
+  --color-border-strong-rgb: 209 213 219;
+
+  --color-accent-primary: #ff2e8b;
+  --color-accent-primary-rgb: 255 46 139;
+  --color-accent-primary-hover: #e62079;
+  --color-accent-primary-hover-rgb: 230 32 121;
+  --color-accent-soft: #ffeaf3;
+  --color-accent-soft-rgb: 255 234 243;
+
+  --color-trust-primary: #2563eb;
+  --color-trust-primary-rgb: 37 99 235;
+  --color-trust-soft: #eff6ff;
+  --color-trust-soft-rgb: 239 246 255;
+  --color-trust-border: #bfdbfe;
+  --color-trust-border-rgb: 191 219 254;
+
+  --color-status-success: #136f41;
+  --color-status-warning: #8a5a00;
+  --color-status-error: #9e1b32;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+
+  --shadow-rest: 0 1px 2px rgba(15, 23, 42, 0.02);
+  --shadow-hover-soft: 0 10px 24px rgba(15, 23, 42, 0.06);
+  --shadow-hover: 0 16px 36px rgba(15, 23, 42, 0.1);
+  --shadow-overlay: 0 24px 60px rgba(15, 23, 42, 0.18);
+
+  --motion-fast: 150ms;
+  --motion-base: 200ms;
+  --motion-slow: 250ms;
+  --motion-ease: ease-out;
+
+  /* Compatibility aliases for existing desktop CSS */
+  --bg: var(--color-bg-surface);
+  --surface: var(--color-bg-surface);
+  --surface-alt: var(--color-bg-canvas);
+  --surface-muted: var(--color-bg-subtle);
+  --text: var(--color-text-primary);
+  --muted: var(--color-text-secondary);
+  --border: var(--color-border-default);
+  --border-strong: var(--color-border-strong);
+  --accent: var(--color-accent-primary);
+  --accent-hover: var(--color-accent-primary-hover);
+  --accent-soft: var(--color-accent-soft);
+  --trust: var(--color-trust-primary);
+  --success: var(--color-status-success);
+  --warning: var(--color-status-warning);
+  --error: var(--color-status-error);
+}

@@ -6,18 +6,18 @@ export default {
     extend: {
       colors: {
         brand: {
-          primary: "#FF2E8B",
-          "primary-dark": "#E62079",
-          trust: "#2563EB",
-          "trust-soft": "#EFF6FF",
-          "trust-border": "#BFDBFE",
+          primary: "rgb(var(--color-accent-primary-rgb) / <alpha-value>)",
+          "primary-dark": "rgb(var(--color-accent-primary-hover-rgb) / <alpha-value>)",
+          trust: "rgb(var(--color-trust-primary-rgb) / <alpha-value>)",
+          "trust-soft": "rgb(var(--color-trust-soft-rgb) / <alpha-value>)",
+          "trust-border": "rgb(var(--color-trust-border-rgb) / <alpha-value>)",
         },
         ui: {
-          bg: "#F7F7F8",
-          surface: "#FFFFFF",
-          text: "#111111",
-          muted: "#6B7280",
-          border: "#E5E7EB",
+          bg: "rgb(var(--color-bg-canvas-rgb) / <alpha-value>)",
+          surface: "rgb(var(--color-bg-surface-rgb) / <alpha-value>)",
+          text: "rgb(var(--color-text-primary-rgb) / <alpha-value>)",
+          muted: "rgb(var(--color-text-secondary-rgb) / <alpha-value>)",
+          border: "rgb(var(--color-border-default-rgb) / <alpha-value>)",
         },
       },
       fontFamily: {

@@ -43,6 +43,21 @@ No server-side processing and no network dependency are required for PDF operati
 - Error messages returned to UI remain generic.
 - Processing remains local-only.
 
+## Shared Design System Foundations
+
+The desktop app consumes the shared design token foundation from:
+
+- [`shared/design/tokens.css`](/Users/ste/Workspace/wLabs/prj/pdflo/shared/design/tokens.css)
+
+Desktop-specific styles then build on top of those tokens in:
+
+- [`apps/desktop/src/styles.css`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/desktop/src/styles.css)
+
+Rule:
+
+1. New shared palette values should be added in the shared token file, not directly in desktop-only CSS.
+2. Desktop-specific styling may compose the tokens differently, but should not invent a parallel palette.
+
 ## Tool Overview (Current)
 
 Purpose:

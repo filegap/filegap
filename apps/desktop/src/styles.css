@@ -1,20 +1,4 @@
-:root {
-  --bg: #ffffff;
-  --surface: #ffffff;
-  --surface-alt: #f7f7f8;
-  --surface-muted: #f3f4f6;
-  --text: #111111;
-  --muted: #6b7280;
-  --border: #e5e7eb;
-  --border-strong: #d1d5db;
-  --accent: #ff2e8b;
-  --accent-hover: #e62079;
-  --accent-soft: #ffeaf3;
-  --trust: #2563eb;
-  --success: #136f41;
-  --warning: #8a5a00;
-  --error: #9e1b32;
-}
+@import '../../../shared/design/tokens.css';
 
 *,
 *::before,

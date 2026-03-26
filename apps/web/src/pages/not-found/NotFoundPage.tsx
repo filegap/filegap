@@ -1,6 +1,7 @@
 import { AppFooter } from '../../components/layout/AppFooter';
 import { AppHeader } from '../../components/layout/AppHeader';
 import { PageContainer } from '../../components/layout/PageContainer';
+import { buttonStyles } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { usePageMetadata } from '../../lib/seo/usePageMetadata';
 
@@ -25,7 +26,7 @@ export function NotFoundPage() {
             <div className='pt-2'>
               <a
                 href='/merge-pdf'
-                className='inline-flex items-center justify-center rounded-xl bg-brand-primary px-5 py-3 text-sm font-semibold text-white transition hover:bg-brand-primary-dark'
+                className={buttonStyles({ variant: 'primary' })}
               >
                 Go to Merge PDF
               </a>

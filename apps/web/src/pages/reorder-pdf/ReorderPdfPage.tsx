@@ -1,15 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { PDFDocument } from 'pdf-lib';
-import { ChevronLeft, ChevronsDownUp, FileText, RotateCcw, Trash2, X } from 'lucide-react';
+import { ChevronsDownUp, RotateCcw, X } from 'lucide-react';
 
-import { Card } from '../../components/ui/Card';
 import { DropZone } from '../../components/ui/DropZone';
 import { Button } from '../../components/ui/Button';
+import { ToolActionCard } from '../../components/layout/ToolActionCard';
 import { PreDownloadModal } from '../../components/ui/PreDownloadModal';
 import { ToolLandingSections } from '../../components/seo/ToolLandingSections';
 import { ReorderPageGallery } from '../../components/ui/ReorderPageGallery';
 import { ToolLayout } from '../../components/layout/ToolLayout';
+import { FileSelectionSummary } from '../../components/ui/FileSelectionSummary';
 import { parsePageOrder, reorderPdfPages } from '../../adapters/pdfEngine';
 import { trackEvent, trackToolEvent } from '../../lib/analytics/trackEvent';
 import { renderPdfThumbnails, type PageThumbnail } from '../../lib/pdfPreview';
@@ -552,8 +553,7 @@ export function ReorderPdfPage() {
       metaDescription='Reorder PDF pages online for free with private local processing. Change page order directly in your browser with no uploads and no signup.'
       heroVariant='brand'
     >
-      <Card id='reorder-pdf-tool'>
-        <div className='space-y-7'>
+      <ToolActionCard id='reorder-pdf-tool'>
           {!sourceFile ? (
             <DropZone
               onFilesSelected={(files) => void handleSourceSelected(files)}
@@ -562,37 +562,12 @@ export function ReorderPdfPage() {
               loadedFileName={null}
             />
           ) : isDropZoneCollapsed ? (
-            <div className='flex w-full items-center gap-3 rounded-xl border border-ui-border/70 bg-ui-surface px-3 py-2.5 text-left transition hover:border-brand-primary/35 hover:bg-ui-bg'>
-              <span className='inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-ui-bg text-ui-muted'>
-                <FileText className='h-4.5 w-4.5' />
-              </span>
-              <span className='min-w-0 flex-1'>
-                <span className='block truncate text-sm font-semibold text-ui-text'>{sourceFile.name}</span>
-                <span className='block text-xs text-ui-muted'>
-                  {formatFileSize(sourceFile.size)}
-                  {pageCount ? ` • ${pageCount} pages` : ''}
-                </span>
-              </span>
-              <button
-                type='button'
-                onClick={() => setIsDropZoneCollapsed(false)}
-                aria-label='Show file picker'
-                title='Show file picker'
-                className='inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-ui-muted transition hover:bg-ui-bg hover:text-ui-text'
-              >
-                <span className='hidden sm:inline'>Replace</span>
-                <ChevronLeft className='h-4 w-4' />
-              </button>
-              <button
-                type='button'
-                onClick={removeSourceFile}
-                aria-label='Remove file'
-                title='Remove file'
-                className='inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-ui-muted transition hover:bg-ui-bg hover:text-ui-text'
-              >
-                <Trash2 className='h-4 w-4' />
-              </button>
-            </div>
+            <FileSelectionSummary
+              filename={sourceFile.name}
+              meta={`${formatFileSize(sourceFile.size)}${pageCount ? ` • ${pageCount} pages` : ''}`}
+              onReplace={() => setIsDropZoneCollapsed(false)}
+              onRemove={removeSourceFile}
+            />
           ) : (
             <div className='relative'>
               <button
@@ -739,8 +714,7 @@ export function ReorderPdfPage() {
               </div>
             </div>
           ) : null}
-        </div>
-      </Card>
+      </ToolActionCard>
 
       <ToolLandingSections
         {...REORDER_PAGE_CONTENT}

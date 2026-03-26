@@ -1,5 +1,7 @@
 import type { PropsWithChildren, ReactNode } from 'react';
 
+import { Card } from '../ui/Card';
+
 type SectionBlockProps = PropsWithChildren<{
   title: string;
   intro?: ReactNode;
@@ -28,16 +30,9 @@ export function SectionBlock({
         </h2>
         {intro ? <div className='max-w-3xl text-sm leading-relaxed text-ui-muted'>{intro}</div> : null}
       </div>
-      <div
-        className={[
-          'rounded-xl border border-ui-border bg-ui-surface p-6 md:p-8',
-          contentClassName,
-        ]
-          .filter(Boolean)
-          .join(' ')}
-      >
+      <Card className={contentClassName}>
         {children}
-      </div>
+      </Card>
     </section>
   );
 }

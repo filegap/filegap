@@ -1,168 +1,296 @@
-# Filegap Web UI Components
+# Filegap UI Components and Patterns
 
-## Goal
+## Purpose
 
-Define a small reusable component set for all web tools.
-Components should keep pages consistent and implementation fast.
+This document defines the shared UI primitives and product patterns that should be reused across Filegap.
 
-## Core Components
+The goal is to stop recreating the same element in slightly different ways on every page or screen.
 
-## `PageContainer`
+For foundations and token rules, see:
+
+- [`docs/design-system.md`](/Users/ste/Workspace/wLabs/prj/pdflo/docs/design-system.md)
+
+## Taxonomy
+
+We use two categories:
+
+1. Primitives: low-level reusable UI building blocks.
+2. Product patterns: composed UI structures that represent recurring Filegap flows.
+
+Use the right category. Not every repeated piece should become a primitive.
+
+## Primitives
+
+## `Button`
 
 Purpose:
-- Constrain width and establish vertical rhythm.
+
+- Trigger primary, secondary, and utility actions.
+
+Approved variants:
+
+1. `primary`
+2. `secondary`
+3. `ghost`
+4. `link` when the action should remain text-forward
 
 Rules:
 
-1. Centered container with responsive max-width.
-2. Top spacing optimized for immediate task visibility.
-3. Standard section spacing using 8px scale.
+1. Primary buttons use accent fill.
+2. Secondary buttons use neutral border and neutral surface.
+3. Ghost buttons stay low emphasis.
+4. Loading states must preserve layout and label clarity.
+5. Hover states should feel calm, not flashy.
 
-## `ToolLayout`
+Current implementation note:
 
-Purpose:
-- Shared structure across tool routes.
+- Web primitive lives in [`apps/web/src/components/ui/Button.tsx`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/web/src/components/ui/Button.tsx)
+- Desktop primitive lives in [`apps/desktop/src/components/ui/Button.tsx`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/desktop/src/components/ui/Button.tsx)
 
-Includes:
-
-1. Title block
-2. Tool interaction card
-3. Supporting SEO sections
-
-Props:
-
-1. `title`
-2. `description`
-3. `keyword`
-4. `children`
+The web primitive now exposes a shared `buttonStyles(...)` helper so anchors and buttons can use the same official variants instead of duplicating long class strings in pages.
 
 ## `Card`
 
 Purpose:
-- Surface for grouped interactions.
+
+- Provide a surface for grouped content or grouped interactions.
+
+Approved usages:
+
+1. Content card
+2. Interactive card
+3. Result/success card
 
 Rules:
 
-1. White background (`ui.surface`)
-2. Light border (`ui.border`)
-3. Medium radius
-4. Subtle shadow
+1. Use `ui.surface` background.
+2. Use shared border and radius tokens.
+3. Use subtle rest shadow only.
+4. Interactive cards should signal hover via lift, shadow, and/or soft border shifts, not saturated fills.
 
-## `Button`
+Current implementation note:
 
-Variants:
+- Web primitive lives in [`apps/web/src/components/ui/Card.tsx`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/web/src/components/ui/Card.tsx)
+- Desktop primitive wrapper lives in [`apps/desktop/src/components/ui/Card.tsx`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/desktop/src/components/ui/Card.tsx)
 
-1. `primary` (brand primary)
-2. `secondary` (neutral border)
-3. `ghost` (text action)
+The web primitive now exposes a shared `cardStyles(...)` helper with `default`, `interactive`, and `interactive-subtle` variants.
 
-States:
-
-1. default
-2. hover
-3. focus-visible
-4. disabled
-5. loading
-
-## `ToolCard`
+## `Pill` / `Badge`
 
 Purpose:
-- Small cards used on home/tool index pages.
 
-Content:
+- Surface small, supporting metadata or trust messaging.
 
-1. Tool name
-2. 1-line description
-3. CTA link/button
+Current recurring examples:
 
-## `DropZone` (Most Important Component)
-
-Purpose:
-- Primary file intake interaction.
-
-Behavior:
-
-1. Click to open file picker.
-2. Drag-over visual feedback.
-3. Accept/reject file validation messaging.
-4. Supports keyboard trigger.
-
-Visual requirements:
-
-1. Dashed border
-2. Large internal padding
-3. Centered icon + text
-4. Hover/drag highlight using `brand.primary`
-
-API proposal:
-
-1. `accept` (MIME/extensions)
-2. `multiple`
-3. `maxFiles`
-4. `onFilesSelected(files)`
-5. `disabled`
-6. `hintText`
-
-## `FileList`
-
-Purpose:
-- Show selected files and order.
-
-Capabilities:
-
-1. Remove file
-2. Reorder file (where needed)
-3. Show file size and validation state
-
-## `ActionPanel`
-
-Purpose:
-- Host tool-specific controls (page ranges, reorder input, options).
+1. Trust pill
+2. Small metadata badge
+3. Secondary label badge
 
 Rules:
 
-1. Keep fields minimal.
-2. Validate inline before processing.
-3. Place primary action button at bottom of panel.
+1. Pills must stay visually secondary.
+2. Trust pills should be compact and not repeated aggressively near identical copy.
+3. Avoid treating pills as large callout banners.
+
+## `SectionHeader`
+
+Purpose:
+
+- Provide a consistent section title block for editorial/supporting content.
+
+Rules:
+
+1. Heading sits outside the content box.
+2. Optional intro/subtitle may appear under the title.
+3. Spacing between header and content should be consistent across pages.
+
+Current implementation note:
+
+- Web section pattern lives in [`apps/web/src/components/layout/SectionBlock.tsx`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/web/src/components/layout/SectionBlock.tsx)
+- It now composes the shared `Card` primitive instead of duplicating the same surface classes inline.
+
+## `ToolHero`
+
+Purpose:
+
+- Standardize the title, description, and trust cue at the top of tool pages.
+
+Rules:
+
+1. Keep the hero concise and operational.
+2. Trust messaging sits between description and the first interaction surface.
+3. Do not turn tool heroes into marketing banners.
+
+Current implementation note:
+
+- Web pattern lives in [`apps/web/src/components/layout/ToolHero.tsx`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/web/src/components/layout/ToolHero.tsx)
+- [`ToolLayout.tsx`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/web/src/components/layout/ToolLayout.tsx) now composes `ToolHero`.
+
+## `IconButton`
+
+Purpose:
+
+- Compact utility actions such as remove, replace, settings, or close.
+
+Rules:
+
+1. Must have a visible hover state.
+2. Must have accessible labeling.
+3. Keep icon size and hit target consistent.
+
+## `Input`
+
+Purpose:
+
+- Capture ranges, page orders, file settings, and similar structured input.
+
+Rules:
+
+1. Neutral surface and border by default.
+2. Accent is reserved for focus and validation cues.
+3. Inline validation beats detached error banners whenever possible.
 
 ## `StatusMessage`
 
 Purpose:
-- Communicate processing state and outcomes.
 
-Variants:
+- Communicate info, success, and error states.
 
-1. `info`
-2. `success`
-3. `error`
+Rules:
 
-Messages:
+1. Messages must remain generic and privacy-safe.
+2. Use consistent tone and visual treatment across web and desktop.
+3. Success and error styling should not look like marketing banners.
 
-1. Start processing
-2. Completion with download prompt
-3. Actionable error hints
+## Product Patterns
 
-## Component Composition by Tool
+## `ToolHero`
 
-Shared base:
+Current shared behavior:
 
-1. `PageContainer`
-2. `ToolLayout`
-3. `Card`
-4. `DropZone`
-5. `StatusMessage`
+1. Main title
+2. Description
+3. Compact trust cue
+4. Tool interaction starts immediately below
 
-Tool-specific additions:
+Rules:
 
-1. Merge: `FileList` + single primary action
-2. Split: split mode selector + output preview list
-3. Extract: page range input
-4. Reorder: reorder UI (list drag or page order input)
+1. The hero remains concise and tool-first.
+2. Trust messaging should appear before file interaction begins.
+3. Avoid stacking multiple repetitive privacy messages in the same block.
 
-## Implementation Rules
+## `ToolInteractionCard`
 
-1. Components stay presentational when possible.
-2. Heavy logic belongs in feature hooks/services.
-3. All file processing calls go through worker bridge.
-4. No component may perform network PDF operations.
-5. Icons must come from `lucide-react` (do not use inline SVG icons).
+Purpose:
+
+- Main working surface for a tool.
+
+Contains combinations of:
+
+1. Drop zone
+2. File list/table
+3. Tool-specific controls
+4. Primary action
+5. Result state
+
+Rules:
+
+1. Keep the card visually stable while state changes.
+2. Do not introduce marketing styling into operational surfaces.
+
+Current implementation note:
+
+- Web wrapper lives in [`apps/web/src/components/layout/ToolActionCard.tsx`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/web/src/components/layout/ToolActionCard.tsx)
+- Single-file tool pages reuse [`FileSelectionSummary.tsx`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/web/src/components/ui/FileSelectionSummary.tsx) for the collapsed file state instead of repeating inline markup.
+
+## `ToolCard`
+
+Purpose:
+
+- Homepage or index navigation card for a PDF tool.
+
+Content:
+
+1. Tool icon
+2. Tool name
+3. One short description
+4. Integrated CTA treatment
+
+Rules:
+
+1. Entire card is clickable.
+2. Hover state should feel premium and restrained.
+3. Inner CTA must feel integrated with the card, not like a competing button.
+4. Brand accent is used sparingly.
+
+## `SecondaryPromoCard`
+
+Purpose:
+
+- Lower-priority cards such as CLI and desktop app promotion.
+
+Rules:
+
+1. Must remain visually quieter than tool cards.
+2. Hover intensity should be softer than tool cards.
+3. Secondary action treatment should remain neutral and low-noise.
+
+## `EditorialSection`
+
+Purpose:
+
+- Supporting content blocks such as FAQ, Why Filegap, and explanatory sections.
+
+Rules:
+
+1. Use section header outside the box.
+2. Keep content scannable.
+3. Avoid mixing editorial sections with high-intensity CTA styling.
+
+## `ResultState`
+
+Purpose:
+
+- Confirm completion and expose next actions.
+
+Rules:
+
+1. Make the success state clear.
+2. Keep actions obvious and limited.
+3. Visual treatment should support confidence without looking celebratory or noisy.
+
+## Platform Guidance
+
+## Shared between web and desktop
+
+These should feel materially the same:
+
+1. Colors and semantic token meaning
+2. Typography hierarchy
+3. Button variants
+4. Card behavior
+5. Hover/focus philosophy
+6. Trust treatment
+7. Motion timing
+
+## Allowed to differ by platform
+
+These may adapt to platform constraints:
+
+1. Overall density
+2. Navigation shell
+3. Sidebar vs stacked layout
+4. Footer/status placement
+5. Modal sizing
+
+## Decision Rules
+
+When adding or changing UI:
+
+1. Check whether the element is a primitive or a pattern.
+2. Reuse an existing primitive/pattern if possible.
+3. If a new variant is truly needed, document it here.
+4. If the change affects shared visual language, update [`docs/design-system.md`](/Users/ste/Workspace/wLabs/prj/pdflo/docs/design-system.md) too.
+
+The system should stay small, explicit, and reusable. If it starts collecting one-off exceptions, it is no longer doing its job.

@@ -2,12 +2,12 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { PDFDocument } from 'pdf-lib';
 
-import { Card } from '../../components/ui/Card';
 import { DropZone } from '../../components/ui/DropZone';
 import { Button } from '../../components/ui/Button';
 import { PreDownloadModal } from '../../components/ui/PreDownloadModal';
 import { ToolLandingSections } from '../../components/seo/ToolLandingSections';
 import { UploadedFilesTable } from '../../components/ui/UploadedFilesTable';
+import { ToolActionCard } from '../../components/layout/ToolActionCard';
 import { ToolLayout } from '../../components/layout/ToolLayout';
 import { mergePdfBuffers } from '../../adapters/pdfEngine';
 import { trackEvent, trackToolEvent } from '../../lib/analytics/trackEvent';
@@ -351,8 +351,7 @@ export function MergePdfPage() {
       metaDescription='Merge PDF files online for free with private local processing. Combine PDFs directly in your browser with no uploads and no signup.'
       heroVariant='brand'
     >
-      <Card id='merge-pdf-tool'>
-        <div className='space-y-6'>
+      <ToolActionCard id='merge-pdf-tool' className='space-y-6'>
           <DropZone
             onFilesSelected={handleFilesSelected}
             multiple
@@ -400,8 +399,7 @@ export function MergePdfPage() {
               </div>
             </div>
           ) : null}
-        </div>
-      </Card>
+      </ToolActionCard>
 
       <ToolLandingSections
         {...MERGE_PAGE_CONTENT}

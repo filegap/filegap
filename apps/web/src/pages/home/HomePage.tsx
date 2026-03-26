@@ -18,6 +18,8 @@ import { AppHeader } from '../../components/layout/AppHeader';
 import { PageContainer } from '../../components/layout/PageContainer';
 import { SectionBlock } from '../../components/layout/SectionBlock';
 import { trackEvent } from '../../lib/analytics/trackEvent';
+import { buttonStyles } from '../../components/ui/Button';
+import { cardStyles } from '../../components/ui/Card';
 import { TrustNotice } from '../../components/ui/TrustNotice';
 import { usePageMetadata } from '../../lib/seo/usePageMetadata';
 import { HomeToolCard } from './HomeToolCard';
@@ -140,13 +142,13 @@ export function HomePage() {
             <div className='flex flex-col items-center justify-center gap-3 sm:flex-row'>
               <a
                 href={heroPrimaryTool.href}
-                className='inline-flex min-w-[210px] items-center justify-center rounded-xl bg-brand-primary px-6 py-3 text-sm font-semibold text-white shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition-[background-color,box-shadow] duration-200 ease-out hover:bg-brand-primary-dark hover:shadow-[0_6px_18px_rgba(15,23,42,0.06)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/40 focus-visible:ring-offset-2'
+                className={buttonStyles({ variant: 'primary', size: 'lg', className: 'min-w-[210px]' })}
               >
                 {`Start with ${heroPrimaryTool.name}`}
               </a>
               <a
                 href='#home-tool-grid'
-                className='inline-flex min-w-[160px] items-center justify-center rounded-xl border border-ui-border/90 bg-ui-surface px-6 py-3 text-sm font-semibold text-ui-text shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition duration-200 hover:border-ui-text/20 hover:bg-ui-bg hover:shadow-[0_6px_18px_rgba(15,23,42,0.06)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/20 focus-visible:ring-offset-2'
+                className={buttonStyles({ variant: 'secondary', size: 'lg', className: 'min-w-[160px] border-ui-border/90' })}
               >
                 See all tools
               </a>
@@ -190,16 +192,18 @@ export function HomePage() {
           ))}
         </section>
 
-        <SectionBlock
-          title='Use Filegap your way'
-          className='mt-16 md:mt-20'
-          contentClassName='border-0 bg-transparent p-0 md:p-0'
-        >
+        <section className='mt-16 md:mt-20'>
+          <div className='mb-6 space-y-2'>
+            <h2 className='font-heading text-3xl font-semibold tracking-tight text-ui-text md:text-4xl'>
+              Use Filegap your way
+            </h2>
+          </div>
+
           <div className='grid gap-4 md:grid-cols-2'>
             <a
               href='/cli'
               onClick={() => trackEvent('download_cli_clicked')}
-              className='group rounded-xl border border-ui-border bg-ui-surface p-6 shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition-[transform,box-shadow,border-color] duration-200 ease-out hover:-translate-y-0.5 hover:border-ui-text/10 hover:shadow-[0_10px_24px_rgba(15,23,42,0.06)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/30 focus-visible:ring-offset-2'
+              className={`${cardStyles({ variant: 'interactive-subtle' })} group p-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/30 focus-visible:ring-offset-2`}
             >
               <div className='flex items-start gap-4'>
                 <span
@@ -228,7 +232,7 @@ export function HomePage() {
             <a
               href='/download'
               onClick={() => trackEvent('download_app_clicked')}
-              className='group rounded-xl border border-ui-border bg-ui-surface p-6 shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition-[transform,box-shadow,border-color] duration-200 ease-out hover:-translate-y-0.5 hover:border-ui-text/10 hover:shadow-[0_10px_24px_rgba(15,23,42,0.06)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/30 focus-visible:ring-offset-2'
+              className={`${cardStyles({ variant: 'interactive-subtle' })} group p-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/30 focus-visible:ring-offset-2`}
             >
               <div className='flex items-start gap-4'>
                 <span
@@ -255,7 +259,7 @@ export function HomePage() {
               </div>
             </a>
           </div>
-        </SectionBlock>
+        </section>
 
         <SectionBlock title='Why Filegap' className='mt-16 md:mt-20'>
           <ul className='grid gap-6 md:grid-cols-3'>
@@ -316,7 +320,7 @@ export function HomePage() {
           </p>
           <a
             href={heroPrimaryTool.href}
-            className='inline-flex items-center justify-center rounded-xl bg-brand-primary px-6 py-3 text-sm font-semibold text-white transition hover:bg-brand-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/40 focus-visible:ring-offset-2'
+            className={buttonStyles({ variant: 'primary', size: 'lg' })}
           >
             {`Start with ${heroPrimaryTool.name}`}
           </a>

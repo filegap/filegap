@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 
 import { SectionBlock } from '../layout/SectionBlock';
+import { buttonStyles } from '../ui/Button';
 
 type WhyItem = {
   title: string;
@@ -93,7 +94,7 @@ export function ToolLandingSections({
         <p className='mx-auto max-w-2xl text-base leading-relaxed text-ui-muted'>{finalCtaText}</p>
         <a
           href={finalCtaHref}
-          className='inline-flex items-center justify-center rounded-xl bg-brand-primary px-6 py-3 text-sm font-semibold text-white transition hover:bg-brand-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/40 focus-visible:ring-offset-2'
+          className={buttonStyles({ variant: 'primary', size: 'lg' })}
         >
           {finalCtaLabel}
         </a>
