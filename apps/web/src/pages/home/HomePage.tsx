@@ -315,10 +315,10 @@ export function HomePage() {
             Start using Filegap directly in your browser — no uploads, no signup.
           </p>
           <a
-            href='/merge-pdf'
+            href={heroPrimaryTool.href}
             className='inline-flex items-center justify-center rounded-xl bg-brand-primary px-6 py-3 text-sm font-semibold text-white transition hover:bg-brand-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/40 focus-visible:ring-offset-2'
           >
-            Merge PDFs instantly
+            {`Start with ${heroPrimaryTool.name}`}
           </a>
         </section>
       </PageContainer>

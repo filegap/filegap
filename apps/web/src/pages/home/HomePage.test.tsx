@@ -7,7 +7,8 @@ describe('HomePage', () => {
   it('renders hero, tool grid, why section, faq section, seo section, and final cta', () => {
     render(<HomePage />);
 
-    const heroPrimaryCta = screen.getByRole('link', { name: /Start with / });
+    const heroPrimaryCtas = screen.getAllByRole('link', { name: /Start with / });
+    const heroPrimaryCta = heroPrimaryCtas[0];
     expect(heroPrimaryCta).toHaveAttribute(
       'href',
       expect.stringMatching(/^\/(merge-pdf|split-pdf|extract-pages|reorder-pdf)$/)
@@ -110,6 +111,10 @@ describe('HomePage', () => {
     expect(
       screen.getByText('Start using Filegap directly in your browser — no uploads, no signup.')
     ).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Merge PDFs instantly' })).toHaveAttribute('href', '/merge-pdf');
+    expect(heroPrimaryCtas).toHaveLength(2);
+    expect(heroPrimaryCtas[1]).toHaveAttribute(
+      'href',
+      heroPrimaryCta.getAttribute('href')
+    );
   });
 });
