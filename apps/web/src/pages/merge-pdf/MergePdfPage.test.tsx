@@ -25,18 +25,22 @@ describe('MergePdfPage', () => {
     expect(screen.getByText('Frequently asked questions')).toBeInTheDocument();
     expect(screen.getByText('Merge PDF files quickly and securely')).toBeInTheDocument();
     expect(screen.getByText('Ready to merge your PDFs?')).toBeInTheDocument();
+    expect(screen.queryByText('Uploaded files')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Merge PDF' })).not.toBeInTheDocument();
     const mergeCtas = screen.getAllByRole('link', { name: 'Merge PDFs instantly' });
     expect(mergeCtas[mergeCtas.length - 1]).toHaveAttribute('href', '#merge-pdf-tool');
-    expect(screen.getByRole('button', { name: 'Merge PDF' })).toBeInTheDocument();
   });
 
-  it('shows validation if merge starts with less than 2 files', async () => {
-    const user = userEvent.setup();
+  it('shows queued state and disabled CTA when less than 2 files are selected', () => {
     render(<MergePdfPage />);
 
-    await user.click(screen.getByRole('button', { name: 'Merge PDF' }));
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const fileA = new File([new Uint8Array([1])], 'a.pdf', { type: 'application/pdf' });
+    fireEvent.change(input, { target: { files: [fileA] } });
 
-    expect(screen.getByText('Add PDF files to start.')).toBeInTheDocument();
+    expect(screen.getByText('1 PDF file queued')).toBeInTheDocument();
+    expect(screen.getByText('Add at least 2 PDF files to merge.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Merge PDF' })).toBeDisabled();
   });
 
   it('shows completed feedback and download CTA after successful merge', async () => {

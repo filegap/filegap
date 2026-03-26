@@ -340,7 +340,7 @@ export function MergePdfPage() {
     setShowDownloadGate(false);
   }
 
-  const statusClassName = status.tone === 'error' ? 'text-sm text-red-600' : 'text-sm text-ui-muted';
+  const actionMessageClassName = status.tone === 'error' ? 'text-sm text-red-600' : 'text-sm text-ui-muted';
 
   return (
     <ToolLayout
@@ -359,27 +359,40 @@ export function MergePdfPage() {
             loadedFileName={dropZoneLoadedName}
           />
 
-          <UploadedFilesTable
-            files={uploadedFiles}
-            reorderable
-            onRemove={(id) => {
-              const index = files.findIndex((file) => file.id === id);
-              if (index < 0) {
-                return;
-              }
-              removeFile(index);
-            }}
-            onReorder={moveFile}
-          />
+          {uploadedFiles.length > 0 ? (
+            <UploadedFilesTable
+              files={uploadedFiles}
+              reorderable
+              onRemove={(id) => {
+                const index = files.findIndex((file) => file.id === id);
+                if (index < 0) {
+                  return;
+                }
+                removeFile(index);
+              }}
+              onReorder={moveFile}
+            />
+          ) : null}
 
-          <div className='flex flex-wrap items-center gap-4'>
-            {!mergedOutput ? (
-              <Button onClick={handleMergeCtaClick} loading={isProcessing}>
-                Merge PDF
-              </Button>
-            ) : null}
-            {!mergedOutput ? <p className={statusClassName}>{status.message}</p> : null}
-          </div>
+          {!mergedOutput && uploadedFiles.length > 0 ? (
+            <div className='sticky bottom-4 z-10 pt-2'>
+              <div className='flex flex-col gap-3 rounded-2xl border border-ui-border/80 bg-ui-surface/95 px-4 py-4 shadow-[0_10px_30px_rgba(15,23,42,0.05)] backdrop-blur sm:flex-row sm:items-center sm:justify-between'>
+                <div className='min-w-0'>
+                  <p className='text-sm font-semibold text-ui-text'>
+                    {uploadedFiles.length === 1
+                      ? '1 PDF file queued'
+                      : `${uploadedFiles.length} PDF files queued`}
+                  </p>
+                  <div className='mt-2 flex flex-wrap items-center gap-2'>
+                    <p className={actionMessageClassName}>{status.message}</p>
+                  </div>
+                </div>
+                <Button onClick={handleMergeCtaClick} loading={isProcessing} disabled={files.length < 2}>
+                  Merge PDF
+                </Button>
+              </div>
+            </div>
+          ) : null}
 
           {mergedOutput ? (
             <div className='rounded-2xl border border-brand-primary/40 bg-brand-primary/10 p-5'>
