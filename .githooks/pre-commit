@@ -1,0 +1,45 @@
+#!/bin/sh
+set -eu
+
+repo_root="$(git rev-parse --show-toplevel)"
+cd "$repo_root"
+
+staged_files="$(git diff --cached --name-only --diff-filter=ACMR)"
+
+if [ -z "$staged_files" ]; then
+  exit 0
+fi
+
+run_web=false
+run_desktop=false
+
+if printf '%s\n' "$staged_files" | grep -Eq '^(apps/web/|shared/design/tokens\.css$)'; then
+  run_web=true
+fi
+
+if printf '%s\n' "$staged_files" | grep -Eq '^(apps/desktop/|shared/design/tokens\.css$)'; then
+  run_desktop=true
+fi
+
+if [ "$run_web" = false ] && [ "$run_desktop" = false ]; then
+  echo "pre-commit: no web/desktop changes detected, skipping app checks."
+  exit 0
+fi
+
+if [ "$run_web" = true ]; then
+  echo "pre-commit: running web checks..."
+  (
+    cd apps/web
+    npm run build
+    npm run test
+  )
+fi
+
+if [ "$run_desktop" = true ]; then
+  echo "pre-commit: running desktop checks..."
+  (
+    cd apps/desktop
+    npm run build
+    npm run test
+  )
+fi

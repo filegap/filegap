@@ -136,6 +136,23 @@ Current web scaffold includes local merge flow via Web Worker.
 
 Design foundations for both web and desktop now share a common token source in `shared/design/tokens.css`.
 
+## Automatic Commit Checks
+
+This repository ships with a versioned Git `pre-commit` hook in `.githooks/pre-commit`.
+
+Once enabled locally, every commit automatically runs the relevant checks based on staged files:
+
+- changes in `apps/web/**` run `npm run build` and `npm run test` in `apps/web`
+- changes in `apps/desktop/**` run `npm run build` and `npm run test` in `apps/desktop`
+- changes in `shared/design/tokens.css` run both web and desktop checks
+
+Enable hooks for your local clone with:
+
+```bash
+git config core.hooksPath .githooks
+chmod +x .githooks/pre-commit
+```
+
 ## Quick Start (Desktop MVP)
 
 Desktop app lives in `apps/desktop` and uses Tauri + React with direct calls to `crates/core`.
