@@ -1,4 +1,4 @@
-import { Lock } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
 
 type TrustNoticeProps = {
   className?: string;
@@ -17,7 +17,7 @@ export function TrustNotice({
 
   return (
     <div className={classes} role="note" aria-label="Privacy trust statement">
-      <Lock aria-hidden="true" />
+      <ShieldCheck aria-hidden="true" />
       <p>{text}</p>
     </div>
   );
