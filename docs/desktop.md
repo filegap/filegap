@@ -138,6 +138,13 @@ These components and patterns are reused across desktop tools (`Merge`, `Split`,
 - Inline utility actions:
   - Compact controls with semantic icons and concise labels.
 
+Current shared rollout status:
+
+- [`apps/desktop/src/components/ui/Button.tsx`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/desktop/src/components/ui/Button.tsx) now carries explicit shared button variants and size helpers.
+- [`apps/desktop/src/components/ui/Card.tsx`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/desktop/src/components/ui/Card.tsx) now carries shared card variants for neutral, subtle, and result surfaces.
+- [`apps/desktop/src/components/layout/ToolLayout.tsx`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/desktop/src/components/layout/ToolLayout.tsx) now composes a reusable tool header pattern.
+- [`apps/desktop/src/components/ui/ResultStateBlock.tsx`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/desktop/src/components/ui/ResultStateBlock.tsx) now sits on top of the shared card primitive instead of custom standalone success panel styling.
+
 ## Copy Guidelines (Desktop, Privacy-First)
 
 Use local-first terminology consistently:

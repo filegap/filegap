@@ -48,6 +48,7 @@ Current implementation note:
 - Desktop primitive lives in [`apps/desktop/src/components/ui/Button.tsx`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/desktop/src/components/ui/Button.tsx)
 
 The web primitive now exposes a shared `buttonStyles(...)` helper so anchors and buttons can use the same official variants instead of duplicating long class strings in pages.
+The desktop primitive now exposes a parallel `buttonClassName(...)` helper so desktop buttons can use the same variant logic without repeating class combinations.
 
 ## `Card`
 
@@ -74,6 +75,7 @@ Current implementation note:
 - Desktop primitive wrapper lives in [`apps/desktop/src/components/ui/Card.tsx`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/desktop/src/components/ui/Card.tsx)
 
 The web primitive now exposes a shared `cardStyles(...)` helper with `default`, `interactive`, and `interactive-subtle` variants.
+The desktop primitive now exposes `cardClassName(...)` with `default`, `subtle`, and `result` variants.
 
 ## `Pill` / `Badge`
 
@@ -126,6 +128,7 @@ Current implementation note:
 
 - Web pattern lives in [`apps/web/src/components/layout/ToolHero.tsx`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/web/src/components/layout/ToolHero.tsx)
 - [`ToolLayout.tsx`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/web/src/components/layout/ToolLayout.tsx) now composes `ToolHero`.
+- Desktop tool shell now composes its own shared header pattern in [`apps/desktop/src/components/layout/ToolHeader.tsx`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/desktop/src/components/layout/ToolHeader.tsx) via [`apps/desktop/src/components/layout/ToolLayout.tsx`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/desktop/src/components/layout/ToolLayout.tsx).
 
 ## `IconButton`
 
@@ -259,6 +262,10 @@ Rules:
 1. Make the success state clear.
 2. Keep actions obvious and limited.
 3. Visual treatment should support confidence without looking celebratory or noisy.
+
+Current implementation note:
+
+- Desktop uses [`apps/desktop/src/components/ui/ResultStateBlock.tsx`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/desktop/src/components/ui/ResultStateBlock.tsx), now aligned to the shared `Card` primitive instead of standalone success styling.
 
 ## Platform Guidance
 

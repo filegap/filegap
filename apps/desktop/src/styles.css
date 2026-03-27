@@ -680,19 +680,20 @@ p {
 .tool-page-header {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  margin-bottom: 14px;
+  gap: 6px;
+  margin-bottom: 16px;
 }
 
 .tool-page-header h1 {
-  font-size: 1.55rem;
-  line-height: 1.2;
+  font-size: 1.6rem;
+  line-height: 1.18;
   font-weight: 700;
 }
 
 .tool-page-header p {
   color: var(--muted);
-  font-size: 0.9rem;
+  font-size: 0.92rem;
+  line-height: 1.45;
 }
 
 .tool-split-layout {
@@ -726,12 +727,22 @@ p {
 
 .card {
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   background: var(--surface);
+  box-shadow: var(--shadow-rest);
   padding: 14px;
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+.card-subtle {
+  background: color-mix(in srgb, var(--surface-alt) 55%, white);
+}
+
+.card-result {
+  border-color: color-mix(in srgb, var(--success) 22%, var(--border));
+  background: color-mix(in srgb, var(--success) 5%, white);
 }
 
 .card h2 {
@@ -745,13 +756,18 @@ p {
 
 .btn {
   border: 1px solid transparent;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   font-size: 0.82rem;
   line-height: 1;
   font-weight: 600;
   padding: 9px 12px;
   cursor: pointer;
-  transition: all 150ms ease;
+  transition:
+    background-color var(--motion-fast) var(--motion-ease),
+    border-color var(--motion-fast) var(--motion-ease),
+    box-shadow var(--motion-fast) var(--motion-ease),
+    color var(--motion-fast) var(--motion-ease),
+    transform var(--motion-fast) var(--motion-ease);
 }
 
 .btn:disabled {
@@ -759,27 +775,45 @@ p {
   cursor: not-allowed;
 }
 
+.btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 16%, white);
+}
+
+.btn-md {
+  min-height: 36px;
+}
+
+.btn-lg {
+  min-height: 40px;
+  padding: 10px 14px;
+}
+
 .btn-primary {
   color: #ffffff;
   border-color: var(--accent);
   background: var(--accent);
+  box-shadow: var(--shadow-rest);
 }
 
 .btn-primary:hover:enabled {
   color: #ffffff;
   border-color: var(--accent-hover);
   background: var(--accent-hover);
+  box-shadow: var(--shadow-hover-soft);
 }
 
 .btn-secondary {
   color: var(--text);
   border-color: var(--border);
   background: var(--surface-alt);
+  box-shadow: var(--shadow-rest);
 }
 
 .btn-secondary:hover:enabled {
   border-color: var(--border-strong);
-  background: #e9edf2;
+  background: color-mix(in srgb, var(--surface-alt) 72%, white);
+  box-shadow: var(--shadow-hover-soft);
 }
 
 .btn-ghost {
@@ -1487,15 +1521,12 @@ p {
 }
 
 .output-result-block {
-  border: 1px solid #d9e4dd;
-  border-radius: 7px;
-  background: #f5f8f6;
-  box-shadow: 0 1px 1px rgba(17, 24, 39, 0.04);
+  border-radius: var(--radius-md);
   padding: 10px;
 }
 
 .output-complete-title {
-  color: #334155;
+  color: color-mix(in srgb, var(--text) 78%, #475569);
   font-size: 0.72rem;
   font-weight: 650;
   display: inline-flex;
@@ -1507,8 +1538,8 @@ p {
   width: 16px;
   height: 16px;
   border-radius: 999px;
-  background: #dcfce7;
-  color: #15803d;
+  background: color-mix(in srgb, var(--success) 18%, white);
+  color: var(--success);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1518,11 +1549,11 @@ p {
 .output-success-icon svg {
   width: 16px;
   height: 16px;
-  color: #15803d;
+  color: var(--success);
 }
 
 .output-complete-details {
-  color: #0f172a;
+  color: var(--text);
   font-size: 0.82rem;
   font-weight: 700;
 }

@@ -1,4 +1,5 @@
 import { BadgeCheck, File, Folder } from 'lucide-react';
+import { Card } from './Card';
 
 type ResultStateBlockProps = {
   title: string;
@@ -9,7 +10,7 @@ type ResultStateBlockProps = {
 
 export function ResultStateBlock({ title, details, onOpen, onReveal }: ResultStateBlockProps) {
   return (
-    <div className="output-result-block">
+    <Card variant="result" className="output-result-block">
       <div className="output-complete-state">
         <p className="output-complete-title">
           <span className="output-success-icon" aria-hidden="true">
@@ -36,6 +37,6 @@ export function ResultStateBlock({ title, details, onOpen, onReveal }: ResultSta
           </button>
         </div>
       </div>
-    </div>
+    </Card>
   );
 }

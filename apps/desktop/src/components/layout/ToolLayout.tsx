@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { AppShell } from './AppShell';
 import { PageContainer } from './PageContainer';
+import { ToolHeader } from './ToolHeader';
 
 type ToolLayoutProps = {
   title: string;
@@ -16,10 +17,7 @@ export function ToolLayout({ title, subtitle, leftPanel, rightPanel, footerMessa
       <PageContainer className="page-container-tool">
         <section className="tool-split-layout">
           <section className="tool-left-panel">
-            <header className="tool-page-header">
-              <h1>{title}</h1>
-              <p>{subtitle}</p>
-            </header>
+            <ToolHeader title={title} subtitle={subtitle} />
             {leftPanel}
           </section>
           <aside className="tool-right-panel">{rightPanel}</aside>
