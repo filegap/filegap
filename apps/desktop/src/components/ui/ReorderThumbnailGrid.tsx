@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { WorkspaceEmptyState } from './WorkspaceEmptyState';
 
 export type ReorderThumbnailItem = {
   pageNumber: number;
@@ -93,12 +94,7 @@ export function ReorderThumbnailGrid({
   }
 
   if (items.length === 0) {
-    return (
-      <div className="file-table-empty">
-        <p>No files selected</p>
-        <p>Drag & drop PDFs or click to browse</p>
-      </div>
-    );
+    return <WorkspaceEmptyState title="No files selected" hint="Drag & drop PDFs or click to browse" />;
   }
 
   return (

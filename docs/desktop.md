@@ -146,6 +146,7 @@ Current shared rollout status:
 - [`apps/desktop/src/components/ui/ResultStateBlock.tsx`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/desktop/src/components/ui/ResultStateBlock.tsx) now sits on top of the shared card primitive instead of custom standalone success panel styling.
 - The right-side tool panels now share sidebar composition blocks via [`apps/desktop/src/components/ui/SidebarSection.tsx`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/desktop/src/components/ui/SidebarSection.tsx), [`apps/desktop/src/components/ui/OutputDestinationField.tsx`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/desktop/src/components/ui/OutputDestinationField.tsx), and [`apps/desktop/src/components/ui/OutputActionSection.tsx`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/desktop/src/components/ui/OutputActionSection.tsx).
 - The left-side single-file workflows now share the picker and file-header patterns via [`apps/desktop/src/components/ui/SingleFilePicker.tsx`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/desktop/src/components/ui/SingleFilePicker.tsx) and [`apps/desktop/src/components/ui/WorkingFileHeader.tsx`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/desktop/src/components/ui/WorkingFileHeader.tsx).
+- Empty workspace states are now unified through [`apps/desktop/src/components/ui/WorkspaceEmptyState.tsx`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/desktop/src/components/ui/WorkspaceEmptyState.tsx) instead of being duplicated across file and thumbnail components.
 
 ## Copy Guidelines (Desktop, Privacy-First)
 

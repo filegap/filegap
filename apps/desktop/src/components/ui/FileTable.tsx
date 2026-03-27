@@ -1,4 +1,5 @@
 import { ArrowBigDown, ArrowBigUp, FileText, Trash2 } from 'lucide-react';
+import { WorkspaceEmptyState } from './WorkspaceEmptyState';
 
 type FileRow = {
   id: string;
@@ -19,12 +20,7 @@ export function FileTable({ rows, onRemove, onReorder, isLoading = false }: File
     if (isLoading) {
       return null;
     }
-    return (
-      <div className="file-table-empty">
-        <p>No files selected</p>
-        <p>Drag &amp; drop PDFs or click to browse</p>
-      </div>
-    );
+    return <WorkspaceEmptyState title="No files selected" hint="Drag & drop PDFs or click to browse" />;
   }
 
   return (

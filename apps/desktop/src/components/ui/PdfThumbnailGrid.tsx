@@ -1,4 +1,5 @@
 import { Check } from 'lucide-react';
+import { WorkspaceEmptyState } from './WorkspaceEmptyState';
 
 type PdfThumbnail = {
   pageNumber: number;
@@ -29,12 +30,7 @@ export function PdfThumbnailGrid({
   }
 
   if (thumbnails.length === 0) {
-    return (
-      <div className="file-table-empty">
-        <p>{emptyTitle}</p>
-        <p>{emptyHint}</p>
-      </div>
-    );
+    return <WorkspaceEmptyState title={emptyTitle} hint={emptyHint} />;
   }
 
   return (

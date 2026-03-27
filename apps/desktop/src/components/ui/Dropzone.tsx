@@ -35,7 +35,7 @@ export function Dropzone({ disabled = false, fileCount, onSelectFiles }: Dropzon
       <Upload aria-hidden="true" />
       <h2>Drag &amp; drop PDF files</h2>
       <p>Or select files from your device</p>
-      <Button onClick={onSelectFiles} variant="secondary" disabled={disabled}>
+      <Button onClick={onSelectFiles} variant="secondary" size="lg" disabled={disabled}>
         Select PDF files
       </Button>
       <p className="dropzone-hint">Shortcut: Cmd/Ctrl + O</p>
