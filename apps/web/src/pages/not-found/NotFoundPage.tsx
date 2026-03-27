@@ -9,6 +9,7 @@ export function NotFoundPage() {
   usePageMetadata({
     title: 'Page not found | Filegap',
     description: 'This page does not exist. Use Filegap private PDF tools that run locally.',
+    canonicalPath: null,
   });
 
   return (
