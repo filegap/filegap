@@ -181,6 +181,8 @@ Current desktop MVP includes:
 - Local file picker + save dialog
 - Rust-side PDF commands powered by `filegap_core`
 
+Desktop UI foundations and recurring tool patterns now align with the shared design system documented in `docs/design-system.md`, `docs/ui-components.md`, and `docs/desktop.md`.
+
 ## Status
 
 `v0.1` feature-complete on CLI (`merge`, `extract`, `split`, `reorder`, `info`) with automated tests.

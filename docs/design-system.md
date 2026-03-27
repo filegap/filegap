@@ -240,6 +240,21 @@ Current web rollout:
 2. `ToolActionCard`: [`apps/web/src/components/layout/ToolActionCard.tsx`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/web/src/components/layout/ToolActionCard.tsx)
 3. `FileSelectionSummary`: [`apps/web/src/components/ui/FileSelectionSummary.tsx`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/web/src/components/ui/FileSelectionSummary.tsx)
 
+Current desktop rollout:
+
+1. `ToolHeader`: [`apps/desktop/src/components/layout/ToolHeader.tsx`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/desktop/src/components/layout/ToolHeader.tsx)
+2. `Button` / `buttonClassName(...)`: [`apps/desktop/src/components/ui/Button.tsx`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/desktop/src/components/ui/Button.tsx)
+3. `Card` / `cardClassName(...)`: [`apps/desktop/src/components/ui/Card.tsx`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/desktop/src/components/ui/Card.tsx)
+4. `ResultStateBlock`: [`apps/desktop/src/components/ui/ResultStateBlock.tsx`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/desktop/src/components/ui/ResultStateBlock.tsx)
+5. Sidebar composition patterns:
+   - [`apps/desktop/src/components/ui/SidebarSection.tsx`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/desktop/src/components/ui/SidebarSection.tsx)
+   - [`apps/desktop/src/components/ui/OutputDestinationField.tsx`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/desktop/src/components/ui/OutputDestinationField.tsx)
+   - [`apps/desktop/src/components/ui/OutputActionSection.tsx`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/desktop/src/components/ui/OutputActionSection.tsx)
+6. Single-file workspace patterns:
+   - [`apps/desktop/src/components/ui/SingleFilePicker.tsx`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/desktop/src/components/ui/SingleFilePicker.tsx)
+   - [`apps/desktop/src/components/ui/WorkingFileHeader.tsx`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/desktop/src/components/ui/WorkingFileHeader.tsx)
+   - [`apps/desktop/src/components/ui/WorkspaceEmptyState.tsx`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/desktop/src/components/ui/WorkspaceEmptyState.tsx)
+
 ## Visual Hierarchy Rules
 
 Hierarchy should remain stable across web and desktop:
