@@ -1,7 +1,8 @@
 import type { RefObject } from 'react';
-import { Folder, RotateCcw } from 'lucide-react';
 import { Button } from './Button';
-import { ResultStateBlock } from './ResultStateBlock';
+import { OutputActionSection } from './OutputActionSection';
+import { OutputDestinationField } from './OutputDestinationField';
+import { SidebarSection } from './SidebarSection';
 import { TrustNotice } from './TrustNotice';
 
 type SplitOutputPanelProps = {
@@ -64,8 +65,7 @@ export function SplitOutputPanel({
 
   return (
     <div className="output-panel">
-      <section className="output-panel-top output-panel-section">
-        <h2>Split settings</h2>
+      <SidebarSection title="Split settings" className="output-panel-top">
         <div className="stack-row">
           <Button
             variant={splitMode === 'pages' ? 'secondary' : 'ghost'}
@@ -124,12 +124,11 @@ export function SplitOutputPanel({
             <p className="output-helper-text">Create one output file per range, for example: 1-3,4,5-10.</p>
           </>
         )}
-      </section>
+      </SidebarSection>
 
       <div className="output-panel-divider" />
 
-      <section className="output-panel-top output-panel-section">
-        <h2>Export</h2>
+      <SidebarSection title="Export" className="output-panel-top">
         <label className="output-label" htmlFor="output-base-name">
           File name
         </label>
@@ -141,43 +140,30 @@ export function SplitOutputPanel({
           onChange={(event) => onOutputBaseNameChange(event.target.value)}
           className="output-input"
         />
-        <div className="output-location-row">
-          <p className="output-location-label">Location</p>
-          <div className="output-destination-wrap">
-            <p className="output-destination" title={destinationPath ?? destinationLabel}>
-              <Folder aria-hidden="true" />
-              <span>{destinationLabel}</span>
-            </p>
-            <Button variant="ghost" className="output-change-btn" onClick={onChooseDestination}>
-              Change
-            </Button>
-          </div>
-        </div>
-      </section>
+        <OutputDestinationField
+          destinationLabel={destinationLabel}
+          destinationPath={destinationPath}
+          onChooseDestination={onChooseDestination}
+        />
+      </SidebarSection>
 
       <div className="output-panel-divider" />
 
-      <section className="output-actions-block output-panel-section">
-        <Button onClick={onRun} loading={isProcessing} loadingLabel="Splitting..." disabled={!canRun} className="merge-primary-btn">
-          {actionLabel}
-        </Button>
-        {isProcessing ? <p className="output-merge-progress">Splitting...</p> : null}
-
-        {showCompletionState ? (
-          <>
-            <ResultStateBlock
-              title="✓ Split completed"
-              details={`${completedOutputCount} files created`}
-              onOpen={onOpenFile}
-              onReveal={onShowInFolder}
-            />
-            <Button variant="ghost" className="output-new-merge-btn" onClick={onNewSplit}>
-              <RotateCcw aria-hidden="true" />
-              <span>New split</span>
-            </Button>
-          </>
-        ) : null}
-      </section>
+      <OutputActionSection
+        canRun={canRun}
+        isProcessing={isProcessing}
+        actionLabel={actionLabel}
+        loadingLabel="Splitting..."
+        progressLabel="Splitting..."
+        onRun={onRun}
+        showCompletionState={showCompletionState}
+        completionTitle="Split completed"
+        completionDetails={`${completedOutputCount} files created`}
+        onOpenFile={onOpenFile}
+        onShowInFolder={onShowInFolder}
+        onNewAction={onNewSplit}
+        newActionLabel="New split"
+      />
 
       <TrustNotice className="output-panel-trust" />
     </div>

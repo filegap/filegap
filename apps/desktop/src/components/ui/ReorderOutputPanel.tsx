@@ -1,7 +1,7 @@
 import type { RefObject } from 'react';
-import { Folder, RotateCcw } from 'lucide-react';
-import { Button } from './Button';
-import { ResultStateBlock } from './ResultStateBlock';
+import { OutputActionSection } from './OutputActionSection';
+import { OutputDestinationField } from './OutputDestinationField';
+import { SidebarSection } from './SidebarSection';
 import { TrustNotice } from './TrustNotice';
 
 type ReorderOutputPanelProps = {
@@ -53,8 +53,7 @@ export function ReorderOutputPanel({
 
   return (
     <div className="output-panel">
-      <section className="output-panel-top output-panel-section">
-        <h2>Reorder settings</h2>
+      <SidebarSection title="Reorder settings" className="output-panel-top">
         <label className="output-label" htmlFor="reorder-page-order">
           Current order
         </label>
@@ -77,12 +76,11 @@ export function ReorderOutputPanel({
           className="output-input"
         />
         <p className="output-helper-text">Drag page cards in the grid to set the new order.</p>
-      </section>
+      </SidebarSection>
 
       <div className="output-panel-divider" />
 
-      <section className="output-panel-top output-panel-section">
-        <h2>Export</h2>
+      <SidebarSection title="Export" className="output-panel-top">
         <label className="output-label" htmlFor="reorder-output-file-name">
           File name
         </label>
@@ -94,49 +92,30 @@ export function ReorderOutputPanel({
           onChange={(event) => onOutputNameChange(event.target.value)}
           className="output-input"
         />
-        <div className="output-location-row">
-          <p className="output-location-label">Location</p>
-          <div className="output-destination-wrap">
-            <p className="output-destination" title={destinationPath ?? destinationLabel}>
-              <Folder aria-hidden="true" />
-              <span>{destinationLabel}</span>
-            </p>
-            <Button variant="ghost" className="output-change-btn" onClick={onChooseDestination}>
-              Change
-            </Button>
-          </div>
-        </div>
-      </section>
+        <OutputDestinationField
+          destinationLabel={destinationLabel}
+          destinationPath={destinationPath}
+          onChooseDestination={onChooseDestination}
+        />
+      </SidebarSection>
 
       <div className="output-panel-divider" />
 
-      <section className="output-actions-block output-panel-section">
-        <Button
-          onClick={onRun}
-          loading={isProcessing}
-          loadingLabel="Reordering..."
-          disabled={!canRun}
-          className="merge-primary-btn"
-        >
-          {actionLabel}
-        </Button>
-        {isProcessing ? <p className="output-merge-progress">Reordering...</p> : null}
-
-        {showCompletionState ? (
-          <>
-            <ResultStateBlock
-              title="✓ Reorder completed"
-              details="Your PDF is ready"
-              onOpen={onOpenFile}
-              onReveal={onShowInFolder}
-            />
-            <Button variant="ghost" className="output-new-merge-btn" onClick={onNewReorder}>
-              <RotateCcw aria-hidden="true" />
-              <span>New reorder</span>
-            </Button>
-          </>
-        ) : null}
-      </section>
+      <OutputActionSection
+        canRun={canRun}
+        isProcessing={isProcessing}
+        actionLabel={actionLabel}
+        loadingLabel="Reordering..."
+        progressLabel="Reordering..."
+        onRun={onRun}
+        showCompletionState={showCompletionState}
+        completionTitle="Reorder completed"
+        completionDetails="Your PDF is ready"
+        onOpenFile={onOpenFile}
+        onShowInFolder={onShowInFolder}
+        onNewAction={onNewReorder}
+        newActionLabel="New reorder"
+      />
 
       <TrustNotice className="output-panel-trust" />
     </div>

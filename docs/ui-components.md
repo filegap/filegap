@@ -206,6 +206,7 @@ Current implementation note:
 
 - Web wrapper lives in [`apps/web/src/components/layout/ToolActionCard.tsx`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/web/src/components/layout/ToolActionCard.tsx)
 - Single-file tool pages reuse [`FileSelectionSummary.tsx`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/web/src/components/ui/FileSelectionSummary.tsx) for the collapsed file state instead of repeating inline markup.
+- Desktop sidebar panels now share reusable sidebar composition primitives in [`apps/desktop/src/components/ui/SidebarSection.tsx`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/desktop/src/components/ui/SidebarSection.tsx), [`apps/desktop/src/components/ui/OutputDestinationField.tsx`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/desktop/src/components/ui/OutputDestinationField.tsx), and [`apps/desktop/src/components/ui/OutputActionSection.tsx`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/desktop/src/components/ui/OutputActionSection.tsx).
 
 ## `ToolCard`
 

@@ -1,7 +1,7 @@
 import type { RefObject } from 'react';
-import { Folder, RotateCcw } from 'lucide-react';
-import { Button } from './Button';
-import { ResultStateBlock } from './ResultStateBlock';
+import { OutputActionSection } from './OutputActionSection';
+import { OutputDestinationField } from './OutputDestinationField';
+import { SidebarSection } from './SidebarSection';
 import { TrustNotice } from './TrustNotice';
 
 type ExtractOutputPanelProps = {
@@ -53,8 +53,7 @@ export function ExtractOutputPanel({
 
   return (
     <div className="output-panel">
-      <section className="output-panel-top output-panel-section">
-        <h2>Extract settings</h2>
+      <SidebarSection title="Extract settings" className="output-panel-top">
         <label className="output-label" htmlFor="extract-page-ranges">
           Page ranges
         </label>
@@ -77,12 +76,11 @@ export function ExtractOutputPanel({
           className="output-input"
         />
         <p className="output-helper-text">Use commas and ranges, for example: 1,3,5-8.</p>
-      </section>
+      </SidebarSection>
 
       <div className="output-panel-divider" />
 
-      <section className="output-panel-top output-panel-section">
-        <h2>Export</h2>
+      <SidebarSection title="Export" className="output-panel-top">
         <label className="output-label" htmlFor="extract-output-file-name">
           File name
         </label>
@@ -94,44 +92,30 @@ export function ExtractOutputPanel({
           onChange={(event) => onOutputNameChange(event.target.value)}
           className="output-input"
         />
-        <div className="output-location-row">
-          <p className="output-location-label">Location</p>
-          <div className="output-destination-wrap">
-            <p className="output-destination" title={destinationPath ?? destinationLabel}>
-              <Folder aria-hidden="true" />
-              <span>{destinationLabel}</span>
-            </p>
-            <Button variant="ghost" className="output-change-btn" onClick={onChooseDestination}>
-              Change
-            </Button>
-          </div>
-        </div>
-      </section>
+        <OutputDestinationField
+          destinationLabel={destinationLabel}
+          destinationPath={destinationPath}
+          onChooseDestination={onChooseDestination}
+        />
+      </SidebarSection>
 
       <div className="output-panel-divider" />
 
-      <section className="output-actions-block output-panel-section">
-        <Button
-          onClick={onRun}
-          loading={isProcessing}
-          loadingLabel="Extracting..."
-          disabled={!canRun}
-          className="merge-primary-btn"
-        >
-          {actionLabel}
-        </Button>
-        {isProcessing ? <p className="output-merge-progress">Extracting...</p> : null}
-
-        {showCompletionState ? (
-          <>
-            <ResultStateBlock title="✓ Extract completed" details="Your PDF is ready" onOpen={onOpenFile} onReveal={onShowInFolder} />
-            <Button variant="ghost" className="output-new-merge-btn" onClick={onNewExtract}>
-              <RotateCcw aria-hidden="true" />
-              <span>New extract</span>
-            </Button>
-          </>
-        ) : null}
-      </section>
+      <OutputActionSection
+        canRun={canRun}
+        isProcessing={isProcessing}
+        actionLabel={actionLabel}
+        loadingLabel="Extracting..."
+        progressLabel="Extracting..."
+        onRun={onRun}
+        showCompletionState={showCompletionState}
+        completionTitle="Extract completed"
+        completionDetails="Your PDF is ready"
+        onOpenFile={onOpenFile}
+        onShowInFolder={onShowInFolder}
+        onNewAction={onNewExtract}
+        newActionLabel="New extract"
+      />
 
       <TrustNotice className="output-panel-trust" />
     </div>

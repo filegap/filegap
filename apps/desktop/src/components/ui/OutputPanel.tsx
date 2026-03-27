@@ -1,7 +1,8 @@
 import type { RefObject } from 'react';
-import { Folder, RotateCcw } from 'lucide-react';
 import { Button } from './Button';
-import { ResultStateBlock } from './ResultStateBlock';
+import { OutputActionSection } from './OutputActionSection';
+import { OutputDestinationField } from './OutputDestinationField';
+import { SidebarSection } from './SidebarSection';
 import { TrustNotice } from './TrustNotice';
 
 type OutputPanelProps = {
@@ -40,12 +41,10 @@ export function OutputPanel({
   onShowInFolder,
 }: OutputPanelProps) {
   const showCompletionState = hasCompleted && !isProcessing && completedMergeCount !== null;
-  const showResultActions = showCompletionState;
 
   return (
     <div className="output-panel">
-      <section className="output-panel-top output-panel-section">
-        <h2>Export</h2>
+      <SidebarSection title="Export" className="output-panel-top">
         <label className="output-label" htmlFor="output-file-name">
           File name
         </label>
@@ -57,49 +56,30 @@ export function OutputPanel({
           onChange={(event) => onOutputNameChange(event.target.value)}
           className="output-input"
         />
-        <div className="output-location-row">
-          <p className="output-location-label">Location</p>
-          <div className="output-destination-wrap">
-            <p className="output-destination" title={destinationPath ?? destinationLabel}>
-              <Folder aria-hidden="true" />
-              <span>{destinationLabel}</span>
-            </p>
-            <Button variant="ghost" className="output-change-btn" onClick={onChooseDestination}>
-              Change
-            </Button>
-          </div>
-        </div>
-      </section>
+        <OutputDestinationField
+          destinationLabel={destinationLabel}
+          destinationPath={destinationPath}
+          onChooseDestination={onChooseDestination}
+        />
+      </SidebarSection>
 
       <div className="output-panel-divider" />
 
-      <section className="output-actions-block output-panel-section">
-        <Button
-          onClick={onRun}
-          loading={isProcessing}
-          loadingLabel="Merging..."
-          disabled={!canRun}
-          className="merge-primary-btn"
-        >
-          {mergeActionLabel}
-        </Button>
-        {isProcessing ? <p className="output-merge-progress">Merging...</p> : null}
-
-        {showCompletionState ? (
-          <>
-            <ResultStateBlock
-              title="Merge completed"
-              details={`${completedMergeCount} files merged`}
-              onOpen={onOpenFile}
-              onReveal={onShowInFolder}
-            />
-            <Button variant="ghost" className="output-new-merge-btn" onClick={onNewMerge}>
-              <RotateCcw aria-hidden="true" />
-              <span>New merge</span>
-            </Button>
-          </>
-        ) : null}
-      </section>
+      <OutputActionSection
+        canRun={canRun}
+        isProcessing={isProcessing}
+        actionLabel={mergeActionLabel}
+        loadingLabel="Merging..."
+        progressLabel="Merging..."
+        onRun={onRun}
+        showCompletionState={showCompletionState}
+        completionTitle="Merge completed"
+        completionDetails={`${completedMergeCount} files merged`}
+        onOpenFile={onOpenFile}
+        onShowInFolder={onShowInFolder}
+        onNewAction={onNewMerge}
+        newActionLabel="New merge"
+      />
 
       <TrustNotice className="output-panel-trust" />
     </div>
