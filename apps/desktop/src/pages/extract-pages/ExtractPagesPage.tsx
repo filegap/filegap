@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ChevronLeft, ChevronsDownUp, Trash2, Upload } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import { ToolLayout } from '../../components/layout/ToolLayout';
 import { Button } from '../../components/ui/Button';
-import { Dropzone } from '../../components/ui/Dropzone';
 import { ExtractOutputPanel } from '../../components/ui/ExtractOutputPanel';
 import { PdfThumbnailGrid } from '../../components/ui/PdfThumbnailGrid';
+import { SingleFilePicker } from '../../components/ui/SingleFilePicker';
+import { WorkingFileHeader } from '../../components/ui/WorkingFileHeader';
 import {
   chooseOutputDirectory,
   chooseSinglePdfInput,
@@ -507,43 +508,20 @@ export function ExtractPagesPage() {
       footerMessage={footerMessage}
       leftPanel={
         <div className="merge-left-panel">
-          {files.length === 0 ? (
-            <Dropzone disabled={isProcessing || isLoadingFiles} fileCount={files.length} onSelectFiles={() => void handleSelectInput()} />
-          ) : isDropzoneCollapsed ? (
-            <button
-              type="button"
-              className="extract-picker-collapsed-bar"
-              onClick={() => setIsDropzoneCollapsed(false)}
-              aria-label="Show file picker"
-              title="Show file picker"
-            >
-              <span className="extract-picker-collapsed-left" aria-hidden="true">
-                <Upload />
-              </span>
-              <span className="extract-picker-collapsed-right" aria-hidden="true">
-                <ChevronLeft />
-              </span>
-            </button>
-          ) : (
-            <div className="extract-dropzone-shell">
-              <button
-                type="button"
-                className="extract-dropzone-collapse-btn"
-                onClick={() => setIsDropzoneCollapsed(true)}
-                aria-label="Hide file picker"
-                title="Hide file picker"
-              >
-                <ChevronsDownUp />
-              </button>
-              <Dropzone disabled={isProcessing || isLoadingFiles} fileCount={files.length} onSelectFiles={() => void handleSelectInput()} />
-            </div>
-          )}
+          <SingleFilePicker
+            hasFile={files.length > 0}
+            isCollapsed={isDropzoneCollapsed}
+            disabled={isProcessing || isLoadingFiles}
+            fileCount={files.length}
+            onSelectFiles={() => void handleSelectInput()}
+            onShowPicker={() => setIsDropzoneCollapsed(false)}
+            onHidePicker={() => setIsDropzoneCollapsed(true)}
+          />
           {files.length > 0 ? (
-            <div className="uploaded-files-header">
-              <p className="uploaded-file-name" title={fileNameFromPath(files[0].path)}>
-                {fileNameFromPath(files[0].path)}
-              </p>
-              <div className="stack-row">
+            <WorkingFileHeader
+              title={fileNameFromPath(files[0].path)}
+              titleAttribute={fileNameFromPath(files[0].path)}
+            >
                 <Button
                   variant="ghost"
                   onClick={handleSelectAllPages}
@@ -602,8 +580,7 @@ export function ExtractPagesPage() {
                 >
                   <Trash2 aria-hidden="true" />
                 </Button>
-              </div>
-            </div>
+            </WorkingFileHeader>
           ) : null}
           {isLoadingFiles ? <p className="file-loading-hint">Processing file...</p> : null}
           {files.length === 1 && files[0].pageCount && files[0].pageCount > MAX_PREVIEW_PAGES ? (
