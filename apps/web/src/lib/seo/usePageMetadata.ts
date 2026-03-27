@@ -21,7 +21,7 @@ function normalizeCanonicalPath(path: string): string {
     return '/';
   }
 
-  return path.endsWith('/') ? path : `${path}/`;
+  return path.endsWith('/') ? path.slice(0, -1) : path;
 }
 
 function upsertCanonical(href: string): void {
