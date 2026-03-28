@@ -7,15 +7,15 @@ import { ArrowUpDown, Files, Scissors, Split } from 'lucide-react';
 const TOOLS = [
   {
     name: 'Merge PDF',
-    description: 'Combine multiple PDF files into one document — fast, private, and directly in your browser.',
-    actionLabel: 'Merge files',
+    description: 'Combine multiple PDFs into one — fast and private.',
+    actionLabel: 'Merge PDFs',
     href: '/merge-pdf',
     icon: <Files />,
     enabled: true,
   },
   {
     name: 'Split PDF',
-    description: 'Split one PDF into smaller PDF files without uploading it anywhere.',
+    description: 'Split a PDF into smaller files — no uploads required.',
     actionLabel: 'Split PDF',
     href: '/split-pdf',
     icon: <Split />,
@@ -23,7 +23,7 @@ const TOOLS = [
   },
   {
     name: 'Extract Pages',
-    description: 'Extract specific pages from a PDF and save only the pages you need.',
+    description: 'Extract only the pages you need from a PDF.',
     actionLabel: 'Extract pages',
     href: '/extract-pages',
     icon: <Scissors />,
@@ -31,7 +31,7 @@ const TOOLS = [
   },
   {
     name: 'Reorder PDF',
-    description: 'Rearrange PDF pages visually and export a new file in seconds.',
+    description: 'Rearrange PDF pages and export a new file in seconds.',
     actionLabel: 'Reorder pages',
     href: '/reorder-pdf',
     icon: <ArrowUpDown />,
@@ -45,7 +45,9 @@ export function HomePage() {
       <PageContainer>
         <section className="home-main-center">
           <h1 className="home-title">Filegap — Private PDF tools</h1>
-          <TrustNotice className="home-trust-banner" />
+          <div className="home-trust-banner">
+            <TrustNotice />
+          </div>
 
           <div className="tool-grid" aria-label="Tool launcher">
             {TOOLS.map((tool) => (

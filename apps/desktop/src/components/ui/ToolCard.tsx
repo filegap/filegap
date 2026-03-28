@@ -1,7 +1,6 @@
 import type { MouseEventHandler, ReactNode } from 'react';
+import { ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from './Button';
-import { TrustNotice } from './TrustNotice';
 
 type ToolCardProps = {
   title: string;
@@ -22,22 +21,22 @@ function ToolCardInner({ title, description, actionLabel, icon, disabled = false
       className={`tool-card ${disabled ? 'tool-card-disabled' : 'tool-card-enabled'}`.trim()}
       aria-disabled={disabled}
     >
-      <TrustNotice className="tool-card-badge" text="Local" variant="badge" />
       <span className="tool-card-icon" aria-hidden="true">
         {icon}
       </span>
       <div className="tool-card-content">
         <h2>{title}</h2>
         <p>{description}</p>
-        <Button
-          variant="secondary"
+        <button
+          type="button"
           className="tool-card-cta-btn"
           onClick={onActionClick}
           disabled={disabled}
           aria-label={actionLabel}
         >
           {actionLabel}
-        </Button>
+          <ArrowRight aria-hidden="true" />
+        </button>
       </div>
     </article>
   );

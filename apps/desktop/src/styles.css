@@ -551,6 +551,8 @@ p {
 .home-trust-banner {
   width: min(980px, 100%);
   margin: 0 auto;
+  display: flex;
+  justify-content: flex-start;
 }
 
 .tool-grid {
@@ -567,78 +569,82 @@ p {
 }
 
 .tool-card {
-  position: relative;
-  min-height: 230px;
+  min-height: 198px;
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 18px;
+  gap: 16px;
   align-items: flex-start;
   border: 1px solid var(--border);
   border-radius: 20px;
   background: var(--surface);
-  padding: 30px;
+  padding: 24px;
   transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease, background-color 180ms ease;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
 }
 
 .tool-card-icon {
-  width: 56px;
-  height: 56px;
+  width: 48px;
+  height: 48px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 14px;
   background: transparent;
   color: var(--accent);
+  transition: transform 200ms ease-out;
 }
 
 .tool-card-icon svg {
-  width: 42px;
-  height: 42px;
+  width: 32px;
+  height: 32px;
 }
 
 .tool-card-content {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  min-width: 0;
   gap: 0;
 }
 
 .tool-card-content h2 {
   font-size: 2rem;
   font-weight: 700;
-  line-height: 1.15;
-  margin-bottom: 14px;
+  line-height: 1.1;
+  margin-bottom: 10px;
 }
 
 .tool-card-content p {
   color: var(--muted);
   font-size: 1rem;
   line-height: 1.45;
-  margin-bottom: 8px;
-}
-
-.tool-card-badge {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  border-color: color-mix(in srgb, #bfdbfe 72%, white);
-  background: color-mix(in srgb, #eff6ff 72%, white);
-  color: color-mix(in srgb, #1f4fbf 66%, #64748b);
-  opacity: 0.9;
+  margin-bottom: 0;
 }
 
 .tool-card-link .tool-card-cta-btn,
 .tool-card .tool-card-cta-btn {
-  margin-top: 2px;
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-size: 0.8rem;
+  margin-top: 24px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.95rem;
   line-height: 1;
   font-weight: 600;
-  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
-  background: color-mix(in srgb, var(--accent) 8%, white);
-  color: var(--accent);
-  transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02);
+  transition: background-color 200ms ease-out, border-color 200ms ease-out, box-shadow 200ms ease-out, color 200ms ease-out;
+  cursor: pointer;
+}
+
+.tool-card-link .tool-card-cta-btn svg,
+.tool-card .tool-card-cta-btn svg {
+  width: 14px;
+  height: 14px;
+  color: color-mix(in srgb, currentColor 70%, transparent);
+  transition: transform 200ms ease-out, opacity 200ms ease-out;
 }
 
 .tool-card-enabled {
@@ -647,26 +653,35 @@ p {
 }
 
 .tool-card-link:hover .tool-card {
-  border-color: color-mix(in srgb, var(--accent) 48%, var(--border));
-  background: color-mix(in srgb, var(--accent) 12%, white);
-  box-shadow: 0 10px 20px rgba(33, 42, 64, 0.09);
-  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
+  transform: translateY(-3px);
 }
 
-.tool-card-link .tool-card-cta-btn:hover:enabled {
-  color: #ffffff;
-  border-color: var(--accent);
-  background: var(--accent);
+.tool-card-link:hover .tool-card-icon {
+  transform: scale(1.1);
+}
+
+.tool-card-link:hover .tool-card-cta-btn:enabled {
+  border-color: color-mix(in srgb, var(--text) 20%, var(--border));
+  background: color-mix(in srgb, var(--bg) 90%, white);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.05);
+}
+
+.tool-card-link:hover .tool-card-cta-btn svg {
+  transform: translateX(4px);
+  opacity: 1;
 }
 
 .tool-card-link:active .tool-card {
   transform: scale(0.994);
-  background: var(--accent-soft);
+  background: var(--surface);
 }
 
 .tool-card-disabled {
   background: var(--surface);
   color: inherit;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
 }
 
 .tool-card-disabled .tool-card-icon {
@@ -1732,7 +1747,7 @@ p {
 }
 
 .trust-notice {
-  display: flex;
+  display: inline-flex;
   gap: 8px;
   align-items: center;
   color: #2563eb;
@@ -1751,22 +1766,6 @@ p {
 
 .trust-notice p {
   line-height: 1.25;
-}
-
-.trust-notice-badge {
-  gap: 4px;
-  padding: 3px 8px;
-  border-radius: 999px;
-  font-size: 0.7rem;
-}
-
-.trust-notice-badge svg {
-  width: 11px;
-  height: 11px;
-}
-
-.trust-notice-badge p {
-  line-height: 1;
 }
 
 .output-panel-trust {
@@ -1798,7 +1797,7 @@ p {
   }
 
   .tool-card {
-    min-height: 190px;
+    min-height: 180px;
     padding: 22px;
     gap: 14px;
   }
