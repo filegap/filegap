@@ -23,3 +23,4 @@
 - Metadata cleanup
 - Watermark
 - Redaction
+- Desktop distribution roadmap: GitHub Releases, Homebrew Cask, paid store distribution, and OSS/support positioning. See [`docs/desktop-distribution-roadmap.md`](/Users/ste/Workspace/wLabs/prj/pdflo/docs/desktop-distribution-roadmap.md).
