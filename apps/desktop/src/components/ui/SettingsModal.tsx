@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ChevronsUpDown, Folders, X } from 'lucide-react';
-import { chooseOutputDirectory } from '../../lib/desktop';
+import { chooseOutputDirectory, openExternalUrl } from '../../lib/desktop';
+import { getDistributionConfig } from '../../lib/distribution';
 import { useDesktopSettings } from '../../lib/settings';
 import { fileNameFromPath } from '../../lib/pathUtils';
 import { Button } from './Button';
@@ -13,6 +14,7 @@ type SettingsModalProps = {
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const [settings, updateSettings] = useDesktopSettings();
   const [isChoosingFolder, setIsChoosingFolder] = useState(false);
+  const distributionConfig = getDistributionConfig();
 
   useEffect(() => {
     if (!isOpen) {
@@ -58,6 +60,10 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
   function toggleSetting(key: 'askDestinationEveryTime' | 'openFileAfterExport' | 'revealInFolderAfterExport') {
     updateSettings({ [key]: !settings[key] });
+  }
+
+  async function handleOpenSupport() {
+    await openExternalUrl(distributionConfig.supportUrl);
   }
 
   return (
@@ -259,6 +265,33 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 </div>
               </div>
             </section>
+
+            {distributionConfig.showSupportCta ? (
+              <>
+                <div className="settings-section-divider" />
+                <section className="settings-section-block">
+                  <h3 className="settings-section-title">Support</h3>
+                  <div className="settings-group">
+                    <div className="settings-row">
+                      <div className="settings-row-copy">
+                        <h3>Support Filegap</h3>
+                        <p className="settings-help">
+                          Filegap is open source and privacy-first. If it saves you time, support development.
+                        </p>
+                      </div>
+                      <div className="settings-row-control">
+                        <Button variant="secondary" className="settings-support-btn" onClick={() => void handleOpenSupport()}>
+                          <span className="settings-support-emoji" aria-hidden="true">
+                            {'☕'}
+                          </span>
+                          <span>Buy me a coffee</span>
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+              </>
+            ) : null}
           </div>
         </div>
       </section>

@@ -1,6 +1,7 @@
 import { invoke } from '@tauri-apps/api/core';
 import { downloadDir } from '@tauri-apps/api/path';
 import { open } from '@tauri-apps/plugin-dialog';
+import { openUrl } from '@tauri-apps/plugin-opener';
 
 export type MergeResult = {
   output_path: string;
@@ -133,4 +134,8 @@ export async function revealInFolder(path: string): Promise<void> {
 
 export async function pathExists(path: string): Promise<boolean> {
   return invoke<boolean>('path_exists', { path });
+}
+
+export async function openExternalUrl(url: string): Promise<void> {
+  await openUrl(url);
 }

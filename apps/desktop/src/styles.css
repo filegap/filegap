@@ -463,6 +463,42 @@ p {
   background: var(--accent);
 }
 
+.settings-row-control .settings-support-btn.btn {
+  min-height: 52px;
+  padding: 0 22px;
+  border-radius: 20px;
+  border-color: #facc15;
+  background: #facc15;
+  color: #111827;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  box-shadow: 0 8px 18px rgba(250, 204, 21, 0.22);
+}
+
+.settings-support-emoji {
+  font-size: 1.3rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(-1px);
+}
+
+.settings-row-control .settings-support-btn.btn:hover:enabled {
+  border-color: #eab308;
+  background: #eab308;
+  box-shadow: 0 10px 20px rgba(234, 179, 8, 0.26);
+}
+
+.settings-row-control .settings-support-btn.btn:active:enabled {
+  transform: translateY(1px);
+  box-shadow: 0 6px 12px rgba(234, 179, 8, 0.2);
+}
+
 .settings-row-compact .settings-row-copy h3 {
   font-size: 1rem;
 }
