@@ -19,6 +19,7 @@ jobs:
     runs-on: macos-latest
     env:
       VITE_APP_DISTRIBUTION: github
+      HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -107,15 +108,15 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Checkout Homebrew tap repository
-        if: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN != '' }}
+        if: ${{ env.HOMEBREW_TAP_GITHUB_TOKEN != '' }}
         uses: actions/checkout@v4
         with:
           repository: filegap/homebrew-filegap
-          token: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
+          token: ${{ env.HOMEBREW_TAP_GITHUB_TOKEN }}
           path: tap
 
       - name: Create or update Casks/filegap-desktop.rb
-        if: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN != '' }}
+        if: ${{ env.HOMEBREW_TAP_GITHUB_TOKEN != '' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -140,7 +141,7 @@ jobs:
           CASK
 
       - name: Commit and push tap changes
-        if: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN != '' }}
+        if: ${{ env.HOMEBREW_TAP_GITHUB_TOKEN != '' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -156,7 +157,7 @@ jobs:
           git -C tap push
 
       - name: Skip tap update when token is missing
-        if: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN == '' }}
+        if: ${{ env.HOMEBREW_TAP_GITHUB_TOKEN == '' }}
         shell: bash
         run: |
           echo "HOMEBREW_TAP_GITHUB_TOKEN is not set; skipping automatic Homebrew tap update."
