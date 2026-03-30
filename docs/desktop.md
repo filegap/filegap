@@ -126,6 +126,10 @@ These components and patterns are reused across desktop tools (`Merge`, `Split`,
   - `Privacy` settings:
     - `Open file after export`.
     - `Reveal in folder after export`.
+  - `Support` settings:
+    - `Support Filegap` section with CTA to Buy Me a Coffee for community channels.
+    - CTA hidden for `store` channel builds.
+    - CTA target includes static, privacy-safe UTM tags for aggregated channel attribution.
   - If no default folder is set and `Ask destination every time` is disabled, app falls back to system Downloads directory.
 - Thumbnail grid (Extract):
   - In-memory page previews.

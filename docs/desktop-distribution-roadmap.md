@@ -276,6 +276,21 @@ Exit criteria:
 
 This section reflects the current codebase state as of `2026-03-28`.
 
+## Implemented Update (2026-03-30)
+
+Completed in desktop app:
+
+- Added distribution-channel config in [`apps/desktop/src/lib/distribution.ts`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/desktop/src/lib/distribution.ts) with `store|github|homebrew|dev`.
+- Added support CTA visibility gating: hidden for `store`, visible for community channels.
+- Added support section in settings UI with:
+  - section title `Support Filegap`
+  - CTA button `Buy me a coffee`
+  - static support URL with privacy-safe UTM params (`utm_source=filegap-desktop`, `utm_medium=app`, `utm_campaign=support_cta`)
+- Added external URL opener helper in [`apps/desktop/src/lib/desktop.ts`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/desktop/src/lib/desktop.ts).
+- Enabled URL opening permissions in desktop capability:
+  - [`apps/desktop/src-tauri/capabilities/default.json`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/desktop/src-tauri/capabilities/default.json)
+  - [`apps/desktop/src-tauri/gen/schemas/capabilities.json`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/desktop/src-tauri/gen/schemas/capabilities.json)
+
 ### Already in place
 
 - Desktop app exists as a Tauri application with bundling enabled in [`apps/desktop/src-tauri/tauri.conf.json`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/desktop/src-tauri/tauri.conf.json).
@@ -303,9 +318,8 @@ This section reflects the current codebase state as of `2026-03-28`.
 
 #### Phase 3 gaps
 
-- Settings currently cover output, naming, overwrite behavior, and post-export options, but there is no About / Support section in [`SettingsModal.tsx`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/desktop/src/components/ui/SettingsModal.tsx).
-- No distribution-channel config exists yet to differentiate `store`, `github`, and `homebrew` builds from the same codebase.
-- No in-app link for support, sponsorship, website, privacy policy, release notes, or version/build metadata.
+- No About / Version surface yet in [`SettingsModal.tsx`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/desktop/src/components/ui/SettingsModal.tsx) (support section exists, but versioning/support policy links are still missing).
+- No in-app links yet for website, privacy policy, release notes, or support policy page.
 - No store-listing assets or store submission checklist exist in `docs/`.
 
 #### Phase 4 gaps
@@ -324,5 +338,5 @@ This section reflects the current codebase state as of `2026-03-28`.
 If execution starts now, the highest-leverage next steps are:
 
 1. Add a desktop release workflow that produces official tagged artifacts on GitHub.
-2. Add distribution-flavor configuration to the desktop app so `store` builds can hide support CTA while `github` and `homebrew` builds can show it.
-3. Extend desktop settings with an About / Support area for version info, website/privacy links, and a `Support Filegap` entry for community builds only.
+2. Add a desktop Homebrew Cask workflow driven from tagged desktop releases (`.dmg` + SHA automation).
+3. Extend settings with an About / Version area (app version, release notes, website/privacy links) to complete store-readiness metadata.
