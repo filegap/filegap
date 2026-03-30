@@ -207,7 +207,7 @@ Goal:
 
 Tasks:
 
-- create/update a separate Homebrew cask tap for the desktop app
+- publish desktop cask in the existing Homebrew tap (`filegap/homebrew-filegap`)
 - package the signed `.dmg`
 - automate cask version + SHA updates from tagged releases
 - document `brew install --cask ...` in the README/site

@@ -81,3 +81,77 @@ jobs:
             Notes:
             - PDF processing remains local-only.
             - This channel is intended for community distribution until Apple Developer signing/notarization is enabled.
+
+      - name: Prepare Homebrew Cask metadata
+        id: cask_meta
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          TAG="${{ steps.release_tag.outputs.value }}"
+          VERSION="${TAG#desktop-v}"
+          DMG_PATH="$(find release-artifacts -maxdepth 1 -type f -name "*.dmg" | head -n 1)"
+
+          if [ -z "${DMG_PATH}" ]; then
+            echo "No .dmg artifact found in release-artifacts."
+            exit 1
+          fi
+
+          DMG_FILE="$(basename "${DMG_PATH}")"
+          DMG_FILE_URL="${DMG_FILE// /%20}"
+          DMG_SHA256="$(shasum -a 256 "${DMG_PATH}" | awk '{print $1}')"
+          RELEASE_URL="https://github.com/filegap/filegap/releases/download/${TAG}/${DMG_FILE_URL}"
+
+          {
+            echo "tag=${TAG}"
+            echo "version=${VERSION}"
+            echo "dmg_file=${DMG_FILE}"
+            echo "dmg_sha256=${DMG_SHA256}"
+            echo "release_url=${RELEASE_URL}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Checkout Homebrew tap repository
+        uses: actions/checkout@v4
+        with:
+          repository: filegap/homebrew-filegap
+          token: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
+          path: tap
+
+      - name: Create or update Casks/filegap-desktop.rb
+        shell: bash
+        run: |
+          set -euo pipefail
+          CASK_PATH="tap/Casks/filegap-desktop.rb"
+          mkdir -p "$(dirname "${CASK_PATH}")"
+
+          cat > "${CASK_PATH}" <<CASK
+          cask "filegap-desktop" do
+            version "${{ steps.cask_meta.outputs.version }}"
+            sha256 "${{ steps.cask_meta.outputs.dmg_sha256 }}"
+
+            url "${{ steps.cask_meta.outputs.release_url }}"
+            name "Filegap Desktop"
+            desc "Privacy-first local PDF desktop app"
+            homepage "https://github.com/filegap/filegap"
+
+            auto_updates false
+            depends_on macos: ">= :ventura"
+
+            app "Filegap Desktop.app"
+          end
+          CASK
+
+      - name: Commit and push tap changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git -C tap diff --quiet; then
+            echo "No tap changes to commit."
+            exit 0
+          fi
+
+          git -C tap config user.name "filegap-bot"
+          git -C tap config user.email "actions@github.com"
+          git -C tap add Casks/filegap-desktop.rb
+          git -C tap commit -m "chore(cask): bump filegap-desktop ${{ steps.cask_meta.outputs.tag }}"
+          git -C tap push

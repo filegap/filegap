@@ -25,6 +25,7 @@ Build behavior:
 - runs on `macos-latest`
 - builds desktop app from `apps/desktop` with `VITE_APP_DISTRIBUTION=github`
 - publishes bundle artifacts to GitHub Release
+- updates Homebrew tap `filegap/homebrew-filegap` Cask (`Casks/filegap-desktop.rb`) using the generated `.dmg` SHA256
 
 Current artifacts:
 
@@ -37,6 +38,14 @@ Current artifacts:
 Use desktop-specific tags to avoid collisions with CLI-only release automation:
 
 - example: `desktop-v0.1.1`
+
+## Homebrew Tap Strategy
+
+Desktop and CLI share the same tap repository:
+
+- tap repo: `filegap/homebrew-filegap`
+- CLI path: `Formula/filegap.rb`
+- Desktop path: `Casks/filegap-desktop.rb`
 
 ## Security and UX Caveat
 
