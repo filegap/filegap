@@ -290,6 +290,9 @@ Completed in desktop app:
 - Enabled URL opening permissions in desktop capability:
   - [`apps/desktop/src-tauri/capabilities/default.json`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/desktop/src-tauri/capabilities/default.json)
   - [`apps/desktop/src-tauri/gen/schemas/capabilities.json`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/desktop/src-tauri/gen/schemas/capabilities.json)
+- Added community desktop release workflow (unsigned, macOS) for tag-based releases:
+  - [`.github/workflows/release-desktop-community.yml`](/Users/ste/Workspace/wLabs/prj/pdflo/.github/workflows/release-desktop-community.yml)
+  - supporting docs in [`docs/desktop-release.md`](/Users/ste/Workspace/wLabs/prj/pdflo/docs/desktop-release.md)
 
 ### Already in place
 
@@ -305,8 +308,7 @@ Completed in desktop app:
 
 #### Phase 1 gaps
 
-- No documented desktop install path in [`README.md`](/Users/ste/Workspace/wLabs/prj/pdflo/README.md) beyond local development.
-- No GitHub Actions workflow that builds and publishes desktop release artifacts on tags.
+- No polished official install path in [`README.md`](/Users/ste/Workspace/wLabs/prj/pdflo/README.md) yet (community channel is documented).
 - No documented signing or notarization process for desktop builds.
 - `createUpdaterArtifacts` is disabled in [`apps/desktop/src-tauri/tauri.conf.json`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/desktop/src-tauri/tauri.conf.json#L27), and there is no updater/release channel strategy yet.
 
@@ -337,6 +339,6 @@ Completed in desktop app:
 
 If execution starts now, the highest-leverage next steps are:
 
-1. Add a desktop release workflow that produces official tagged artifacts on GitHub.
+1. Upgrade desktop release workflow from community unsigned to signed/notarized output when Apple Developer credentials are available.
 2. Add a desktop Homebrew Cask workflow driven from tagged desktop releases (`.dmg` + SHA automation).
 3. Extend settings with an About / Version area (app version, release notes, website/privacy links) to complete store-readiness metadata.

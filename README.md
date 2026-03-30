@@ -184,6 +184,7 @@ Current desktop MVP includes:
 Desktop UI foundations and recurring tool patterns now align with the shared design system documented in `docs/design-system.md`, `docs/ui-components.md`, and `docs/desktop.md`.
 
 Desktop distribution planning now lives in [`docs/desktop-distribution-roadmap.md`](/Users/ste/Workspace/wLabs/prj/pdflo/docs/desktop-distribution-roadmap.md), including channel strategy, store positioning, and a gap analysis against the current codebase.
+Desktop community release workflow details are documented in [`docs/desktop-release.md`](/Users/ste/Workspace/wLabs/prj/pdflo/docs/desktop-release.md).
 
 ## Status
 

@@ -1,0 +1,83 @@
+name: Release Desktop Community
+
+on:
+  push:
+    tags:
+      - "desktop-v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to publish (for manual runs)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build-macos-community:
+    runs-on: macos-latest
+    env:
+      VITE_APP_DISTRIBUTION: github
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: apps/desktop/package-lock.json
+
+      - name: Setup Rust (stable)
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install desktop dependencies
+        working-directory: apps/desktop
+        run: npm ci
+
+      - name: Build desktop app (unsigned community build)
+        working-directory: apps/desktop
+        run: npm run tauri:build
+
+      - name: Collect release artifacts
+        id: collect
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p release-artifacts
+          find apps/desktop/src-tauri/target/release/bundle -type f \
+            \( -name "*.dmg" -o -name "*.app.tar.gz" -o -name "*.app.tar.gz.sig" \) \
+            -exec cp {} release-artifacts/ \;
+          ls -la release-artifacts
+
+      - name: Upload workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-community-macos
+          path: release-artifacts/*
+          if-no-files-found: error
+
+      - name: Resolve release tag
+        id: release_tag
+        shell: bash
+        run: |
+          if [ -n "${{ github.event.inputs.tag || '' }}" ]; then
+            echo "value=${{ github.event.inputs.tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.release_tag.outputs.value }}
+          generate_release_notes: true
+          files: release-artifacts/*
+          body: |
+            Community desktop release (unsigned / non-notarized).
+
+            Notes:
+            - PDF processing remains local-only.
+            - This channel is intended for community distribution until Apple Developer signing/notarization is enabled.
