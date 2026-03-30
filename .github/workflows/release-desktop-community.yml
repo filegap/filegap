@@ -98,16 +98,12 @@ jobs:
           fi
 
           DMG_FILE="$(basename "${DMG_PATH}")"
-          DMG_FILE_URL="${DMG_FILE// /%20}"
           DMG_SHA256="$(shasum -a 256 "${DMG_PATH}" | awk '{print $1}')"
-          RELEASE_URL="https://github.com/filegap/filegap/releases/download/${TAG}/${DMG_FILE_URL}"
 
           {
             echo "tag=${TAG}"
             echo "version=${VERSION}"
-            echo "dmg_file=${DMG_FILE}"
             echo "dmg_sha256=${DMG_SHA256}"
-            echo "release_url=${RELEASE_URL}"
           } >> "$GITHUB_OUTPUT"
 
       - name: Checkout Homebrew tap repository
@@ -129,7 +125,7 @@ jobs:
             version "${{ steps.cask_meta.outputs.version }}"
             sha256 "${{ steps.cask_meta.outputs.dmg_sha256 }}"
 
-            url "${{ steps.cask_meta.outputs.release_url }}"
+            url "https://github.com/filegap/filegap/releases/download/desktop-v#{version}/Filegap%20Desktop_#{version}_aarch64.dmg"
             name "Filegap Desktop"
             desc "Privacy-first local PDF desktop app"
             homepage "https://github.com/filegap/filegap"
