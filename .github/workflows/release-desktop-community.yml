@@ -107,6 +107,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Checkout Homebrew tap repository
+        if: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN != '' }}
         uses: actions/checkout@v4
         with:
           repository: filegap/homebrew-filegap
@@ -114,6 +115,7 @@ jobs:
           path: tap
 
       - name: Create or update Casks/filegap-desktop.rb
+        if: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN != '' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -138,6 +140,7 @@ jobs:
           CASK
 
       - name: Commit and push tap changes
+        if: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN != '' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -151,3 +154,9 @@ jobs:
           git -C tap add Casks/filegap-desktop.rb
           git -C tap commit -m "chore(cask): bump filegap-desktop ${{ steps.cask_meta.outputs.tag }}"
           git -C tap push
+
+      - name: Skip tap update when token is missing
+        if: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN == '' }}
+        shell: bash
+        run: |
+          echo "HOMEBREW_TAP_GITHUB_TOKEN is not set; skipping automatic Homebrew tap update."
