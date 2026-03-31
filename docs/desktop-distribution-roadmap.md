@@ -308,21 +308,18 @@ Completed in desktop app:
 
 #### Phase 1 gaps
 
-- No polished official install path in [`README.md`](/Users/ste/Workspace/wLabs/prj/pdflo/README.md) yet (community channel is documented).
 - No documented signing or notarization process for desktop builds.
 - `createUpdaterArtifacts` is disabled in [`apps/desktop/src-tauri/tauri.conf.json`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/desktop/src-tauri/tauri.conf.json#L27), and there is no updater/release channel strategy yet.
 
 #### Phase 2 gaps
 
-- Homebrew automation currently exists only for the CLI formula, not a desktop cask.
-- No desktop `.dmg`/cask release workflow is present in `.github/workflows`.
-- No README or docs entry describing desktop Homebrew install.
+- Desktop Homebrew channel is active, but still community preview (unsigned/non-notarized).
+- Website and docs messaging must keep the preview warning explicit until signing/notarization is completed.
 
 #### Phase 3 gaps
 
-- No About / Version surface yet in [`SettingsModal.tsx`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/desktop/src/components/ui/SettingsModal.tsx) (support section exists, but versioning/support policy links are still missing).
-- No in-app links yet for website, privacy policy, release notes, or support policy page.
 - No store-listing assets or store submission checklist exist in `docs/`.
+- No explicit support policy page exists yet (SLA/contact boundary for paid-store users vs community users).
 
 #### Phase 4 gaps
 
@@ -340,5 +337,5 @@ Completed in desktop app:
 If execution starts now, the highest-leverage next steps are:
 
 1. Upgrade desktop release workflow from community unsigned to signed/notarized output when Apple Developer credentials are available.
-2. Add a desktop Homebrew Cask workflow driven from tagged desktop releases (`.dmg` + SHA automation).
-3. Extend settings with an About / Version area (app version, release notes, website/privacy links) to complete store-readiness metadata.
+2. Prepare store submission kit (screenshots, listing copy, privacy text, support policy, review checklist).
+3. Define update-policy UX text per channel (`store`, `github`, `homebrew`) and keep it aligned between app settings and website download page.

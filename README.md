@@ -186,6 +186,27 @@ Desktop UI foundations and recurring tool patterns now align with the shared des
 Desktop distribution planning now lives in [`docs/desktop-distribution-roadmap.md`](/Users/ste/Workspace/wLabs/prj/pdflo/docs/desktop-distribution-roadmap.md), including channel strategy, store positioning, and a gap analysis against the current codebase.
 Desktop community release workflow details are documented in [`docs/desktop-release.md`](/Users/ste/Workspace/wLabs/prj/pdflo/docs/desktop-release.md).
 
+## Install Desktop (Homebrew Cask, Community Preview)
+
+Install from the official tap:
+
+```bash
+brew tap filegap/filegap
+brew install --cask filegap-desktop
+```
+
+Upgrade:
+
+```bash
+brew upgrade --cask filegap-desktop
+```
+
+Channel notes:
+
+- Desktop Homebrew is currently a community/developer preview channel.
+- Until Apple signing/notarization is enabled, macOS Gatekeeper prompts can occur.
+- PDF processing remains fully local: no uploads and no server-side handling.
+
 ## Status
 
 `v0.1` feature-complete on CLI (`merge`, `extract`, `split`, `reorder`, `info`) with automated tests.

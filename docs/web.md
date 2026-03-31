@@ -22,8 +22,7 @@
 - Merge queue supports incremental add, remove, and drag-and-drop reorder
 - Split parser supports range input including single pages (for example `1-3,4,5-10`) with preview-ready architecture
 - No backend/API dependency for file processing
-- Public routes implemented: `/merge-pdf`, `/split-pdf`, `/extract-pages`, `/reorder-pdf`
-- Home route intentionally deferred
+- Public routes implemented: `/`, `/merge-pdf`, `/split-pdf`, `/extract-pages`, `/reorder-pdf`, `/download`
 - Shared tool layout is app-like and compact:
   - sticky top header with tool links
   - title/subtitle directly in page flow (no hero card)
@@ -45,6 +44,12 @@ Rule:
 2. Shared color and surface changes must start from the design tokens file.
 
 ## Implemented Tool Behaviors
+
+### `/download`
+
+- Provides desktop community-channel installation instructions via Homebrew cask.
+- Shows developer-preview positioning and channel caveats for unsigned/non-notarized artifacts.
+- Links to CLI and GitHub Releases without changing privacy invariants.
 
 ### `/merge-pdf`
 
