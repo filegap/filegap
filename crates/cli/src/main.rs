@@ -12,6 +12,8 @@ use lopdf::Document;
 use serde_json::json;
 use zip::write::{SimpleFileOptions, ZipWriter};
 
+const SUPPORT_URL: &str = "https://buymeacoffee.com/filegap";
+
 #[derive(Debug, Parser)]
 #[command(name = "filegap")]
 #[command(about = "Private PDF tools that run locally")]
@@ -48,6 +50,8 @@ enum Commands {
         after_help = "Examples:\n  filegap info input.pdf\n  cat input.pdf | filegap info --json"
     )]
     Info(InfoArgs),
+    #[command(about = "Show how to support Filegap")]
+    Support,
 }
 
 #[derive(Debug, Args)]
@@ -206,6 +210,7 @@ fn main() -> ExitCode {
         Commands::Split(args) => handle_split(args),
         Commands::Reorder(args) => handle_reorder(args),
         Commands::Info(args) => handle_info(args),
+        Commands::Support => handle_support(),
     };
 
     match result {
@@ -400,6 +405,13 @@ fn handle_info(args: InfoArgs) -> Result<(), CliError> {
         );
     }
 
+    Ok(())
+}
+
+fn handle_support() -> Result<(), CliError> {
+    println!("Support Filegap");
+    println!("Open source, privacy-first PDF tools that run locally.");
+    println!("{SUPPORT_URL}");
     Ok(())
 }
 

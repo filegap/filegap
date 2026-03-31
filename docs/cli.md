@@ -24,6 +24,7 @@ Check installation:
 ```bash
 filegap --version
 filegap --help
+filegap support
 ```
 
 ## Homebrew Tap Automation
@@ -57,7 +58,14 @@ filegap extract [INPUT|-] --pages RANGES [-o FILE]
 filegap split [INPUT|-] --pages RANGES [--output-pattern PATTERN | --format zip] [-o FILE]
 filegap reorder [INPUT|-] --pages ORDER [-o FILE]
 filegap info [INPUT|-] [--json]
+filegap support
 ```
+
+## Support Command
+
+`filegap support` prints a short, non-invasive support message with the official support link.
+
+This keeps the main `--help` output focused on commands and options while still giving CLI users an explicit way to support the project.
 
 ## Input Rules
 

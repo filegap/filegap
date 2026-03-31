@@ -99,6 +99,7 @@ Quick sanity checks:
 ```bash
 filegap --version
 filegap --help
+filegap support
 ```
 
 Pipe-first examples:
