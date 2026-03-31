@@ -28,7 +28,7 @@ filegap --help
 
 ## Homebrew Tap Automation
 
-Workflow: `.github/workflows/update-homebrew-formula.yml`
+Workflow: `.github/workflows/release-cli-community.yml`
 
 On each pushed tag (`v*`), CI:
 

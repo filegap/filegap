@@ -301,7 +301,7 @@ Completed in desktop app:
 - Desktop CI validation exists in [`.github/workflows/ci.yml`](/Users/ste/Workspace/wLabs/prj/pdflo/.github/workflows/ci.yml) for `npm run build` and `npm run test`.
 - The app already has generated icons for desktop/store-related targets under [`apps/desktop/src-tauri/icons`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/desktop/src-tauri/icons).
 - Settings infrastructure already exists in [`apps/desktop/src/components/ui/SettingsModal.tsx`](/Users/ste/Workspace/wLabs/prj/pdflo/apps/desktop/src/components/ui/SettingsModal.tsx), which is the right place for a future Support/About section.
-- The repository already uses a release-driven Homebrew automation pattern for the CLI in [`.github/workflows/update-homebrew-formula.yml`](/Users/ste/Workspace/wLabs/prj/pdflo/.github/workflows/update-homebrew-formula.yml).
+- The repository already uses a release-driven Homebrew automation pattern for the CLI in [`.github/workflows/release-cli-community.yml`](/Users/ste/Workspace/wLabs/prj/pdflo/.github/workflows/release-cli-community.yml).
 - The current repository is already well positioned for a single-branch strategy because there is no existing `free` vs `paid` divergence in desktop features.
 
 ### Gaps vs roadmap
