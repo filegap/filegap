@@ -463,6 +463,19 @@ p {
   background: var(--accent);
 }
 
+.settings-row-control .settings-about-link-btn.btn {
+  width: 100%;
+  justify-content: flex-start;
+  border-color: var(--border);
+  background: #ffffff;
+  color: var(--text);
+}
+
+.settings-row-control .settings-about-link-btn.btn:hover:enabled {
+  border-color: var(--border-strong);
+  background: color-mix(in srgb, var(--surface-alt) 72%, white);
+}
+
 .settings-row-control .settings-support-btn.btn {
   min-height: 52px;
   padding: 0 22px;

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { getName, getVersion } from '@tauri-apps/api/app';
 import { ChevronsUpDown, Folders, X } from 'lucide-react';
 import { chooseOutputDirectory, openExternalUrl } from '../../lib/desktop';
 import { getDistributionConfig } from '../../lib/distribution';
@@ -11,10 +12,24 @@ type SettingsModalProps = {
   onClose: () => void;
 };
 
+const WEBSITE_URL = 'https://filegap.app';
+const PRIVACY_URL = 'https://filegap.app/privacy';
+const RELEASE_NOTES_URL = 'https://github.com/filegap/filegap/releases';
+
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const [settings, updateSettings] = useDesktopSettings();
   const [isChoosingFolder, setIsChoosingFolder] = useState(false);
+  const [appName, setAppName] = useState('Filegap Desktop');
+  const [appVersion, setAppVersion] = useState('unknown');
   const distributionConfig = getDistributionConfig();
+  const channelLabel =
+    distributionConfig.channel === 'store'
+      ? 'Store'
+      : distributionConfig.channel === 'github'
+        ? 'GitHub'
+        : distributionConfig.channel === 'homebrew'
+          ? 'Homebrew'
+          : 'Development';
 
   useEffect(() => {
     if (!isOpen) {
@@ -32,6 +47,33 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [isOpen, onClose]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    let isMounted = true;
+
+    async function loadAppMetadata() {
+      try {
+        const [name, version] = await Promise.all([getName(), getVersion()]);
+        if (!isMounted) {
+          return;
+        }
+        setAppName(name);
+        setAppVersion(version);
+      } catch {
+        // Keep fallback metadata if Tauri app APIs are unavailable.
+      }
+    }
+
+    void loadAppMetadata();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isOpen]);
 
   if (!isOpen) {
     return null;
@@ -261,6 +303,37 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     >
                       <span className="settings-switch-thumb" />
                     </button>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <div className="settings-section-divider" />
+            <section className="settings-section-block">
+              <h3 className="settings-section-title">About</h3>
+              <div className="settings-group">
+                <div className="settings-row">
+                  <div className="settings-row-copy">
+                    <h3>
+                      {appName} v{appVersion}
+                    </h3>
+                    <p className="settings-help">Distribution channel: {channelLabel}</p>
+                    <p className="settings-help">App updates may require network access depending on distribution channel.</p>
+                  </div>
+                  <div className="settings-row-control settings-row-control-stack">
+                    <Button variant="ghost" className="settings-about-link-btn" onClick={() => void openExternalUrl(WEBSITE_URL)}>
+                      Website
+                    </Button>
+                    <Button variant="ghost" className="settings-about-link-btn" onClick={() => void openExternalUrl(PRIVACY_URL)}>
+                      Privacy
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="settings-about-link-btn"
+                      onClick={() => void openExternalUrl(RELEASE_NOTES_URL)}
+                    >
+                      Release notes
+                    </Button>
                   </div>
                 </div>
               </div>
