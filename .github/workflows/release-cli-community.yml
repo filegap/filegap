@@ -36,25 +36,25 @@ jobs:
           mkdir -p "$(dirname "${FORMULA_PATH}")"
 
           if [ ! -f "${FORMULA_PATH}" ]; then
-            cat > "${FORMULA_PATH}" <<FORMULA
-class Filegap < Formula
-  desc "Privacy-first local PDF CLI"
-  homepage "https://github.com/filegap/filegap"
-  url "${TARBALL_URL}"
-  sha256 "${SHA256}"
-  license "MIT"
-
-  depends_on "rust" => :build
-
-  def install
-    system "cargo", "install", *std_cargo_args(path: "crates/cli")
-  end
-
-  test do
-    assert_match version.to_s, shell_output("#{bin}/filegap --version")
-  end
-end
-FORMULA
+            {
+              echo 'class Filegap < Formula'
+              echo '  desc "Privacy-first local PDF CLI"'
+              echo '  homepage "https://github.com/filegap/filegap"'
+              echo "  url \"${TARBALL_URL}\""
+              echo "  sha256 \"${SHA256}\""
+              echo '  license "MIT"'
+              echo
+              echo '  depends_on "rust" => :build'
+              echo
+              echo '  def install'
+              echo '    system "cargo", "install", *std_cargo_args(path: "crates/cli")'
+              echo '  end'
+              echo
+              echo '  test do'
+              echo '    assert_match version.to_s, shell_output("#{bin}/filegap --version")'
+              echo '  end'
+              echo 'end'
+            } > "${FORMULA_PATH}"
           else
             sed -i "s|^  url \".*\"|  url \"${TARBALL_URL}\"|" "${FORMULA_PATH}"
             sed -i "s|^  sha256 \".*\"|  sha256 \"${SHA256}\"|" "${FORMULA_PATH}"
