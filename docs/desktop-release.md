@@ -26,6 +26,8 @@ Build behavior:
 - builds desktop app from `apps/desktop` with `VITE_APP_DISTRIBUTION=github`
 - publishes bundle artifacts to GitHub Release
 - updates Homebrew tap `filegap/homebrew-filegap` Cask (`Casks/filegap-desktop.rb`) using the generated `.dmg` SHA256
+- validates that tag version (`desktop-vX.Y.Z`) matches desktop app version in `apps/desktop/src-tauri/tauri.conf.json`
+- writes the Cask URL using the real published `.dmg` filename (prevents template mismatch issues)
 
 Current artifacts:
 
@@ -38,6 +40,9 @@ Current artifacts:
 Use desktop-specific tags to avoid collisions with CLI-only release automation:
 
 - example: `desktop-v0.1.1`
+- before tagging, bump desktop app version in:
+  - `apps/desktop/src-tauri/tauri.conf.json`
+  - `apps/desktop/package.json`
 
 ## Homebrew Tap Strategy
 
@@ -46,6 +51,20 @@ Desktop and CLI share the same tap repository:
 - tap repo: `filegap/homebrew-filegap`
 - CLI path: `Formula/filegap.rb`
 - Desktop path: `Casks/filegap-desktop.rb`
+
+Install commands (desktop):
+
+```bash
+brew tap filegap/filegap
+brew install --cask filegap-desktop
+brew upgrade --cask filegap-desktop
+```
+
+Website messaging for this channel should clearly state:
+
+- `Developer Preview`
+- community distribution channel
+- possible macOS security prompts until signing/notarization is active
 
 ## Security and UX Caveat
 

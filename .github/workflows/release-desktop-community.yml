@@ -70,6 +70,20 @@ jobs:
             echo "value=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Validate desktop app version matches release tag
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="${{ steps.release_tag.outputs.value }}"
+          TAG_VERSION="${TAG#desktop-v}"
+          APP_VERSION="$(jq -r '.version' apps/desktop/src-tauri/tauri.conf.json)"
+
+          if [ "${TAG_VERSION}" != "${APP_VERSION}" ]; then
+            echo "Tag version (${TAG_VERSION}) does not match desktop app version (${APP_VERSION}) in apps/desktop/src-tauri/tauri.conf.json."
+            echo "Update the desktop app version before creating/publishing this tag."
+            exit 1
+          fi
+
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -99,11 +113,14 @@ jobs:
           fi
 
           DMG_FILE="$(basename "${DMG_PATH}")"
+          DMG_FILE_URL="${DMG_FILE// /%20}"
           DMG_SHA256="$(shasum -a 256 "${DMG_PATH}" | awk '{print $1}')"
 
           {
             echo "tag=${TAG}"
             echo "version=${VERSION}"
+            echo "dmg_file=${DMG_FILE}"
+            echo "dmg_file_url=${DMG_FILE_URL}"
             echo "dmg_sha256=${DMG_SHA256}"
           } >> "$GITHUB_OUTPUT"
 
@@ -128,7 +145,7 @@ jobs:
             version "${{ steps.cask_meta.outputs.version }}"
             sha256 "${{ steps.cask_meta.outputs.dmg_sha256 }}"
 
-            url "https://github.com/filegap/filegap/releases/download/desktop-v#{version}/Filegap%20Desktop_#{version}_aarch64.dmg"
+            url "https://github.com/filegap/filegap/releases/download/desktop-v#{version}/${{ steps.cask_meta.outputs.dmg_file_url }}"
             name "Filegap Desktop"
             desc "Privacy-first local PDF desktop app"
             homepage "https://github.com/filegap/filegap"
