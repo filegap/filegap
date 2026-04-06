@@ -20,3 +20,4 @@ apps/desktop/src-tauri/target/
 
 # Local audit/history artifacts
 .repo-history/
+AGENTS.override.md

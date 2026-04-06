@@ -42,6 +42,18 @@ filegap/
 └─ testdata/
 ```
 
+## Branch Model
+
+- `dev` is the default branch for day-to-day development.
+- `main` is the stable branch.
+- Recommended working branches:
+  - `feature/<name>` from `dev`
+  - `fix/<name>` from `dev`
+  - `hotfix/<name>` from `main`
+  - `release/<version>` from `dev`
+
+Normal development should integrate toward `dev`, and only stable code should be promoted to `main`.
+
 ## Privacy Principles
 
 - No remote PDF processing in the web flow
