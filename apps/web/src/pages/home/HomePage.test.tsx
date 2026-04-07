@@ -11,7 +11,7 @@ describe('HomePage', () => {
     const heroPrimaryCta = heroPrimaryCtas[0];
     expect(heroPrimaryCta).toHaveAttribute(
       'href',
-      expect.stringMatching(/^\/(merge-pdf|split-pdf|extract-pages|reorder-pdf|optimize-pdf)$/)
+      expect.stringMatching(/^\/(merge-pdf|split-pdf|extract-pages|reorder-pdf|optimize-pdf|compress-pdf)$/)
     );
 
     expect(
@@ -51,17 +51,22 @@ describe('HomePage', () => {
     expect(within(grid).getByRole('link', { name: /Extract Pages/i })).toHaveAttribute('href', '/extract-pages');
     expect(within(grid).getByRole('link', { name: /Reorder PDF/i })).toHaveAttribute('href', '/reorder-pdf');
     expect(within(grid).getByRole('link', { name: /Optimize PDF/i })).toHaveAttribute('href', '/optimize-pdf');
+    expect(within(grid).getByRole('link', { name: /Compress PDF/i })).toHaveAttribute('href', '/compress-pdf');
     expect(within(grid).getByText('Merge PDFs')).toBeInTheDocument();
     expect(within(grid).getAllByText('Split PDF')).toHaveLength(2);
     expect(within(grid).getByText('Extract pages')).toBeInTheDocument();
     expect(within(grid).getByText('Reorder pages')).toBeInTheDocument();
     expect(within(grid).getAllByText('Optimize PDF')).toHaveLength(2);
+    expect(within(grid).getAllByText('Compress PDF')).toHaveLength(2);
     expect(within(grid).getByText('Combine multiple PDFs into one — fast and private.')).toBeInTheDocument();
     expect(within(grid).getByText('Split a PDF into smaller files — no uploads required.')).toBeInTheDocument();
     expect(within(grid).getByText('Extract only the pages you need from a PDF.')).toBeInTheDocument();
     expect(within(grid).getByText('Rearrange PDF pages and export a new file in seconds.')).toBeInTheDocument();
     expect(
       within(grid).getByText('Optimize PDF structure for leaner files without intentional quality loss.')
+    ).toBeInTheDocument();
+    expect(
+      within(grid).getByText('Compress PDF files with local structural reduction and desktop fallback for heavier jobs.')
     ).toBeInTheDocument();
 
     expect(screen.getByRole('heading', { level: 2, name: 'Why Filegap' })).toBeInTheDocument();
@@ -112,6 +117,7 @@ describe('HomePage', () => {
     expect(screen.getByRole('link', { name: 'extract pages' })).toHaveAttribute('href', '/extract-pages');
     expect(screen.getByRole('link', { name: 'reorder pages' })).toHaveAttribute('href', '/reorder-pdf');
     expect(screen.getByRole('link', { name: 'optimize PDF files' })).toHaveAttribute('href', '/optimize-pdf');
+    expect(screen.getByRole('link', { name: 'compress PDFs' })).toHaveAttribute('href', '/compress-pdf');
 
     expect(screen.getByRole('heading', { level: 2, name: 'Ready to edit your PDFs privately?' })).toBeInTheDocument();
     expect(

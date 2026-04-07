@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-type ToolIcon = 'merge' | 'split' | 'extract' | 'reorder' | 'optimize';
+type ToolIcon = 'merge' | 'split' | 'extract' | 'reorder' | 'optimize' | 'compress';
 
 const TOOL_NAV_LINKS: Array<{ href: string; label: string; icon: ToolIcon }> = [
   { href: '/merge-pdf', label: 'Merge PDF', icon: 'merge' },
@@ -8,6 +8,7 @@ const TOOL_NAV_LINKS: Array<{ href: string; label: string; icon: ToolIcon }> = [
   { href: '/extract-pages', label: 'Extract Pages', icon: 'extract' },
   { href: '/reorder-pdf', label: 'Reorder PDF', icon: 'reorder' },
   { href: '/optimize-pdf', label: 'Optimize PDF', icon: 'optimize' },
+  { href: '/compress-pdf', label: 'Compress PDF', icon: 'compress' },
 ];
 
 function ToolMenuIcon({ icon }: { icon: ToolIcon }) {
@@ -51,6 +52,16 @@ function ToolMenuIcon({ icon }: { icon: ToolIcon }) {
         <path d='m9 21-6-6' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' />
         <path d='M21 3h-6v6' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' />
         <path d='M3 21h6v-6' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' />
+      </svg>
+    );
+  }
+
+  if (icon === 'compress') {
+    return (
+      <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' aria-hidden='true' className='h-4 w-4'>
+        <path d='M4 8h16' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' />
+        <path d='M7 12h10' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' />
+        <path d='M10 16h4' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' />
       </svg>
     );
   }

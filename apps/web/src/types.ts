@@ -1,4 +1,4 @@
-import type { SplitRangeSegment } from './adapters/pdfEngine';
+import type { CompressPreset, SplitRangeSegment } from './adapters/pdfEngine';
 
 export type MergeRequest = {
   type: 'merge';
@@ -38,7 +38,21 @@ export type OptimizeRequest = {
   };
 };
 
-export type WorkerRequest = MergeRequest | SplitRequest | ExtractRequest | ReorderRequest | OptimizeRequest;
+export type CompressRequest = {
+  type: 'compress';
+  payload: {
+    file: ArrayBuffer;
+    preset: CompressPreset;
+  };
+};
+
+export type WorkerRequest =
+  | MergeRequest
+  | SplitRequest
+  | ExtractRequest
+  | ReorderRequest
+  | OptimizeRequest
+  | CompressRequest;
 
 export type MergeSuccessResponse = {
   ok: true;
@@ -80,12 +94,21 @@ export type OptimizeSuccessResponse = {
   };
 };
 
+export type CompressSuccessResponse = {
+  ok: true;
+  type: 'compress';
+  payload: {
+    output: Uint8Array;
+  };
+};
+
 export type WorkerSuccessResponse =
   | MergeSuccessResponse
   | SplitSuccessResponse
   | ExtractSuccessResponse
   | ReorderSuccessResponse
-  | OptimizeSuccessResponse;
+  | OptimizeSuccessResponse
+  | CompressSuccessResponse;
 
 export type WorkerErrorResponse = {
   ok: false;

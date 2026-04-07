@@ -1,5 +1,6 @@
 import { createBrowserRouter } from 'react-router-dom';
 import { CliPage } from '../pages/cli/CliPage';
+import { CompressPdfPage } from '../pages/compress-pdf/CompressPdfPage';
 import { DownloadPage } from '../pages/download/DownloadPage';
 import { ExtractPagesPage } from '../pages/extract-pages/ExtractPagesPage';
 import { HomePage } from '../pages/home/HomePage';
@@ -19,6 +20,10 @@ export const router = createBrowserRouter([
   {
     path: '/download',
     element: <DownloadPage />,
+  },
+  {
+    path: '/compress-pdf',
+    element: <CompressPdfPage />,
   },
   {
     path: '/merge-pdf',

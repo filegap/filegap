@@ -1,4 +1,5 @@
 import {
+  compressPdfBuffer,
   extractPdfByRanges,
   mergePdfBuffers,
   optimizePdfBuffer,
@@ -59,6 +60,17 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
       const response: WorkerResponse = {
         ok: true,
         type: 'optimize',
+        payload: { output },
+      };
+      (self as unknown as Worker).postMessage(response);
+      return;
+    }
+
+    if (event.data.type === 'compress') {
+      const output = await compressPdfBuffer(event.data.payload.file, event.data.payload.preset);
+      const response: WorkerResponse = {
+        ok: true,
+        type: 'compress',
         payload: { output },
       };
       (self as unknown as Worker).postMessage(response);

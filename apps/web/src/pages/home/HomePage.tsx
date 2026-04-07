@@ -1,6 +1,7 @@
 import {
   ArrowRight,
   ArrowUpDown,
+  Archive,
   Download,
   Files,
   Github,
@@ -61,6 +62,13 @@ const TOOLS = [
     ctaLabel: 'Optimize PDF',
     icon: <Minimize2 />,
   },
+  {
+    name: 'Compress PDF',
+    description: 'Compress PDF files with local structural reduction and desktop fallback for heavier jobs.',
+    href: '/compress-pdf',
+    ctaLabel: 'Compress PDF',
+    icon: <Archive />,
+  },
 ];
 
 const WHY_ITEMS = [
@@ -113,7 +121,7 @@ export function HomePage() {
   usePageMetadata({
     title: 'Free PDF tools — private, fast, and local | Filegap',
     description:
-      'Edit PDF files locally with fast, private tools. Merge, split, reorder, and optimize PDFs directly in your browser with no uploads or account required.',
+      'Edit PDF files locally with fast, private tools. Merge, split, reorder, optimize, and compress PDFs directly in your browser with no uploads or account required.',
   });
 
   return (
@@ -307,7 +315,8 @@ export function HomePage() {
               <a className='text-ui-text underline' href='/split-pdf'>split PDF documents</a>,{' '}
               <a className='text-ui-text underline' href='/extract-pages'>extract pages</a>, or{' '}
               <a className='text-ui-text underline' href='/reorder-pdf'>reorder pages</a>, and{' '}
-              <a className='text-ui-text underline' href='/optimize-pdf'>optimize PDF files</a> in a few clicks.
+              <a className='text-ui-text underline' href='/optimize-pdf'>optimize PDF files</a> and{' '}
+              <a className='text-ui-text underline' href='/compress-pdf'>compress PDFs</a> in a few clicks.
             </p>
             <p>
               The interface stays simple, so you can get in, make the change you need, and export

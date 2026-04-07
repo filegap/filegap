@@ -5,6 +5,8 @@ export type SplitRangeSegment = {
   end: number;
 };
 
+export type CompressPreset = 'low' | 'balanced' | 'strong';
+
 export async function mergePdfBuffers(buffers: ArrayBuffer[]): Promise<Uint8Array> {
   if (buffers.length < 2) {
     throw new Error('merge requires at least 2 input files');
@@ -181,6 +183,15 @@ export async function optimizePdfBuffer(source: ArrayBuffer): Promise<Uint8Array
   const sourceDoc = await PDFDocument.load(source, { updateMetadata: false });
   const output = await sourceDoc.save({
     useObjectStreams: true,
+    addDefaultPage: false,
+  });
+  return output;
+}
+
+export async function compressPdfBuffer(source: ArrayBuffer, preset: CompressPreset): Promise<Uint8Array> {
+  const sourceDoc = await PDFDocument.load(source, { updateMetadata: false });
+  const output = await sourceDoc.save({
+    useObjectStreams: preset !== 'low',
     addDefaultPage: false,
   });
   return output;
