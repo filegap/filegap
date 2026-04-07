@@ -22,6 +22,16 @@ export type ReorderResult = {
   output_path: string;
 };
 
+export type OptimizeResult = {
+  output_path: string;
+};
+
+export type CompressResult = {
+  output_path: string;
+};
+
+export type CompressPreset = 'low' | 'balanced' | 'strong';
+
 export type PdfFileInfo = {
   path: string;
   size_bytes: number;
@@ -112,6 +122,25 @@ export async function reorderPdf(inputPath: string, outputPath: string, pageOrde
     inputPath,
     outputPath,
     pageOrder,
+  });
+}
+
+export async function optimizePdf(inputPath: string, outputPath: string): Promise<OptimizeResult> {
+  return invoke<OptimizeResult>('optimize_pdf', {
+    inputPath,
+    outputPath,
+  });
+}
+
+export async function compressPdf(
+  inputPath: string,
+  outputPath: string,
+  preset: CompressPreset
+): Promise<CompressResult> {
+  return invoke<CompressResult>('compress_pdf', {
+    inputPath,
+    outputPath,
+    preset,
   });
 }
 

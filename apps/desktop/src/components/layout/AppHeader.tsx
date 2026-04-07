@@ -1,11 +1,13 @@
 import { NavLink } from 'react-router-dom';
-import { ArrowUpDown, Files, House, Scissors, Split } from 'lucide-react';
+import { ArrowUpDown, Files, House, Minimize2, Scissors, Split, Zap } from 'lucide-react';
 
 const TOOL_LINKS = [
   { to: '/merge-pdf', label: 'Merge PDF', icon: <Files aria-hidden="true" /> },
   { to: '/split-pdf', label: 'Split PDF', icon: <Split aria-hidden="true" /> },
   { to: '/extract-pages', label: 'Extract Pages', icon: <Scissors aria-hidden="true" /> },
   { to: '/reorder-pdf', label: 'Reorder PDF', icon: <ArrowUpDown aria-hidden="true" /> },
+  { to: '/optimize-pdf', label: 'Optimize PDF', icon: <Minimize2 aria-hidden="true" /> },
+  { to: '/compress-pdf', label: 'Compress PDF', icon: <Zap aria-hidden="true" /> },
 ];
 
 export function AppHeader() {

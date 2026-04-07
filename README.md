@@ -196,6 +196,8 @@ Current desktop MVP includes:
 - Extract Pages tool
 - In-memory Extract page thumbnails and assisted selection (Select all, Odd, Even, First page)
 - Reorder PDF tool
+- Optimize PDF tool
+- Compress PDF tool with `low`, `balanced`, and `strong` presets
 - Local file picker + save dialog
 - Rust-side PDF commands powered by `filegap_core`
 

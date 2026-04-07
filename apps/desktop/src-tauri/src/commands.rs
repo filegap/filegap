@@ -4,11 +4,12 @@ use std::process::Command;
 
 use filegap_core::{
     ops::{
-        extract_pages as core_extract_pages, merge_pdfs as core_merge_pdfs,
+        compress_pdf as core_compress_pdf, extract_pages as core_extract_pages,
+        merge_pdfs as core_merge_pdfs, optimize_pdf as core_optimize_pdf,
         reorder_pages as core_reorder_pages, split_pdf as core_split_pdf,
     },
-    CoreError, ExtractRequest, MergeRequest, ReorderRequest, SplitMode,
-    SplitRequest,
+    CompressionPreset, CompressRequest, CoreError, ExtractRequest, MergeRequest,
+    OptimizeRequest, ReorderRequest, SplitMode, SplitRequest,
 };
 use lopdf::Document;
 use serde::Serialize;
@@ -37,6 +38,16 @@ pub struct ReorderResult {
 }
 
 #[derive(Debug, Serialize)]
+pub struct OptimizeResult {
+    pub output_path: String,
+}
+
+#[derive(Debug, Serialize)]
+pub struct CompressResult {
+    pub output_path: String,
+}
+
+#[derive(Debug, Serialize)]
 pub struct PdfFileInfo {
     pub path: String,
     pub size_bytes: u64,
@@ -48,6 +59,15 @@ fn map_core_error(err: CoreError) -> String {
         CoreError::InvalidInput(_) => "Invalid input PDF files.".to_string(),
         CoreError::Processing(_) => "PDF processing failed.".to_string(),
         CoreError::Unsupported(_) => "Unsupported PDF operation.".to_string(),
+    }
+}
+
+fn parse_compression_preset(preset: &str) -> Result<CompressionPreset, String> {
+    match preset.trim().to_ascii_lowercase().as_str() {
+        "low" => Ok(CompressionPreset::Low),
+        "balanced" => Ok(CompressionPreset::Balanced),
+        "strong" => Ok(CompressionPreset::Strong),
+        _ => Err("Invalid compression preset.".to_string()),
     }
 }
 
@@ -209,6 +229,60 @@ pub async fn reorder_pdf(
     })
     .await
     .map_err(|_| "Failed to complete reorder operation.".to_string())?
+}
+
+#[tauri::command]
+pub async fn optimize_pdf(input_path: String, output_path: String) -> Result<OptimizeResult, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        if input_path.trim().is_empty() {
+            return Err("Select a valid input PDF file.".to_string());
+        }
+        if output_path.trim().is_empty() {
+            return Err("Select a valid output destination.".to_string());
+        }
+
+        let input_bytes = fs::read(&input_path).map_err(|_| "Failed to read input PDF file.".to_string())?;
+        let optimized = core_optimize_pdf(&OptimizeRequest {
+            document: input_bytes,
+        })
+        .map_err(map_core_error)?;
+
+        fs::write(&output_path, optimized).map_err(|_| "Failed to write optimized PDF.".to_string())?;
+
+        Ok(OptimizeResult { output_path })
+    })
+    .await
+    .map_err(|_| "Failed to complete optimize operation.".to_string())?
+}
+
+#[tauri::command]
+pub async fn compress_pdf(
+    input_path: String,
+    output_path: String,
+    preset: String,
+) -> Result<CompressResult, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        if input_path.trim().is_empty() {
+            return Err("Select a valid input PDF file.".to_string());
+        }
+        if output_path.trim().is_empty() {
+            return Err("Select a valid output destination.".to_string());
+        }
+
+        let compression_preset = parse_compression_preset(&preset)?;
+        let input_bytes = fs::read(&input_path).map_err(|_| "Failed to read input PDF file.".to_string())?;
+        let compressed = core_compress_pdf(&CompressRequest {
+            document: input_bytes,
+            preset: compression_preset,
+        })
+        .map_err(map_core_error)?;
+
+        fs::write(&output_path, compressed).map_err(|_| "Failed to write compressed PDF.".to_string())?;
+
+        Ok(CompressResult { output_path })
+    })
+    .await
+    .map_err(|_| "Failed to complete compress operation.".to_string())?
 }
 
 #[tauri::command]

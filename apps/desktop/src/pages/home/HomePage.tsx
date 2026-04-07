@@ -2,7 +2,7 @@ import { AppShell } from '../../components/layout/AppShell';
 import { PageContainer } from '../../components/layout/PageContainer';
 import { ToolCard } from '../../components/ui/ToolCard';
 import { TrustNotice } from '../../components/ui/TrustNotice';
-import { ArrowUpDown, Files, Scissors, Split } from 'lucide-react';
+import { ArrowUpDown, Files, Minimize2, Scissors, Split, Zap } from 'lucide-react';
 
 const TOOLS = [
   {
@@ -35,6 +35,22 @@ const TOOLS = [
     actionLabel: 'Reorder pages',
     href: '/reorder-pdf',
     icon: <ArrowUpDown />,
+    enabled: true,
+  },
+  {
+    name: 'Optimize PDF',
+    description: 'Clean PDF structure without intentional visual quality reduction.',
+    actionLabel: 'Optimize PDF',
+    href: '/optimize-pdf',
+    icon: <Minimize2 />,
+    enabled: true,
+  },
+  {
+    name: 'Compress PDF',
+    description: 'Shrink PDF size locally with low, balanced, or strong presets.',
+    actionLabel: 'Compress PDF',
+    href: '/compress-pdf',
+    icon: <Zap />,
     enabled: true,
   },
 ];

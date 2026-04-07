@@ -10,6 +10,8 @@ pub fn run() {
             commands::split_pdf,
             commands::extract_pages,
             commands::reorder_pdf,
+            commands::optimize_pdf,
+            commands::compress_pdf,
             commands::inspect_pdf_files,
             commands::read_pdf_bytes,
             commands::show_in_folder,
