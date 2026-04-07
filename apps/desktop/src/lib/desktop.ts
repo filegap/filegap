@@ -38,6 +38,19 @@ export type PdfFileInfo = {
   page_count: number | null;
 };
 
+export type PdfMetadata = {
+  size_bytes: number;
+  pdf_version: string;
+  pages: number;
+  encrypted: boolean;
+  title: string | null;
+  author: string | null;
+  creator: string | null;
+  producer: string | null;
+  creation_date: string | null;
+  modification_date: string | null;
+};
+
 export async function choosePdfInputs(): Promise<string[]> {
   const selection = await open({
     multiple: true,
@@ -146,6 +159,10 @@ export async function compressPdf(
 
 export async function inspectPdfFiles(paths: string[]): Promise<PdfFileInfo[]> {
   return invoke<PdfFileInfo[]>('inspect_pdf_files', { paths });
+}
+
+export async function inspectPdfMetadata(path: string): Promise<PdfMetadata> {
+  return invoke<PdfMetadata>('inspect_pdf_metadata', { path });
 }
 
 export async function readPdfBytes(path: string): Promise<Uint8Array> {

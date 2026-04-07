@@ -5,11 +5,12 @@ use std::process::Command;
 use filegap_core::{
     ops::{
         compress_pdf as core_compress_pdf, extract_pages as core_extract_pages,
-        merge_pdfs as core_merge_pdfs, optimize_pdf as core_optimize_pdf,
+        inspect_pdf as core_inspect_pdf, merge_pdfs as core_merge_pdfs,
+        optimize_pdf as core_optimize_pdf,
         reorder_pages as core_reorder_pages, split_pdf as core_split_pdf,
     },
     CompressionPreset, CompressRequest, CoreError, ExtractRequest, MergeRequest,
-    OptimizeRequest, ReorderRequest, SplitMode, SplitRequest,
+    InfoRequest, OptimizeRequest, ReorderRequest, SplitMode, SplitRequest,
 };
 use lopdf::Document;
 use serde::Serialize;
@@ -52,6 +53,20 @@ pub struct PdfFileInfo {
     pub path: String,
     pub size_bytes: u64,
     pub page_count: Option<u32>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct PdfMetadata {
+    pub size_bytes: u64,
+    pub pdf_version: String,
+    pub pages: u32,
+    pub encrypted: bool,
+    pub title: Option<String>,
+    pub author: Option<String>,
+    pub creator: Option<String>,
+    pub producer: Option<String>,
+    pub creation_date: Option<String>,
+    pub modification_date: Option<String>,
 }
 
 fn map_core_error(err: CoreError) -> String {
@@ -295,6 +310,34 @@ pub async fn inspect_pdf_files(paths: Vec<String>) -> Result<Vec<PdfFileInfo>, S
     })
     .await
     .map_err(|_| "Failed to inspect selected PDF files.".to_string())
+}
+
+#[tauri::command]
+pub async fn inspect_pdf_metadata(path: String) -> Result<PdfMetadata, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        if path.trim().is_empty() {
+            return Err("Select a valid input PDF file.".to_string());
+        }
+
+        let bytes = fs::read(path).map_err(|_| "Failed to read input PDF file.".to_string())?;
+        let size_bytes = bytes.len() as u64;
+        let info = core_inspect_pdf(&InfoRequest { document: bytes }).map_err(map_core_error)?;
+
+        Ok(PdfMetadata {
+            size_bytes,
+            pdf_version: info.pdf_version,
+            pages: info.page_count,
+            encrypted: info.is_encrypted,
+            title: info.title,
+            author: info.author,
+            creator: info.creator,
+            producer: info.producer,
+            creation_date: info.creation_date,
+            modification_date: info.modification_date,
+        })
+    })
+    .await
+    .map_err(|_| "Failed to inspect selected PDF files.".to_string())?
 }
 
 #[tauri::command]

@@ -10,14 +10,16 @@ import {
   chooseSinglePdfInput,
   compressPdf,
   type CompressPreset,
+  type PdfMetadata,
   getDownloadDirectory,
   inspectPdfFiles,
+  inspectPdfMetadata,
   openFile,
   pathExists,
   revealInFolder,
 } from '../../lib/desktop';
 import { renderFilenameTemplate, resolveOutputPathByOverwrite } from '../../lib/outputSettings';
-import { formatKilobytes, joinPath, parsePath, readErrorMessage } from '../../lib/pageHelpers';
+import { joinPath, parsePath, readErrorMessage } from '../../lib/pageHelpers';
 import { fileNameFromPath } from '../../lib/pathUtils';
 import { useDesktopSettings } from '../../lib/settings';
 
@@ -39,6 +41,49 @@ function createDefaultOutputName(): string {
   return renderFilenameTemplate('compressed-{date}.pdf');
 }
 
+function displayValue(value: string | null | undefined): string {
+  if (!value) {
+    return '-';
+  }
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : '-';
+}
+
+function formatBytesHuman(bytes: number): string {
+  if (!Number.isFinite(bytes) || bytes <= 0) {
+    return '0 B';
+  }
+  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+  const exponent = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+  const value = bytes / 1024 ** exponent;
+  const precision = value >= 100 || exponent === 0 ? 0 : value >= 10 ? 1 : 2;
+  return `${new Intl.NumberFormat('en-US', { maximumFractionDigits: precision }).format(value)} ${units[exponent]}`;
+}
+
+function formatPdfDate(value: string | null | undefined): string {
+  const raw = displayValue(value);
+  if (raw === '-') {
+    return raw;
+  }
+  const match = raw.match(/^D:(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/);
+  if (!match) {
+    return raw;
+  }
+  const [, year, month, day, hour, minute, second] = match;
+  const iso = `${year}-${month}-${day}T${hour}:${minute}:${second}Z`;
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) {
+    return raw;
+  }
+  return new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date);
+}
+
 export function CompressPdfPage() {
   const [settings] = useDesktopSettings();
   const [files, setFiles] = useState<CompressFile[]>([]);
@@ -50,6 +95,7 @@ export function CompressPdfPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isLoadingFiles, setIsLoadingFiles] = useState(false);
   const [isDropzoneCollapsed, setIsDropzoneCollapsed] = useState(false);
+  const [metadata, setMetadata] = useState<PdfMetadata | null>(null);
   const [hasCompleted, setHasCompleted] = useState(false);
   const [lastOutputPath, setLastOutputPath] = useState('');
   const [status, setStatus] = useState<StatusState>({ tone: 'neutral', message: 'Idle' });
@@ -98,7 +144,7 @@ export function CompressPdfPage() {
     setIsLoadingFiles(true);
     setStatus({ tone: 'info', message: 'Processing file...' });
     try {
-      const [info] = await inspectPdfFiles([selected]);
+      const [[info], fileMetadata] = await Promise.all([inspectPdfFiles([selected]), inspectPdfMetadata(selected)]);
       setFiles([
         {
           id: `${selected}-${Math.random().toString(16).slice(2)}`,
@@ -107,6 +153,7 @@ export function CompressPdfPage() {
           pageCount: info?.page_count ?? null,
         },
       ]);
+      setMetadata(fileMetadata);
       setHasCompleted(false);
       setLastOutputPath('');
       setIsDropzoneCollapsed(true);
@@ -133,6 +180,7 @@ export function CompressPdfPage() {
 
   function clearSelectedFile() {
     setFiles([]);
+    setMetadata(null);
     setIsDropzoneCollapsed(false);
     setHasCompleted(false);
     setLastOutputPath('');
@@ -267,9 +315,33 @@ export function CompressPdfPage() {
             </WorkingFileHeader>
           ) : null}
           {selectedFile ? (
-            <p className="file-loading-hint">
-              Selected: {formatKilobytes(selectedFile.sizeBytes)} {selectedFile.pageCount ? `• ${selectedFile.pageCount} pages` : ''}
-            </p>
+            <dl className="compress-file-info-grid">
+              <dt>Size</dt>
+              <dd>{formatBytesHuman(metadata?.size_bytes ?? selectedFile.sizeBytes)}</dd>
+              <dt>Pages</dt>
+              <dd>{metadata?.pages ?? selectedFile.pageCount ?? '-'}</dd>
+              <dt>PDF version</dt>
+              <dd>{displayValue(metadata?.pdf_version)}</dd>
+              <dt>Encrypted</dt>
+              <dd>{metadata ? (metadata.encrypted ? 'Yes' : 'No') : '-'}</dd>
+              <dt>Title</dt>
+              <dd>{displayValue(metadata?.title)}</dd>
+              <dt>Author</dt>
+              <dd>{displayValue(metadata?.author)}</dd>
+              <dt>Creator</dt>
+              <dd>{displayValue(metadata?.creator)}</dd>
+              <dt>Producer</dt>
+              <dd
+                className="compress-file-info-value compress-file-info-value--truncate"
+                title={displayValue(metadata?.producer)}
+              >
+                {displayValue(metadata?.producer)}
+              </dd>
+              <dt>Created</dt>
+              <dd>{formatPdfDate(metadata?.creation_date)}</dd>
+              <dt>Modified</dt>
+              <dd>{formatPdfDate(metadata?.modification_date)}</dd>
+            </dl>
           ) : null}
           {isLoadingFiles ? <p className="file-loading-hint">Processing file...</p> : null}
         </div>

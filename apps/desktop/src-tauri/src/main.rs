@@ -13,6 +13,7 @@ pub fn run() {
             commands::optimize_pdf,
             commands::compress_pdf,
             commands::inspect_pdf_files,
+            commands::inspect_pdf_metadata,
             commands::read_pdf_bytes,
             commands::show_in_folder,
             commands::open_file,

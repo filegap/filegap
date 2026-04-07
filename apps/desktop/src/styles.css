@@ -1158,10 +1158,10 @@ p {
 }
 
 .uploaded-file-name {
-  max-width: 300px;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  margin: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  flex: 1;
 }
 
 .extract-delete-file-btn {
@@ -1643,6 +1643,38 @@ p {
   color: var(--muted);
   font-size: 0.73rem;
   line-height: 1.35;
+}
+
+.compress-file-info-grid {
+  margin: 0;
+  display: grid;
+  grid-template-columns: minmax(130px, 1fr) 2fr;
+  gap: 6px 12px;
+  margin-top: 8px;
+  padding: 10px 0 0;
+  border-top: 1px solid var(--border);
+}
+
+.compress-file-info-grid dt {
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.compress-file-info-grid dd {
+  margin: 0;
+  color: var(--text);
+  font-size: 0.74rem;
+  font-weight: 600;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.compress-file-info-value--truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .output-helper-order {
