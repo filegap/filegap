@@ -20,5 +20,8 @@ describe('DownloadPage', () => {
     expect(
       screen.getByRole('link', { name: 'GitHub Releases' })
     ).toHaveAttribute('href', 'https://github.com/filegap/filegap/releases');
+    expect(
+      screen.getByText(/xattr -dr com\.apple\.quarantine "\/Applications\/Filegap Desktop\.app"/)
+    ).toBeInTheDocument();
   });
 });

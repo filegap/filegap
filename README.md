@@ -227,6 +227,13 @@ Channel notes:
 - Until Apple signing/notarization is enabled, macOS Gatekeeper prompts can occur.
 - PDF processing remains fully local: no uploads and no server-side handling.
 
+If macOS reports the app as damaged on community builds, remove quarantine and retry:
+
+```bash
+xattr -dr com.apple.quarantine "/Applications/Filegap Desktop.app"
+open "/Applications/Filegap Desktop.app"
+```
+
 ## Status
 
 `v0.1` feature-complete on CLI (`merge`, `extract`, `split`, `reorder`, `info`) with automated tests.

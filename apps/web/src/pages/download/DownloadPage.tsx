@@ -44,6 +44,19 @@ export function DownloadPage() {
             </ul>
           </div>
 
+          <div className='space-y-2 rounded-xl border border-amber-300 bg-amber-100 p-4'>
+            <h2 className='font-heading text-base font-semibold text-amber-900'>
+              If macOS says the app is damaged
+            </h2>
+            <p className='text-xs text-amber-900/90'>
+              This can happen on unsigned community builds. Remove quarantine from the installed
+              app and open it again:
+            </p>
+            <pre className='overflow-x-auto rounded-lg border border-amber-300 bg-amber-50 p-3 text-xs text-amber-950'>
+              <code>{`xattr -dr com.apple.quarantine "/Applications/Filegap Desktop.app"\nopen "/Applications/Filegap Desktop.app"`}</code>
+            </pre>
+          </div>
+
           <p>
             Privacy-first remains unchanged: PDF processing stays local on your device, with no
             upload and no server-side file handling.
