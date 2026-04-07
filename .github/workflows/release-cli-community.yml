@@ -5,6 +5,9 @@ on:
     tags:
       - "v*"
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 permissions:
   contents: read
 
@@ -24,7 +27,7 @@ jobs:
           echo "SHA256=$(sha256sum source.tar.gz | awk '{print $1}')" >> "${GITHUB_ENV}"
 
       - name: Checkout tap repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: filegap/homebrew-filegap
           token: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
