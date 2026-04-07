@@ -1,12 +1,13 @@
 import { useState } from 'react';
 
-type ToolIcon = 'merge' | 'split' | 'extract' | 'reorder';
+type ToolIcon = 'merge' | 'split' | 'extract' | 'reorder' | 'optimize';
 
 const TOOL_NAV_LINKS: Array<{ href: string; label: string; icon: ToolIcon }> = [
   { href: '/merge-pdf', label: 'Merge PDF', icon: 'merge' },
   { href: '/split-pdf', label: 'Split PDF', icon: 'split' },
   { href: '/extract-pages', label: 'Extract Pages', icon: 'extract' },
   { href: '/reorder-pdf', label: 'Reorder PDF', icon: 'reorder' },
+  { href: '/optimize-pdf', label: 'Optimize PDF', icon: 'optimize' },
 ];
 
 function ToolMenuIcon({ icon }: { icon: ToolIcon }) {
@@ -39,6 +40,17 @@ function ToolMenuIcon({ icon }: { icon: ToolIcon }) {
         <path d='M20 4 8.12 15.88' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' />
         <circle cx='6' cy='18' r='3' stroke='currentColor' strokeWidth='2' />
         <path d='M14.8 14.8 20 20' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' />
+      </svg>
+    );
+  }
+
+  if (icon === 'optimize') {
+    return (
+      <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' aria-hidden='true' className='h-4 w-4'>
+        <path d='m15 3 6 6' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' />
+        <path d='m9 21-6-6' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' />
+        <path d='M21 3h-6v6' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' />
+        <path d='M3 21h6v-6' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' />
       </svg>
     );
   }

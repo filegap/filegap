@@ -9,6 +9,7 @@ import {
   ShieldCheck,
   Split,
   Terminal,
+  Minimize2,
   Zap,
 } from 'lucide-react';
 import { useState } from 'react';
@@ -52,6 +53,13 @@ const TOOLS = [
     href: '/reorder-pdf',
     ctaLabel: 'Reorder pages',
     icon: <ArrowUpDown />,
+  },
+  {
+    name: 'Optimize PDF',
+    description: 'Optimize PDF structure for leaner files without intentional quality loss.',
+    href: '/optimize-pdf',
+    ctaLabel: 'Optimize PDF',
+    icon: <Minimize2 />,
   },
 ];
 
@@ -105,7 +113,7 @@ export function HomePage() {
   usePageMetadata({
     title: 'Free PDF tools — private, fast, and local | Filegap',
     description:
-      'Edit PDF files locally with fast, private tools. Merge, split, and reorder PDFs directly in your browser with no uploads or account required.',
+      'Edit PDF files locally with fast, private tools. Merge, split, reorder, and optimize PDFs directly in your browser with no uploads or account required.',
   });
 
   return (
@@ -298,7 +306,8 @@ export function HomePage() {
               <a className='text-ui-text underline' href='/merge-pdf'>merge PDF files</a>,{' '}
               <a className='text-ui-text underline' href='/split-pdf'>split PDF documents</a>,{' '}
               <a className='text-ui-text underline' href='/extract-pages'>extract pages</a>, or{' '}
-              <a className='text-ui-text underline' href='/reorder-pdf'>reorder pages</a> in a few clicks.
+              <a className='text-ui-text underline' href='/reorder-pdf'>reorder pages</a>, and{' '}
+              <a className='text-ui-text underline' href='/optimize-pdf'>optimize PDF files</a> in a few clicks.
             </p>
             <p>
               The interface stays simple, so you can get in, make the change you need, and export

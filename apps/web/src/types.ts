@@ -31,7 +31,14 @@ export type ReorderRequest = {
   };
 };
 
-export type WorkerRequest = MergeRequest | SplitRequest | ExtractRequest | ReorderRequest;
+export type OptimizeRequest = {
+  type: 'optimize';
+  payload: {
+    file: ArrayBuffer;
+  };
+};
+
+export type WorkerRequest = MergeRequest | SplitRequest | ExtractRequest | ReorderRequest | OptimizeRequest;
 
 export type MergeSuccessResponse = {
   ok: true;
@@ -65,11 +72,20 @@ export type ReorderSuccessResponse = {
   };
 };
 
+export type OptimizeSuccessResponse = {
+  ok: true;
+  type: 'optimize';
+  payload: {
+    output: Uint8Array;
+  };
+};
+
 export type WorkerSuccessResponse =
   | MergeSuccessResponse
   | SplitSuccessResponse
   | ExtractSuccessResponse
-  | ReorderSuccessResponse;
+  | ReorderSuccessResponse
+  | OptimizeSuccessResponse;
 
 export type WorkerErrorResponse = {
   ok: false;

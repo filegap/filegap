@@ -1,6 +1,7 @@
 import {
   extractPdfByRanges,
   mergePdfBuffers,
+  optimizePdfBuffer,
   reorderPdfPages,
   splitPdfByRanges,
 } from '../adapters/pdfEngine';
@@ -47,6 +48,17 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
       const response: WorkerResponse = {
         ok: true,
         type: 'reorder',
+        payload: { output },
+      };
+      (self as unknown as Worker).postMessage(response);
+      return;
+    }
+
+    if (event.data.type === 'optimize') {
+      const output = await optimizePdfBuffer(event.data.payload.file);
+      const response: WorkerResponse = {
+        ok: true,
+        type: 'optimize',
         payload: { output },
       };
       (self as unknown as Worker).postMessage(response);

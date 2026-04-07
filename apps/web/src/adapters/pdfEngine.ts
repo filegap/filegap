@@ -176,3 +176,12 @@ export async function reorderPdfPages(source: ArrayBuffer, pageOrder: number[]):
   copied.forEach((page) => outputDoc.addPage(page));
   return outputDoc.save();
 }
+
+export async function optimizePdfBuffer(source: ArrayBuffer): Promise<Uint8Array> {
+  const sourceDoc = await PDFDocument.load(source, { updateMetadata: false });
+  const output = await sourceDoc.save({
+    useObjectStreams: true,
+    addDefaultPage: false,
+  });
+  return output;
+}
