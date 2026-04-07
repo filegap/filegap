@@ -12,13 +12,14 @@
 ## v0.2
 
 - Add richer info/reporting (`--json` extensions, page-level insights)
+- Add CLI/core `optimize` and `compress` operations for structural cleanup and local image compression presets
 - Add fixtures and golden output tests for edge-case PDFs
 - Expand web operations beyond merge (extract/split/reorder)
 - Start desktop integration with Tauri
 
 ## Future
 
-- Compression
+- Additional compression controls such as custom image quality and maximum dimensions
 - Rotation
 - Metadata cleanup
 - Watermark

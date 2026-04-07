@@ -30,6 +30,24 @@ pub struct SplitRequest {
 }
 
 #[derive(Debug, Clone)]
+pub struct OptimizeRequest {
+    pub document: Vec<u8>,
+}
+
+#[derive(Debug, Clone)]
+pub struct CompressRequest {
+    pub document: Vec<u8>,
+    pub preset: CompressionPreset,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CompressionPreset {
+    Low,
+    Balanced,
+    Strong,
+}
+
+#[derive(Debug, Clone)]
 pub struct InfoRequest {
     pub document: Vec<u8>,
 }
@@ -121,6 +139,28 @@ impl SplitRequest {
     }
 }
 
+impl OptimizeRequest {
+    pub fn validate(&self) -> Result<(), CoreError> {
+        if self.document.is_empty() {
+            return Err(CoreError::InvalidInput(
+                "input PDF cannot be empty".to_string(),
+            ));
+        }
+        Ok(())
+    }
+}
+
+impl CompressRequest {
+    pub fn validate(&self) -> Result<(), CoreError> {
+        if self.document.is_empty() {
+            return Err(CoreError::InvalidInput(
+                "input PDF cannot be empty".to_string(),
+            ));
+        }
+        Ok(())
+    }
+}
+
 impl InfoRequest {
     pub fn validate(&self) -> Result<(), CoreError> {
         if self.document.is_empty() {
@@ -135,8 +175,8 @@ impl InfoRequest {
 #[cfg(test)]
 mod tests {
     use crate::{
-        CoreError, ExtractRequest, InfoRequest, MergeRequest, ReorderRequest, SplitMode,
-        SplitRequest,
+        CompressRequest, CompressionPreset, CoreError, ExtractRequest, InfoRequest, MergeRequest,
+        OptimizeRequest, ReorderRequest, SplitMode, SplitRequest,
     };
 
     #[test]
@@ -214,6 +254,25 @@ mod tests {
             mode: SplitMode::EveryNPages(2),
         };
         request.validate().expect("validation should pass");
+    }
+
+    #[test]
+    fn optimize_request_validate_rejects_empty_pdf() {
+        let request = OptimizeRequest {
+            document: Vec::new(),
+        };
+        let err = request.validate().expect_err("validation should fail");
+        assert!(matches!(err, CoreError::InvalidInput(_)));
+    }
+
+    #[test]
+    fn compress_request_validate_rejects_empty_pdf() {
+        let request = CompressRequest {
+            document: Vec::new(),
+            preset: CompressionPreset::Balanced,
+        };
+        let err = request.validate().expect_err("validation should fail");
+        assert!(matches!(err, CoreError::InvalidInput(_)));
     }
 
     #[test]

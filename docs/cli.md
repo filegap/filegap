@@ -1,4 +1,4 @@
-# CLI (v0.1)
+# CLI
 
 Binary: `filegap`
 
@@ -57,9 +57,19 @@ filegap merge [INPUT ...] [-o FILE]
 filegap extract [INPUT|-] --pages RANGES [-o FILE]
 filegap split [INPUT|-] --pages RANGES [--output-pattern PATTERN | --format zip] [-o FILE]
 filegap reorder [INPUT|-] --pages ORDER [-o FILE]
+filegap optimize [INPUT|-] [-o FILE]
+filegap compress [INPUT|-] [--preset low|balanced|strong] [-o FILE]
 filegap info [INPUT|-] [--json]
 filegap support
 ```
+
+## Optimize vs Compress
+
+Both commands process PDFs locally and are safe to use in pipelines.
+
+- `optimize` cleans the PDF structure without intentional visual quality reduction. It removes unused objects, drops empty streams, renumbers objects, and rewrites the PDF.
+- `compress` runs the same structural cleanup as `optimize`, then recompresses eligible JPEG images and applies stream compression.
+- `compress` may reduce visual quality depending on the selected preset. Use `low` to preserve more quality, `balanced` by default, or `strong` when smaller output matters more.
 
 ## Support Command
 
@@ -110,6 +120,23 @@ filegap reorder input.pdf --pages 3,1,2 > out.pdf
 cat input.pdf | filegap reorder --pages 5,4,3,2,1 > out.pdf
 ```
 
+### Optimize
+
+```bash
+filegap optimize input.pdf > out.pdf
+cat input.pdf | filegap optimize > out.pdf
+filegap optimize - -o out.pdf
+```
+
+### Compress
+
+```bash
+filegap compress input.pdf > out.pdf
+filegap compress input.pdf --preset strong > out.pdf
+cat input.pdf | filegap compress --preset balanced > out.pdf
+filegap compress - --preset low -o out.pdf
+```
+
 ### Split
 
 Single range to stdout:
@@ -135,6 +162,7 @@ filegap split input.pdf --pages 1-2,5 --format zip > parts.zip
 ```bash
 cat input.pdf \
 | filegap extract --pages 1-5 \
+| filegap compress --preset balanced \
 | filegap reorder --pages 5,4,3,2,1 \
 > final.pdf
 ```

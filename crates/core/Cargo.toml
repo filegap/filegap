@@ -8,3 +8,4 @@ authors.workspace = true
 [dependencies]
 thiserror.workspace = true
 lopdf.workspace = true
+image = { version = "0.25", default-features = false, features = ["jpeg"] }

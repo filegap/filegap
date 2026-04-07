@@ -16,7 +16,7 @@ Repository: https://github.com/filegap/filegap
 - CLI tool (developer-friendly automation)
 - Desktop app (offline-friendly UX)
 
-## v0.1 Scope
+## Current Scope
 
 MVP operations:
 
@@ -24,6 +24,8 @@ MVP operations:
 - Extract selected pages
 - Split a PDF
 - Reorder pages
+- Optimize PDF structure without intentional quality reduction
+- Compress PDFs locally with quality presets
 - Inspect PDF metadata and structure (`info`)
 
 ## Repository Structure
@@ -122,6 +124,8 @@ cat input.pdf | cargo run -p filegap-cli --bin filegap -- extract --pages 2-4 > 
 cat input.pdf | cargo run -p filegap-cli --bin filegap -- reorder --pages 3,1,2 > reordered.pdf
 cargo run -p filegap-cli --bin filegap -- split input.pdf --pages 1-3 > part.pdf
 cargo run -p filegap-cli --bin filegap -- split input.pdf --pages 1-2,5 --format zip > parts.zip
+cargo run -p filegap-cli --bin filegap -- optimize input.pdf > optimized.pdf
+cargo run -p filegap-cli --bin filegap -- compress input.pdf --preset balanced > compressed.pdf
 cargo run -p filegap-cli --bin filegap -- info input.pdf
 cargo run -p filegap-cli --bin filegap -- info input.pdf --json
 ```
@@ -131,6 +135,7 @@ Chaining example:
 ```bash
 cat input.pdf \
 | cargo run -p filegap-cli --bin filegap -- extract --pages 1-5 \
+| cargo run -p filegap-cli --bin filegap -- compress --preset balanced \
 | cargo run -p filegap-cli --bin filegap -- reorder --pages 5,4,3,2,1 \
 > final.pdf
 ```

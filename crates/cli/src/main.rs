@@ -5,8 +5,12 @@ use std::process::ExitCode;
 
 use clap::{Args, Parser, Subcommand, ValueEnum};
 use filegap_core::{
-    ops::{extract_pages, inspect_pdf, merge_pdfs, reorder_pages, split_pdf},
-    CoreError, ExtractRequest, InfoRequest, MergeRequest, ReorderRequest, SplitMode, SplitRequest,
+    ops::{
+        compress_pdf, extract_pages, inspect_pdf, merge_pdfs, optimize_pdf, reorder_pages,
+        split_pdf,
+    },
+    CompressRequest, CompressionPreset, CoreError, ExtractRequest, InfoRequest, MergeRequest,
+    OptimizeRequest, ReorderRequest, SplitMode, SplitRequest,
 };
 use lopdf::Document;
 use serde_json::json;
@@ -45,6 +49,18 @@ enum Commands {
         after_help = "Examples:\n  filegap reorder input.pdf --pages 3,1,2 > out.pdf\n  cat input.pdf | filegap reorder --pages 5,4,3,2,1 > out.pdf"
     )]
     Reorder(ReorderArgs),
+    #[command(
+        about = "Optimize PDF structure without intentional quality reduction",
+        long_about = "Optimize a PDF locally without intentional visual quality reduction.\n\nThis removes unused objects, drops empty streams, renumbers objects, and rewrites the file for cleaner structure. It does not downsample images or apply extra stream compression; use `compress` when size reduction is the goal.",
+        after_help = "Examples:\n  filegap optimize input.pdf > out.pdf\n  cat input.pdf | filegap optimize > out.pdf\n  filegap optimize - -o out.pdf"
+    )]
+    Optimize(OptimizeArgs),
+    #[command(
+        about = "Compress a PDF locally with quality presets",
+        long_about = "Compress a PDF locally with quality presets.\n\nThis includes the same structural cleanup as `optimize`, then recompresses eligible JPEG images and compresses eligible PDF streams. Unlike `optimize`, this command may reduce visual quality depending on the selected preset.",
+        after_help = "Examples:\n  filegap compress input.pdf > out.pdf\n  filegap compress input.pdf --preset strong > out.pdf\n  cat input.pdf | filegap compress --preset balanced > out.pdf\n  filegap compress - --preset low -o out.pdf"
+    )]
+    Compress(CompressArgs),
     #[command(
         about = "Show PDF metadata and structure information",
         after_help = "Examples:\n  filegap info input.pdf\n  cat input.pdf | filegap info --json"
@@ -142,6 +158,67 @@ struct ReorderArgs {
 }
 
 #[derive(Debug, Args)]
+struct OptimizeArgs {
+    #[arg(value_name = "INPUT", help = "Input PDF file. Use '-' for stdin")]
+    input: Option<String>,
+    #[arg(
+        short,
+        long,
+        value_name = "FILE",
+        help = "Write output to file (default: stdout)"
+    )]
+    output: Option<String>,
+}
+
+#[derive(Debug, Args)]
+struct CompressArgs {
+    #[arg(value_name = "INPUT", help = "Input PDF file. Use '-' for stdin")]
+    input: Option<String>,
+    #[arg(
+        long,
+        value_enum,
+        default_value_t = CliCompressionPreset::Balanced,
+        help = "Compression preset: low preserves more quality, balanced is the default, strong favors smaller files"
+    )]
+    preset: CliCompressionPreset,
+    #[arg(
+        short,
+        long,
+        value_name = "FILE",
+        help = "Write output to file (default: stdout)"
+    )]
+    output: Option<String>,
+}
+
+#[derive(Debug, Clone, Copy, ValueEnum)]
+enum CliCompressionPreset {
+    Low,
+    Balanced,
+    Strong,
+}
+
+impl From<CliCompressionPreset> for CompressionPreset {
+    fn from(value: CliCompressionPreset) -> Self {
+        match value {
+            CliCompressionPreset::Low => CompressionPreset::Low,
+            CliCompressionPreset::Balanced => CompressionPreset::Balanced,
+            CliCompressionPreset::Strong => CompressionPreset::Strong,
+        }
+    }
+}
+
+impl std::fmt::Display for CliCompressionPreset {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let value = match self {
+            CliCompressionPreset::Low => "low",
+            CliCompressionPreset::Balanced => "balanced",
+            CliCompressionPreset::Strong => "strong",
+        };
+        formatter.write_str(value)
+    }
+}
+
+#[derive(Debug, Args)]
 struct InfoArgs {
     #[arg(value_name = "INPUT", help = "Input PDF file. Use '-' for stdin")]
     input: Option<String>,
@@ -209,6 +286,8 @@ fn main() -> ExitCode {
         Commands::Extract(args) => handle_extract(args),
         Commands::Split(args) => handle_split(args),
         Commands::Reorder(args) => handle_reorder(args),
+        Commands::Optimize(args) => handle_optimize(args),
+        Commands::Compress(args) => handle_compress(args),
         Commands::Info(args) => handle_info(args),
         Commands::Support => handle_support(),
     };
@@ -346,6 +425,25 @@ fn handle_reorder(args: ReorderArgs) -> Result<(), CliError> {
     let output = reorder_pages(&ReorderRequest {
         document: input_bytes,
         page_order,
+    })
+    .map_err(CliError::from_core)?;
+    write_bytes_output(&output, args.output.as_deref())
+}
+
+fn handle_optimize(args: OptimizeArgs) -> Result<(), CliError> {
+    let input_bytes = read_single_input(args.input.as_deref())?;
+    let output = optimize_pdf(&OptimizeRequest {
+        document: input_bytes,
+    })
+    .map_err(CliError::from_core)?;
+    write_bytes_output(&output, args.output.as_deref())
+}
+
+fn handle_compress(args: CompressArgs) -> Result<(), CliError> {
+    let input_bytes = read_single_input(args.input.as_deref())?;
+    let output = compress_pdf(&CompressRequest {
+        document: input_bytes,
+        preset: args.preset.into(),
     })
     .map_err(CliError::from_core)?;
     write_bytes_output(&output, args.output.as_deref())
