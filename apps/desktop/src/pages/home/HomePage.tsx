@@ -2,9 +2,17 @@ import { AppShell } from '../../components/layout/AppShell';
 import { PageContainer } from '../../components/layout/PageContainer';
 import { ToolCard } from '../../components/ui/ToolCard';
 import { TrustNotice } from '../../components/ui/TrustNotice';
-import { ArrowUpDown, Files, Minimize2, Scissors, Split, Zap } from 'lucide-react';
+import { ArrowUpDown, Files, GitBranch, Minimize2, Scissors, Split, Zap } from 'lucide-react';
 
 const TOOLS = [
+  {
+    name: 'Workflow Builder',
+    description: 'Chain operations visually (preview linear mode).',
+    actionLabel: 'Build workflow',
+    href: '/workflow-builder',
+    icon: <GitBranch />,
+    enabled: true,
+  },
   {
     name: 'Merge PDF',
     description: 'Combine multiple PDFs into one — fast and private.',

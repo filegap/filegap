@@ -5,6 +5,7 @@ import {
   Download,
   Files,
   Github,
+  GitBranch,
   Leaf,
   Scissors,
   ShieldCheck,
@@ -27,6 +28,13 @@ import { usePageMetadata } from '../../lib/seo/usePageMetadata';
 import { HomeToolCard } from './HomeToolCard';
 
 const TOOLS = [
+  {
+    name: 'Workflow Builder',
+    description: 'Chain PDF operations visually like CLI pipelines (preview).',
+    href: '/workflow-builder',
+    ctaLabel: 'Build workflow',
+    icon: <GitBranch />,
+  },
   {
     name: 'Merge PDF',
     description: 'Combine multiple PDFs into one — fast and private.',

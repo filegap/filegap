@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-type ToolIcon = 'merge' | 'split' | 'extract' | 'reorder' | 'optimize' | 'compress';
+type ToolIcon = 'merge' | 'split' | 'extract' | 'reorder' | 'optimize' | 'compress' | 'workflow';
 
 const TOOL_NAV_LINKS: Array<{ href: string; label: string; icon: ToolIcon }> = [
   { href: '/merge-pdf', label: 'Merge PDF', icon: 'merge' },
@@ -9,6 +9,7 @@ const TOOL_NAV_LINKS: Array<{ href: string; label: string; icon: ToolIcon }> = [
   { href: '/reorder-pdf', label: 'Reorder PDF', icon: 'reorder' },
   { href: '/optimize-pdf', label: 'Optimize PDF', icon: 'optimize' },
   { href: '/compress-pdf', label: 'Compress PDF', icon: 'compress' },
+  { href: '/workflow-builder', label: 'Workflow Builder', icon: 'workflow' },
 ];
 
 function ToolMenuIcon({ icon }: { icon: ToolIcon }) {
@@ -62,6 +63,18 @@ function ToolMenuIcon({ icon }: { icon: ToolIcon }) {
         <path d='M4 8h16' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' />
         <path d='M7 12h10' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' />
         <path d='M10 16h4' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' />
+      </svg>
+    );
+  }
+
+  if (icon === 'workflow') {
+    return (
+      <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' aria-hidden='true' className='h-4 w-4'>
+        <circle cx='5' cy='6' r='2' stroke='currentColor' strokeWidth='2' />
+        <circle cx='12' cy='12' r='2' stroke='currentColor' strokeWidth='2' />
+        <circle cx='19' cy='18' r='2' stroke='currentColor' strokeWidth='2' />
+        <path d='m7 7.4 3.3 3.2' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
+        <path d='m13.7 13.6 3.3 3.1' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
       </svg>
     );
   }

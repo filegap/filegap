@@ -11,7 +11,7 @@ describe('HomePage', () => {
     const heroPrimaryCta = heroPrimaryCtas[0];
     expect(heroPrimaryCta).toHaveAttribute(
       'href',
-      expect.stringMatching(/^\/(merge-pdf|split-pdf|extract-pages|reorder-pdf|optimize-pdf|compress-pdf)$/)
+      expect.stringMatching(/^\/(workflow-builder|merge-pdf|split-pdf|extract-pages|reorder-pdf|optimize-pdf|compress-pdf)$/)
     );
 
     expect(
@@ -46,18 +46,21 @@ describe('HomePage', () => {
     expect(screen.getByText('Download the app').closest('a')).toHaveAttribute('href', '/download');
 
     const grid = screen.getByTestId('home-tool-grid');
+    expect(within(grid).getByRole('link', { name: /Workflow Builder/i })).toHaveAttribute('href', '/workflow-builder');
     expect(within(grid).getByRole('link', { name: /Merge PDF/i })).toHaveAttribute('href', '/merge-pdf');
     expect(within(grid).getByRole('link', { name: /Split PDF/i })).toHaveAttribute('href', '/split-pdf');
     expect(within(grid).getByRole('link', { name: /Extract Pages/i })).toHaveAttribute('href', '/extract-pages');
     expect(within(grid).getByRole('link', { name: /Reorder PDF/i })).toHaveAttribute('href', '/reorder-pdf');
     expect(within(grid).getByRole('link', { name: /Optimize PDF/i })).toHaveAttribute('href', '/optimize-pdf');
     expect(within(grid).getByRole('link', { name: /Compress PDF/i })).toHaveAttribute('href', '/compress-pdf');
+    expect(within(grid).getByText('Build workflow')).toBeInTheDocument();
     expect(within(grid).getByText('Merge PDFs')).toBeInTheDocument();
     expect(within(grid).getAllByText('Split PDF')).toHaveLength(2);
     expect(within(grid).getByText('Extract pages')).toBeInTheDocument();
     expect(within(grid).getByText('Reorder pages')).toBeInTheDocument();
     expect(within(grid).getAllByText('Optimize PDF')).toHaveLength(2);
     expect(within(grid).getAllByText('Compress PDF')).toHaveLength(2);
+    expect(within(grid).getByText('Chain PDF operations visually like CLI pipelines (preview).')).toBeInTheDocument();
     expect(within(grid).getByText('Combine multiple PDFs into one — fast and private.')).toBeInTheDocument();
     expect(within(grid).getByText('Split a PDF into smaller files — no uploads required.')).toBeInTheDocument();
     expect(within(grid).getByText('Extract only the pages you need from a PDF.')).toBeInTheDocument();

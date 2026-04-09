@@ -7,6 +7,7 @@ import { NotFoundPage } from '../pages/not-found/NotFoundPage';
 import { OptimizePdfPage } from '../pages/optimize-pdf/OptimizePdfPage';
 import { ReorderPdfPage } from '../pages/reorder-pdf/ReorderPdfPage';
 import { SplitPdfPage } from '../pages/split-pdf/SplitPdfPage';
+import { WorkflowBuilderPage } from '../pages/workflow-builder/WorkflowBuilderPage';
 
 export const router = createHashRouter([
   {
@@ -36,6 +37,10 @@ export const router = createHashRouter([
   {
     path: '/compress-pdf',
     element: <CompressPdfPage />,
+  },
+  {
+    path: '/workflow-builder',
+    element: <WorkflowBuilderPage />,
   },
   {
     path: '*',

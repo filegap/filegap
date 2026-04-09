@@ -22,7 +22,7 @@
 - Merge queue supports incremental add, remove, and drag-and-drop reorder
 - Split parser supports range input including single pages (for example `1-3,4,5-10`) with preview-ready architecture
 - No backend/API dependency for file processing
-- Public routes implemented: `/`, `/merge-pdf`, `/split-pdf`, `/extract-pages`, `/reorder-pdf`, `/download`
+- Public routes implemented: `/`, `/workflow-builder`, `/merge-pdf`, `/split-pdf`, `/extract-pages`, `/reorder-pdf`, `/optimize-pdf`, `/compress-pdf`, `/download`
 - Shared tool layout is app-like and compact:
   - sticky top header with tool links
   - title/subtitle directly in page flow (no hero card)
@@ -44,6 +44,18 @@ Rule:
 2. Shared color and surface changes must start from the design tokens file.
 
 ## Implemented Tool Behaviors
+
+### `/workflow-builder` (Preview)
+
+- Linear visual pipeline builder (Workflow V1) inspired by CLI chaining.
+- Input mode selector (`single` vs `multiple`) and ordered step list.
+- Step operations: `merge`, `extract`, `reorder`, `optimize`, `compress`, `split`.
+- Inline validation for V1 constraints:
+  - `merge` only as first step
+  - `split` only as last step
+  - `multiple` input mode requires first step `merge`
+- Real-time CLI preview generation for the configured workflow shape.
+- Preview only: execution still happens through per-tool pages in this iteration.
 
 ### `/download`
 

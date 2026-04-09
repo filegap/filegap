@@ -27,6 +27,7 @@ MVP operations:
 - Optimize PDF structure without intentional quality reduction
 - Compress PDFs locally with quality presets
 - Inspect PDF metadata and structure (`info`)
+- Workflow Builder preview on web/desktop (linear visual chaining with CLI parity)
 
 ## Repository Structure
 

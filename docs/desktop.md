@@ -13,6 +13,7 @@ MVP includes:
 - Reorder PDF flow
 - Optimize PDF flow
 - Compress PDF flow
+- Workflow Builder preview flow (linear chain)
 - Tauri command boundary
 - Direct `filegap_core` integration (no CLI subprocess)
 
@@ -66,6 +67,7 @@ Purpose:
 
 - Run local PDF operations (`Merge`, `Split`, `Extract Pages`, `Reorder`, `Optimize`, `Compress`) with desktop-native UX.
 - Keep repetitive workflows efficient: run tool, verify result, start new operation.
+- Introduce a visual linear workflow composer (`Workflow Builder`) aligned with CLI chaining semantics.
 
 User flow:
 
@@ -147,6 +149,13 @@ These components and patterns are reused across desktop tools (`Merge`, `Split`,
   - Ghost/utility (`Change`, `New merge`)
 - Inline utility actions:
   - Compact controls with semantic icons and concise labels.
+
+Workflow Builder preview specifics:
+
+- Linear-only workflow mode (no branching graph yet).
+- Operations can be reordered and parameterized in-place.
+- Validation rules prevent unsupported shapes (`merge` first only, `split` last only).
+- CLI preview string reflects current workflow draft for easier parity with terminal usage.
 
 Current shared rollout status:
 

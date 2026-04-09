@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { ArrowUpDown, Files, House, Minimize2, Scissors, Split, Zap } from 'lucide-react';
+import { ArrowUpDown, Files, GitBranch, House, Minimize2, Scissors, Split, Zap } from 'lucide-react';
 
 const TOOL_LINKS = [
   { to: '/merge-pdf', label: 'Merge PDF', icon: <Files aria-hidden="true" /> },
@@ -8,6 +8,7 @@ const TOOL_LINKS = [
   { to: '/reorder-pdf', label: 'Reorder PDF', icon: <ArrowUpDown aria-hidden="true" /> },
   { to: '/optimize-pdf', label: 'Optimize PDF', icon: <Minimize2 aria-hidden="true" /> },
   { to: '/compress-pdf', label: 'Compress PDF', icon: <Zap aria-hidden="true" /> },
+  { to: '/workflow-builder', label: 'Workflow', icon: <GitBranch aria-hidden="true" /> },
 ];
 
 export function AppHeader() {

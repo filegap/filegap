@@ -11,6 +11,7 @@ import { PrivacyPage } from '../pages/privacy/PrivacyPage';
 import { ReorderPdfPage } from '../pages/reorder-pdf/ReorderPdfPage';
 import { SplitPdfPage } from '../pages/split-pdf/SplitPdfPage';
 import { TermsPage } from '../pages/terms/TermsPage';
+import { WorkflowBuilderPage } from '../pages/workflow-builder/WorkflowBuilderPage';
 
 export const router = createBrowserRouter([
   {
@@ -52,6 +53,10 @@ export const router = createBrowserRouter([
   {
     path: '/terms',
     element: <TermsPage />,
+  },
+  {
+    path: '/workflow-builder',
+    element: <WorkflowBuilderPage />,
   },
   {
     path: '/',
