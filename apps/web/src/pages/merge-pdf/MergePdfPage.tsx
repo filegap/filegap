@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { PDFDocument } from 'pdf-lib';
 import { FileText, Plus, Trash2, X } from 'lucide-react';
@@ -14,6 +15,7 @@ import { ToolActionCard } from '../../components/layout/ToolActionCard';
 import { ToolLayout } from '../../components/layout/ToolLayout';
 import { mergePdfBuffers } from '../../adapters/pdfEngine';
 import { trackEvent, trackToolEvent } from '../../lib/analytics/trackEvent';
+import { createWorkflowStep, type WorkflowBuilderNavigationState } from '../../lib/workflowBuilder';
 import type { WorkerResponse } from '../../types';
 
 // ⚠️ Do not log user file data. This project is privacy-first.
@@ -171,6 +173,7 @@ const MERGE_PAGE_CONTENT = {
 };
 
 export function MergePdfPage() {
+  const navigate = useNavigate();
   const [files, setFiles] = useState<MergeQueueFile[]>([]);
   const [status, setStatus] = useState<StatusState>(getIdleOrReadyStatus(0));
   const [isProcessing, setIsProcessing] = useState(false);
@@ -411,6 +414,19 @@ export function MergePdfPage() {
     allPagesResolved ? ` • ${totalReadyPages} pages` : ''
   }`;
 
+  function openInWorkflowBuilder(): void {
+    const state: WorkflowBuilderNavigationState = {
+      template: 'merge',
+      draft: {
+        inputMode: 'multiple',
+        steps: [createWorkflowStep('merge')],
+      },
+      sourceFiles: files.map((item) => item.file),
+    };
+
+    navigate('/workflow-builder?template=merge', { state });
+  }
+
   return (
     <ToolLayout
       title='Merge PDF files online — fast, private, and local'
@@ -514,7 +530,7 @@ export function MergePdfPage() {
                 activeStepIndex={1}
                 showTitle={false}
                 secondaryActionLabel='Open in Workflow Builder'
-                secondaryActionHref='/workflow-builder?template=merge'
+                secondaryActionOnClick={openInWorkflowBuilder}
                 onSecondaryActionClick={() => trackEvent('selection_made', { tool: 'merge' })}
               />
             </section>

@@ -16,6 +16,12 @@ export type WorkflowDraft = {
   steps: WorkflowStep[];
 };
 
+export type WorkflowBuilderNavigationState = {
+  template?: 'merge';
+  draft?: WorkflowDraft;
+  sourceFiles?: File[];
+};
+
 export function createWorkflowStep(operation: WorkflowOperation): WorkflowStep {
   return {
     id: `${operation}-${Math.random().toString(16).slice(2)}`,

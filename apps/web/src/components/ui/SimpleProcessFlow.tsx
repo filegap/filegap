@@ -8,6 +8,7 @@ type SimpleProcessFlowProps = {
   showTitle?: boolean;
   secondaryActionLabel?: string;
   secondaryActionHref?: string;
+  secondaryActionOnClick?: () => void;
   onSecondaryActionClick?: () => void;
 };
 
@@ -19,6 +20,7 @@ export function SimpleProcessFlow({
   showTitle = true,
   secondaryActionLabel,
   secondaryActionHref,
+  secondaryActionOnClick,
   onSecondaryActionClick,
 }: SimpleProcessFlowProps) {
   return (
@@ -28,14 +30,27 @@ export function SimpleProcessFlow({
           {showTitle ? <h2 className='font-heading text-lg font-semibold text-ui-text'>{title}</h2> : null}
           {description ? <p className='mt-1 text-sm text-ui-muted'>{description}</p> : null}
         </div>
-        {secondaryActionLabel && secondaryActionHref ? (
-          <a
-            href={secondaryActionHref}
-            onClick={onSecondaryActionClick}
-            className='inline-flex items-center rounded-lg border border-ui-border bg-ui-surface px-3 py-2 text-sm font-medium text-ui-muted transition hover:bg-ui-bg hover:text-ui-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-border/80 focus-visible:ring-offset-2'
-          >
-            {secondaryActionLabel}
-          </a>
+        {secondaryActionLabel && (secondaryActionHref || secondaryActionOnClick) ? (
+          secondaryActionHref ? (
+            <a
+              href={secondaryActionHref}
+              onClick={onSecondaryActionClick}
+              className='inline-flex items-center rounded-lg border border-ui-border bg-ui-surface px-3 py-2 text-sm font-medium text-ui-muted transition hover:bg-ui-bg hover:text-ui-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-border/80 focus-visible:ring-offset-2'
+            >
+              {secondaryActionLabel}
+            </a>
+          ) : (
+            <button
+              type='button'
+              onClick={() => {
+                onSecondaryActionClick?.();
+                secondaryActionOnClick?.();
+              }}
+              className='inline-flex items-center rounded-lg border border-ui-border bg-ui-surface px-3 py-2 text-sm font-medium text-ui-muted transition hover:bg-ui-bg hover:text-ui-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-border/80 focus-visible:ring-offset-2'
+            >
+              {secondaryActionLabel}
+            </button>
+          )
         ) : null}
       </div>
 

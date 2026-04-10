@@ -1,5 +1,6 @@
 import { ArrowDown, ArrowUp, GitBranch, Plus, Trash2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { PDFDocument } from 'pdf-lib';
 
 import { ToolLayout } from '../../components/layout/ToolLayout';
@@ -19,6 +20,7 @@ import {
   buildWorkflowCliPreview,
   createWorkflowStep,
   type WorkflowDraft,
+  type WorkflowBuilderNavigationState,
   type WorkflowOperation,
   validateWorkflowDraft,
 } from '../../lib/workflowBuilder';
@@ -73,16 +75,23 @@ function buildOutputName(baseName: string, index: number, total: number): string
 }
 
 export function WorkflowBuilderPage() {
-  const [draft, setDraft] = useState<WorkflowDraft>({
+  const location = useLocation();
+  const navigationState = (location.state ?? null) as WorkflowBuilderNavigationState | null;
+  const initialDraft = navigationState?.draft ?? {
     inputMode: 'single',
     steps: [createWorkflowStep('optimize')],
-  });
-  const [sourceFiles, setSourceFiles] = useState<File[]>([]);
+  };
+  const initialSourceFiles = navigationState?.sourceFiles ?? [];
+  const [draft, setDraft] = useState<WorkflowDraft>(initialDraft);
+  const [sourceFiles, setSourceFiles] = useState<File[]>(initialSourceFiles);
   const [outputs, setOutputs] = useState<WorkflowOutput[]>([]);
   const [isRunning, setIsRunning] = useState(false);
   const [status, setStatus] = useState<{ tone: StatusTone; message: string }>({
-    tone: 'neutral',
-    message: 'Select input PDF files and run your workflow.',
+    tone: initialSourceFiles.length > 0 ? 'info' : 'neutral',
+    message:
+      initialSourceFiles.length > 0
+        ? 'Workflow imported locally. Review the flow and run it when ready.'
+        : 'Select input PDF files and run your workflow.',
   });
   const [copyFeedback, setCopyFeedback] = useState('');
   const errors = useMemo(() => validateWorkflowDraft(draft), [draft]);

@@ -1,17 +1,29 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
 
 import { MergePdfPage } from './MergePdfPage';
 import { mergePdfBuffers } from '../../adapters/pdfEngine';
+import { WorkflowBuilderPage } from '../workflow-builder/WorkflowBuilderPage';
 
 vi.mock('../../adapters/pdfEngine', () => ({
   mergePdfBuffers: vi.fn(),
 }));
 
+function renderMergePage() {
+  return render(
+    <MemoryRouter initialEntries={['/merge-pdf']}>
+      <Routes>
+        <Route path='/merge-pdf' element={<MergePdfPage />} />
+      </Routes>
+    </MemoryRouter>
+  );
+}
+
 describe('MergePdfPage', () => {
   it('renders the base layout for merge route', () => {
-    render(<MergePdfPage />);
+    renderMergePage();
 
     expect(
       screen.getByRole('heading', { level: 1, name: 'Merge PDF files online — fast, private, and local' })
@@ -32,7 +44,7 @@ describe('MergePdfPage', () => {
   });
 
   it('shows queued state and disabled CTA when less than 2 files are selected', () => {
-    render(<MergePdfPage />);
+    renderMergePage();
 
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     const fileA = new File([new Uint8Array([1])], 'a.pdf', { type: 'application/pdf' });
@@ -44,7 +56,7 @@ describe('MergePdfPage', () => {
   });
 
   it('shows compact process flow and workflow builder bridge after files are added', () => {
-    render(<MergePdfPage />);
+    renderMergePage();
 
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     const fileA = new File([new Uint8Array([1])], 'a.pdf', { type: 'application/pdf' });
@@ -55,10 +67,7 @@ describe('MergePdfPage', () => {
     expect(screen.getByText('Input')).toBeInTheDocument();
     expect(screen.getByText('Merge')).toBeInTheDocument();
     expect(screen.getByText('Output')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Open in Workflow Builder' })).toHaveAttribute(
-      'href',
-      '/workflow-builder?template=merge'
-    );
+    expect(screen.getByRole('button', { name: 'Open in Workflow Builder' })).toBeInTheDocument();
     expect(screen.getByText('Runs locally on your files.')).toBeInTheDocument();
     expect(screen.getAllByText('2 PDFs ready').length).toBeGreaterThan(0);
     expect(screen.getByText('Ready to merge.')).toBeInTheDocument();
@@ -70,7 +79,7 @@ describe('MergePdfPage', () => {
     const user = userEvent.setup();
     vi.mocked(mergePdfBuffers).mockResolvedValue(new Uint8Array([1, 2, 3]));
 
-    render(<MergePdfPage />);
+    renderMergePage();
 
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     const fileA = new File([new Uint8Array([1])], 'a.pdf', { type: 'application/pdf' });
@@ -91,7 +100,7 @@ describe('MergePdfPage', () => {
 
   it('adds files to queue with subsequent selections', async () => {
     const user = userEvent.setup();
-    render(<MergePdfPage />);
+    renderMergePage();
 
     let input = document.querySelector('input[type="file"]') as HTMLInputElement;
     const fileA = new File([new Uint8Array([1])], 'a.pdf', { type: 'application/pdf' });
@@ -112,7 +121,7 @@ describe('MergePdfPage', () => {
 
   it('removes a file from the queue', async () => {
     const user = userEvent.setup();
-    render(<MergePdfPage />);
+    renderMergePage();
 
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     const fileA = new File([new Uint8Array([1])], 'a.pdf', { type: 'application/pdf' });
@@ -129,7 +138,7 @@ describe('MergePdfPage', () => {
   });
 
   it('reorders files with drag and drop', () => {
-    render(<MergePdfPage />);
+    renderMergePage();
 
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     const fileA = new File([new Uint8Array([1])], 'a.pdf', { type: 'application/pdf' });
@@ -157,7 +166,7 @@ describe('MergePdfPage', () => {
     const createObjectURLSpy = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:test');
     const revokeObjectURLSpy = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
 
-    render(<MergePdfPage />);
+    renderMergePage();
 
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     const fileA = new File([new Uint8Array([1])], 'a.pdf', { type: 'application/pdf' });
@@ -184,7 +193,7 @@ describe('MergePdfPage', () => {
   });
 
   it('shows CLI preview connected to the same merge process', () => {
-    render(<MergePdfPage />);
+    renderMergePage();
 
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     const fileA = new File([new Uint8Array([1])], 'alpha.pdf', { type: 'application/pdf' });
@@ -200,7 +209,7 @@ describe('MergePdfPage', () => {
 
   it('reopens the picker from compact state and can clear the queued files', async () => {
     const user = userEvent.setup();
-    render(<MergePdfPage />);
+    renderMergePage();
 
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     const fileA = new File([new Uint8Array([1])], 'alpha.pdf', { type: 'application/pdf' });
@@ -223,5 +232,31 @@ describe('MergePdfPage', () => {
     expect(screen.queryByText('Input files')).not.toBeInTheDocument();
     expect(screen.getByText('Drag & drop PDF files')).toBeInTheDocument();
     expect(screen.queryByText('Uploaded files')).not.toBeInTheDocument();
+  });
+
+  it('opens Workflow Builder with merge draft and current files', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={['/merge-pdf']}>
+        <Routes>
+          <Route path='/merge-pdf' element={<MergePdfPage />} />
+          <Route path='/workflow-builder' element={<WorkflowBuilderPage />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const fileA = new File([new Uint8Array([1])], 'alpha.pdf', { type: 'application/pdf' });
+    const fileB = new File([new Uint8Array([2])], 'beta.pdf', { type: 'application/pdf' });
+    fireEvent.change(input, { target: { files: [fileA, fileB] } });
+
+    await user.click(screen.getByRole('button', { name: 'Open in Workflow Builder' }));
+
+    expect(screen.getByRole('heading', { name: 'Workflow Builder (Preview)' })).toBeInTheDocument();
+    expect(screen.getByDisplayValue('Multiple PDFs')).toBeInTheDocument();
+    expect(screen.getByText('Workflow imported locally. Review the flow and run it when ready.')).toBeInTheDocument();
+    expect(screen.getByText('alpha.pdf')).toBeInTheDocument();
+    expect(screen.getByText('beta.pdf')).toBeInTheDocument();
   });
 });
