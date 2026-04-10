@@ -1,9 +1,11 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ReorderPdfPage } from './ReorderPdfPage';
 import { reorderPdfPages } from '../../adapters/pdfEngine';
+import { WorkflowBuilderPage } from '../workflow-builder/WorkflowBuilderPage';
 
 vi.mock('../../lib/pdfPreview', () => ({
   renderPdfThumbnails: vi.fn().mockResolvedValue([
@@ -33,8 +35,18 @@ vi.mock('../../adapters/pdfEngine', async () => {
 });
 
 describe('ReorderPdfPage', () => {
+  function renderReorderPage() {
+    return render(
+      <MemoryRouter initialEntries={['/reorder-pdf']}>
+        <Routes>
+          <Route path='/reorder-pdf' element={<ReorderPdfPage />} />
+        </Routes>
+      </MemoryRouter>
+    );
+  }
+
   it('renders base reorder route layout', () => {
-    render(<ReorderPdfPage />);
+    renderReorderPage();
 
     expect(
       screen.getByRole('heading', { level: 1, name: 'Reorder PDF pages online — fast, private, and local' })
@@ -57,7 +69,7 @@ describe('ReorderPdfPage', () => {
   });
 
   it('keeps reorder controls hidden until a source file is selected', () => {
-    render(<ReorderPdfPage />);
+    renderReorderPage();
 
     expect(screen.queryByRole('heading', { level: 2, name: 'Set page order' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Reorder PDF' })).not.toBeInTheDocument();
@@ -67,7 +79,7 @@ describe('ReorderPdfPage', () => {
     const user = userEvent.setup();
     vi.mocked(reorderPdfPages).mockResolvedValue(new Uint8Array([1, 2, 3]));
 
-    render(<ReorderPdfPage />);
+    renderReorderPage();
 
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     const file = new File([new Uint8Array([1, 2, 3])], 'source.pdf', { type: 'application/pdf' });
@@ -90,5 +102,61 @@ describe('ReorderPdfPage', () => {
     expect(screen.getByRole('button', { name: 'Download PDF' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'New reorder' })).toBeInTheDocument();
     expect(screen.getByText('Order 2,1,3,4')).toBeInTheDocument();
+  });
+
+  it('shows processing steps and updates CLI preview with page order', async () => {
+    const user = userEvent.setup();
+    renderReorderPage();
+
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const file = new File([new Uint8Array([1, 2, 3])], 'source.pdf', { type: 'application/pdf' });
+    fireEvent.change(input, { target: { files: [file] } });
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: 'Processing steps' })).toBeInTheDocument();
+    });
+
+    expect(screen.getByText('Input')).toBeInTheDocument();
+    expect(screen.getByText('Reorder')).toBeInTheDocument();
+    expect(screen.getByText('Output')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Open in Workflow Builder' })).toBeInTheDocument();
+    expect(screen.getByText('Run the same reorder step from your terminal.')).toBeInTheDocument();
+
+    const orderInput = screen.getByPlaceholderText('3, 1, 2, 4-6');
+    await user.clear(orderInput);
+    await user.type(orderInput, '2,1,3,4');
+
+    expect(screen.getByText('filegap reorder "source.pdf" --pages "2,1,3,4" > source-reordered.pdf')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Try the CLI →' })).toHaveAttribute('href', '/cli?example=reorder');
+  });
+
+  it('opens Workflow Builder with reorder draft, file, and current order', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={['/reorder-pdf']}>
+        <Routes>
+          <Route path='/reorder-pdf' element={<ReorderPdfPage />} />
+          <Route path='/workflow-builder' element={<WorkflowBuilderPage />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const file = new File([new Uint8Array([1, 2, 3])], 'source.pdf', { type: 'application/pdf' });
+    fireEvent.change(input, { target: { files: [file] } });
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { level: 2, name: 'Set page order' })).toBeInTheDocument();
+    });
+
+    const orderInput = screen.getByPlaceholderText('3, 1, 2, 4-6');
+    await user.clear(orderInput);
+    await user.type(orderInput, '2,1,3,4');
+    await user.click(screen.getByRole('button', { name: 'Open in Workflow Builder' }));
+
+    expect(screen.getByRole('heading', { name: 'Workflow Builder (Preview)' })).toBeInTheDocument();
+    expect(screen.getByText('source.pdf')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('2,1,3,4')).toBeInTheDocument();
   });
 });

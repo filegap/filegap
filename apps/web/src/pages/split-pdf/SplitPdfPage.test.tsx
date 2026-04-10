@@ -1,9 +1,11 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
 
 import { SplitPdfPage } from './SplitPdfPage';
 import { splitPdfByRanges } from '../../adapters/pdfEngine';
+import { WorkflowBuilderPage } from '../workflow-builder/WorkflowBuilderPage';
 
 vi.mock('../../lib/pdfPreview', () => ({
   renderPdfThumbnails: vi.fn().mockResolvedValue([
@@ -32,8 +34,18 @@ vi.mock('../../adapters/pdfEngine', async () => {
 });
 
 describe('SplitPdfPage', () => {
+  function renderSplitPage() {
+    return render(
+      <MemoryRouter initialEntries={['/split-pdf']}>
+        <Routes>
+          <Route path='/split-pdf' element={<SplitPdfPage />} />
+        </Routes>
+      </MemoryRouter>
+    );
+  }
+
   it('renders base split route layout', () => {
-    render(<SplitPdfPage />);
+    renderSplitPage();
 
     expect(
       screen.getByRole('heading', { level: 1, name: 'Split PDF files online — fast, private, and local' })
@@ -57,7 +69,7 @@ describe('SplitPdfPage', () => {
   });
 
   it('keeps split controls hidden until a source file is selected', () => {
-    render(<SplitPdfPage />);
+    renderSplitPage();
 
     expect(screen.queryByRole('heading', { level: 2, name: 'Define split ranges' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Split PDF' })).not.toBeInTheDocument();
@@ -71,7 +83,7 @@ describe('SplitPdfPage', () => {
       new Uint8Array([3]),
     ]);
 
-    render(<SplitPdfPage />);
+    renderSplitPage();
 
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     const file = new File([new Uint8Array([1, 2, 3])], 'source.pdf', { type: 'application/pdf' });
@@ -97,11 +109,37 @@ describe('SplitPdfPage', () => {
     expect(screen.getByText('Pages 3')).toBeInTheDocument();
   });
 
+  it('shows processing steps and updates CLI preview with split ranges', async () => {
+    const user = userEvent.setup();
+    renderSplitPage();
+
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const file = new File([new Uint8Array([1, 2, 3])], 'source.pdf', { type: 'application/pdf' });
+    fireEvent.change(input, { target: { files: [file] } });
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: 'Processing steps' })).toBeInTheDocument();
+    });
+
+    expect(screen.getByText('Input')).toBeInTheDocument();
+    expect(screen.getByText('Split')).toBeInTheDocument();
+    expect(screen.getByText('Output')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Open in Workflow Builder' })).toBeInTheDocument();
+    expect(screen.getByText('Run the same split step from your terminal.')).toBeInTheDocument();
+
+    const rangesInput = screen.getByPlaceholderText('1-3, 4, 5-10');
+    await user.clear(rangesInput);
+    await user.type(rangesInput, '1-2,3');
+
+    expect(screen.getByText('filegap split "source.pdf" --pages "1-2,3" > output.zip')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Try the CLI →' })).toHaveAttribute('href', '/cli?example=split');
+  });
+
   it('resets the split view when New split is clicked', async () => {
     const user = userEvent.setup();
     vi.mocked(splitPdfByRanges).mockResolvedValue([new Uint8Array([1])]);
 
-    render(<SplitPdfPage />);
+    renderSplitPage();
 
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     const file = new File([new Uint8Array([1, 2, 3])], 'source.pdf', { type: 'application/pdf' });
@@ -125,5 +163,35 @@ describe('SplitPdfPage', () => {
     expect(screen.queryByRole('button', { name: 'Split PDF' })).not.toBeInTheDocument();
     expect(screen.queryByText('Split completed')).not.toBeInTheDocument();
     expect(screen.queryByRole('heading', { level: 2, name: 'Define split ranges' })).not.toBeInTheDocument();
+  });
+
+  it('opens Workflow Builder with split draft, file, and current ranges', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={['/split-pdf']}>
+        <Routes>
+          <Route path='/split-pdf' element={<SplitPdfPage />} />
+          <Route path='/workflow-builder' element={<WorkflowBuilderPage />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const file = new File([new Uint8Array([1, 2, 3])], 'source.pdf', { type: 'application/pdf' });
+    fireEvent.change(input, { target: { files: [file] } });
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { level: 2, name: 'Define split ranges' })).toBeInTheDocument();
+    });
+
+    const rangesInput = screen.getByPlaceholderText('1-3, 4, 5-10');
+    await user.clear(rangesInput);
+    await user.type(rangesInput, '1-2,3');
+    await user.click(screen.getByRole('button', { name: 'Open in Workflow Builder' }));
+
+    expect(screen.getByRole('heading', { name: 'Workflow Builder (Preview)' })).toBeInTheDocument();
+    expect(screen.getByText('source.pdf')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('1-2,3')).toBeInTheDocument();
   });
 });

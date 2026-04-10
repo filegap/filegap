@@ -1,12 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { PDFDocument } from 'pdf-lib';
 import { ChevronsDownUp, RotateCcw, X } from 'lucide-react';
 
 import { DropZone } from '../../components/ui/DropZone';
 import { Button } from '../../components/ui/Button';
+import { CliPreviewCard } from '../../components/ui/CliPreviewCard';
 import { ToolActionCard } from '../../components/layout/ToolActionCard';
 import { PreDownloadModal } from '../../components/ui/PreDownloadModal';
+import { SimpleProcessFlow } from '../../components/ui/SimpleProcessFlow';
 import { ToolLandingSections } from '../../components/seo/ToolLandingSections';
 import { ReorderPageGallery } from '../../components/ui/ReorderPageGallery';
 import { ToolLayout } from '../../components/layout/ToolLayout';
@@ -14,6 +17,7 @@ import { FileSelectionSummary } from '../../components/ui/FileSelectionSummary';
 import { parsePageOrder, reorderPdfPages } from '../../adapters/pdfEngine';
 import { trackEvent, trackToolEvent } from '../../lib/analytics/trackEvent';
 import { renderPdfThumbnails, type PageThumbnail } from '../../lib/pdfPreview';
+import { createWorkflowStep, type WorkflowBuilderNavigationState } from '../../lib/workflowBuilder';
 import type { WorkerResponse } from '../../types';
 
 // ⚠️ Do not log user file data. This project is privacy-first.
@@ -150,6 +154,7 @@ const REORDER_PAGE_CONTENT = {
 };
 
 export function ReorderPdfPage() {
+  const navigate = useNavigate();
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [pageCount, setPageCount] = useState<number | null>(null);
   const [orderInput, setOrderInput] = useState('');
@@ -534,6 +539,29 @@ export function ReorderPdfPage() {
     });
   }
 
+  function openInWorkflowBuilder(): void {
+    if (!sourceFile) {
+      return;
+    }
+
+    const reorderStep = createWorkflowStep('reorder');
+    const pageOrder = orderInput.trim() || lastValidOrderInput.trim();
+    if (pageOrder) {
+      reorderStep.pageOrder = pageOrder;
+    }
+
+    const state: WorkflowBuilderNavigationState = {
+      template: 'reorder',
+      draft: {
+        inputMode: 'single',
+        steps: [reorderStep],
+      },
+      sourceFiles: [sourceFile],
+    };
+
+    navigate('/workflow-builder?template=reorder', { state });
+  }
+
   const actionMessage =
     status.tone === 'error'
       ? status.message
@@ -543,6 +571,13 @@ export function ReorderPdfPage() {
           ? 'Ready to reorder the PDF.'
           : 'Enter the full page order or drag thumbnails to rearrange pages.';
   const actionMessageClassName = status.tone === 'error' ? 'text-sm text-red-600' : 'text-sm text-ui-muted';
+  const cliPreview = useMemo(() => {
+    const currentOrder = orderInput.trim() || lastValidOrderInput.trim();
+    if (sourceFile) {
+      return `filegap reorder "${sourceFile.name}" --pages "${currentOrder || '3,2,1'}" > ${buildReorderFilename(sourceFile.name)}`;
+    }
+    return 'filegap reorder "input.pdf" --pages "3,2,1" > reordered.pdf';
+  }, [lastValidOrderInput, orderInput, sourceFile]);
 
   return (
     <ToolLayout
@@ -661,6 +696,19 @@ export function ReorderPdfPage() {
                 onReorder={reorderGalleryPages}
               />
 
+              <section className='space-y-3'>
+                <h2 className='font-heading text-xl font-semibold text-ui-text'>Processing steps</h2>
+                <SimpleProcessFlow
+                  description='Runs locally on your files.'
+                  steps={['Input', 'Reorder', 'Output']}
+                  activeStepIndex={1}
+                  showTitle={false}
+                  secondaryActionLabel='Open in Workflow Builder'
+                  secondaryActionOnClick={openInWorkflowBuilder}
+                  onSecondaryActionClick={() => trackEvent('selection_made', { tool: 'reorder' })}
+                />
+              </section>
+
               <div className='sticky bottom-4 z-10 pt-2'>
                 <div className='flex flex-col gap-3 rounded-2xl border border-ui-border/80 bg-ui-surface/95 px-4 py-4 shadow-[0_10px_30px_rgba(15,23,42,0.05)] backdrop-blur sm:flex-row sm:items-center sm:justify-between'>
                   <div className='min-w-0'>
@@ -687,6 +735,19 @@ export function ReorderPdfPage() {
                   ) : null}
                 </div>
               </div>
+
+              {!output ? (
+                <section className='space-y-3'>
+                  <h2 className='font-heading text-xl font-semibold text-ui-text'>CLI preview</h2>
+                  <CliPreviewCard
+                    command={cliPreview}
+                    helperText='Run the same reorder step from your terminal.'
+                    learnHref='/cli?example=reorder'
+                    learnLabel='Try the CLI →'
+                    showTitle={false}
+                  />
+                </section>
+              ) : null}
             </section>
           ) : null}
 

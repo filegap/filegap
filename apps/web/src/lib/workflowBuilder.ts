@@ -16,8 +16,16 @@ export type WorkflowDraft = {
   steps: WorkflowStep[];
 };
 
+export type WorkflowBuilderTemplate =
+  | 'merge'
+  | 'extract'
+  | 'reorder'
+  | 'optimize'
+  | 'compress'
+  | 'split';
+
 export type WorkflowBuilderNavigationState = {
-  template?: 'merge';
+  template?: WorkflowBuilderTemplate;
   draft?: WorkflowDraft;
   sourceFiles?: File[];
 };

@@ -1,17 +1,21 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { PDFDocument } from 'pdf-lib';
 import { ChevronsDownUp } from 'lucide-react';
 
 import { DropZone } from '../../components/ui/DropZone';
 import { Button } from '../../components/ui/Button';
+import { CliPreviewCard } from '../../components/ui/CliPreviewCard';
 import { FileSelectionSummary } from '../../components/ui/FileSelectionSummary';
 import { PreDownloadModal } from '../../components/ui/PreDownloadModal';
+import { SimpleProcessFlow } from '../../components/ui/SimpleProcessFlow';
 import { ToolActionCard } from '../../components/layout/ToolActionCard';
 import { ToolLayout } from '../../components/layout/ToolLayout';
 import { ToolLandingSections } from '../../components/seo/ToolLandingSections';
 import { compressPdfBuffer, type CompressPreset } from '../../adapters/pdfEngine';
 import { trackEvent, trackToolEvent } from '../../lib/analytics/trackEvent';
+import { createWorkflowStep, type WorkflowBuilderNavigationState } from '../../lib/workflowBuilder';
 import type { WorkerResponse } from '../../types';
 
 // ⚠️ Do not log user file data. This project is privacy-first.
@@ -205,6 +209,7 @@ function presetLabel(preset: CompressPreset): string {
 }
 
 export function CompressPdfPage() {
+  const navigate = useNavigate();
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [pageCount, setPageCount] = useState<number | null>(null);
   const [preset, setPreset] = useState<CompressPreset>('balanced');
@@ -228,6 +233,12 @@ export function CompressPdfPage() {
   const sizeLimitLabel = formatFileSize(MAX_WEB_COMPRESS_FILE_SIZE_BYTES);
   const limitExceeded = limitExceededFileSize !== null;
   const summary = output ? getSummary(output.sourceSizeBytes, output.outputSizeBytes) : null;
+  const cliPreview = useMemo(() => {
+    if (sourceFile) {
+      return `filegap compress "${sourceFile.name}" --preset ${preset} > ${buildCompressFilename(sourceFile.name)}`;
+    }
+    return 'filegap compress "input.pdf" --preset balanced > compressed.pdf';
+  }, [preset, sourceFile]);
 
   async function handleSourceSelected(files: File[]): Promise<void> {
     const file = files[0];
@@ -383,6 +394,26 @@ export function CompressPdfPage() {
     setShowDownloadGate(false);
   }
 
+  function openInWorkflowBuilder(): void {
+    if (!sourceFile) {
+      return;
+    }
+
+    const compressStep = createWorkflowStep('compress');
+    compressStep.compressionPreset = preset;
+
+    const state: WorkflowBuilderNavigationState = {
+      template: 'compress',
+      draft: {
+        inputMode: 'single',
+        steps: [compressStep],
+      },
+      sourceFiles: [sourceFile],
+    };
+
+    navigate('/workflow-builder?template=compress', { state });
+  }
+
   return (
     <ToolLayout
       title='Compress PDF online — private, local, and fast'
@@ -491,6 +522,19 @@ export function CompressPdfPage() {
               </div>
             </div>
 
+            <section className='space-y-3'>
+              <h2 className='font-heading text-xl font-semibold text-ui-text'>Processing steps</h2>
+              <SimpleProcessFlow
+                description='Runs locally on your files.'
+                steps={['Input', 'Compress', 'Output']}
+                activeStepIndex={1}
+                showTitle={false}
+                secondaryActionLabel='Open in Workflow Builder'
+                secondaryActionOnClick={openInWorkflowBuilder}
+                onSecondaryActionClick={() => trackEvent('selection_made', { tool: 'compress' })}
+              />
+            </section>
+
             {!output ? (
               <div className='sticky bottom-4 z-10 pt-2'>
                 <div className='flex flex-col gap-3 rounded-2xl border border-ui-border/80 bg-ui-surface/95 px-4 py-4 shadow-[0_10px_30px_rgba(15,23,42,0.05)] backdrop-blur sm:flex-row sm:items-center sm:justify-between'>
@@ -507,8 +551,21 @@ export function CompressPdfPage() {
                   <Button onClick={handleCompressCtaClick} loading={isProcessing} disabled={!canCompress}>
                     Compress PDF
                   </Button>
+                  </div>
                 </div>
-              </div>
+              ) : null}
+
+            {!output ? (
+              <section className='space-y-3'>
+                <h2 className='font-heading text-xl font-semibold text-ui-text'>CLI preview</h2>
+                <CliPreviewCard
+                  command={cliPreview}
+                  helperText='Run the same compression from your terminal.'
+                  learnHref='/cli?example=compress'
+                  learnLabel='Try the CLI →'
+                  showTitle={false}
+                />
+              </section>
             ) : null}
           </section>
         ) : null}

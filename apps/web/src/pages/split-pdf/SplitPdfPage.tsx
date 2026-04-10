@@ -1,12 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { PDFDocument } from 'pdf-lib';
 import { ChevronsDownUp, X } from 'lucide-react';
 
 import { DropZone } from '../../components/ui/DropZone';
 import { Button } from '../../components/ui/Button';
+import { CliPreviewCard } from '../../components/ui/CliPreviewCard';
 import { ToolActionCard } from '../../components/layout/ToolActionCard';
 import { PreDownloadModal } from '../../components/ui/PreDownloadModal';
+import { SimpleProcessFlow } from '../../components/ui/SimpleProcessFlow';
 import { ToolLandingSections } from '../../components/seo/ToolLandingSections';
 import { SplitPageGallery } from '../../components/ui/SplitPageGallery';
 import { ToolLayout } from '../../components/layout/ToolLayout';
@@ -14,6 +17,7 @@ import { FileSelectionSummary } from '../../components/ui/FileSelectionSummary';
 import { parseSplitRanges, splitPdfByRanges, type SplitRangeSegment } from '../../adapters/pdfEngine';
 import { trackEvent, trackToolEvent } from '../../lib/analytics/trackEvent';
 import { renderPdfThumbnails, type PageThumbnail } from '../../lib/pdfPreview';
+import { createWorkflowStep, type WorkflowBuilderNavigationState } from '../../lib/workflowBuilder';
 import type { WorkerResponse } from '../../types';
 
 // ⚠️ Do not log user file data. This project is privacy-first.
@@ -172,6 +176,7 @@ const SPLIT_PAGE_CONTENT = {
 };
 
 export function SplitPdfPage() {
+  const navigate = useNavigate();
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [pageCount, setPageCount] = useState<number | null>(null);
   const [rangeInput, setRangeInput] = useState('');
@@ -508,6 +513,29 @@ export function SplitPdfPage() {
     setShowDownloadGate(false);
   }
 
+  function openInWorkflowBuilder(): void {
+    if (!sourceFile) {
+      return;
+    }
+
+    const splitStep = createWorkflowStep('split');
+    const splitRanges = rangeInput.trim() || lastValidRangeInput.trim();
+    if (splitRanges) {
+      splitStep.splitRanges = splitRanges;
+    }
+
+    const state: WorkflowBuilderNavigationState = {
+      template: 'split',
+      draft: {
+        inputMode: 'single',
+        steps: [splitStep],
+      },
+      sourceFiles: [sourceFile],
+    };
+
+    navigate('/workflow-builder?template=split', { state });
+  }
+
   function startNewSplit(): void {
     setSourceFile(null);
     setPageCount(null);
@@ -549,6 +577,13 @@ export function SplitPdfPage() {
         ? `Ready to split into ${selectedRangesSummary.length} file${selectedRangesSummary.length === 1 ? '' : 's'}.`
         : 'Choose split ranges from the gallery or enter them above.';
   const actionMessageClassName = status.tone === 'error' ? 'text-sm text-red-600' : 'text-sm text-ui-muted';
+  const cliPreview = useMemo(() => {
+    const currentRanges = rangeInput.trim() || lastValidRangeInput.trim();
+    if (sourceFile) {
+      return `filegap split "${sourceFile.name}" --pages "${currentRanges || '1-2,3-4'}" > output.zip`;
+    }
+    return 'filegap split "input.pdf" --pages "1-2,3-4" > output.zip';
+  }, [lastValidRangeInput, rangeInput, sourceFile]);
 
   return (
     <ToolLayout
@@ -658,6 +693,19 @@ export function SplitPdfPage() {
                 onTogglePage={toggleSelectedPage}
               />
 
+              <section className='space-y-3'>
+                <h2 className='font-heading text-xl font-semibold text-ui-text'>Processing steps</h2>
+                <SimpleProcessFlow
+                  description='Runs locally on your files.'
+                  steps={['Input', 'Split', 'Output']}
+                  activeStepIndex={1}
+                  showTitle={false}
+                  secondaryActionLabel='Open in Workflow Builder'
+                  secondaryActionOnClick={openInWorkflowBuilder}
+                  onSecondaryActionClick={() => trackEvent('selection_made', { tool: 'split' })}
+                />
+              </section>
+
               <div className='sticky bottom-4 z-10 pt-2'>
                 <div className='flex flex-col gap-3 rounded-2xl border border-ui-border/80 bg-ui-surface/95 px-4 py-4 shadow-[0_10px_30px_rgba(15,23,42,0.05)] backdrop-blur sm:flex-row sm:items-center sm:justify-between'>
                   <div className='min-w-0'>
@@ -689,6 +737,19 @@ export function SplitPdfPage() {
                   ) : null}
                 </div>
               </div>
+
+              {outputs.length === 0 ? (
+                <section className='space-y-3'>
+                  <h2 className='font-heading text-xl font-semibold text-ui-text'>CLI preview</h2>
+                  <CliPreviewCard
+                    command={cliPreview}
+                    helperText='Run the same split step from your terminal.'
+                    learnHref='/cli?example=split'
+                    learnLabel='Try the CLI →'
+                    showTitle={false}
+                  />
+                </section>
+              ) : null}
             </section>
           ) : null}
 
