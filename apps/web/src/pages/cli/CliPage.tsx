@@ -1,6 +1,5 @@
-import { useState } from 'react';
-
 import { Card } from '../../components/ui/Card';
+import { CopyCodeBlock } from '../../components/ui/CopyCodeBlock';
 import { ToolLayout } from '../../components/layout/ToolLayout';
 
 type CodeSnippetProps = {
@@ -12,39 +11,11 @@ type ExampleCommandProps = {
   command: string;
 };
 
-function CodeSnippet({ code }: CodeSnippetProps) {
-  const [copied, setCopied] = useState(false);
-
-  async function handleCopy(): Promise<void> {
-    if (typeof navigator === 'undefined' || !navigator.clipboard) {
-      return;
-    }
-    await navigator.clipboard.writeText(code);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1200);
-  }
-
-  return (
-    <div className='relative'>
-      <button
-        type='button'
-        onClick={() => void handleCopy()}
-        className='absolute right-2 top-2 rounded-md border border-ui-border bg-ui-surface px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-ui-muted transition hover:text-ui-text'
-      >
-        {copied ? 'Copied' : 'Copy'}
-      </button>
-      <pre className='overflow-x-auto rounded-lg border border-ui-border bg-ui-surface p-4 pr-16 text-xs text-ui-text'>
-        <code>{code}</code>
-      </pre>
-    </div>
-  );
-}
-
 function ExampleCommand({ description, command }: ExampleCommandProps) {
   return (
     <div className='space-y-1.5'>
       <p className='text-xs text-ui-text'>{description}</p>
-      <CodeSnippet code={command} />
+      <CopyCodeBlock code={command} />
     </div>
   );
 }
@@ -71,7 +42,7 @@ export function CliPage() {
             <h2 className='font-heading text-base font-semibold text-ui-text'>
               Install with Homebrew
             </h2>
-            <CodeSnippet
+            <CopyCodeBlock
               code={`brew tap filegap/filegap
 brew install filegap`}
             />
@@ -81,7 +52,7 @@ brew install filegap`}
           </div>
           <div className='space-y-2'>
             <h2 className='font-heading text-base font-semibold text-ui-text'>Quick checks</h2>
-            <CodeSnippet
+            <CopyCodeBlock
               code={`filegap --version
 filegap --help`}
             />

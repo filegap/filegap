@@ -12,6 +12,8 @@ type UploadedFile = {
 type UploadedFilesTableProps = {
   files: UploadedFile[];
   reorderable: boolean;
+  showTitle?: boolean;
+  showHeaderRow?: boolean;
   onRemove: (id: string) => void;
   onReorder?: (fromIndex: number, toIndex: number) => void;
 };
@@ -30,18 +32,27 @@ function formatPages(file: UploadedFile): string {
   return `${file.pages}`;
 }
 
-export function UploadedFilesTable({ files, reorderable, onRemove, onReorder }: UploadedFilesTableProps) {
+export function UploadedFilesTable({
+  files,
+  reorderable,
+  showTitle = true,
+  showHeaderRow = true,
+  onRemove,
+  onReorder,
+}: UploadedFilesTableProps) {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   return (
     <div className='space-y-2'>
-      <div className='flex items-center justify-between gap-3'>
-        <h2 className='font-heading text-2xl font-semibold text-ui-text'>Uploaded files</h2>
-        {reorderable && files.length > 1 ? (
-          <p className='text-xs font-medium uppercase tracking-wide text-ui-muted'>Drag rows to reorder</p>
-        ) : null}
-      </div>
+      {showHeaderRow ? (
+        <div className='flex items-center justify-between gap-3'>
+          {showTitle ? <h2 className='font-heading text-2xl font-semibold text-ui-text'>Uploaded files</h2> : <div />}
+          {reorderable && files.length > 1 ? (
+            <p className='text-xs font-medium uppercase tracking-wide text-ui-muted'>Drag rows to reorder</p>
+          ) : null}
+        </div>
+      ) : null}
 
       {files.length === 0 ? (
         <p className='text-sm text-ui-muted'>No files selected yet.</p>

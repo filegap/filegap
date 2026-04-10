@@ -115,6 +115,48 @@ describe('ExtractPagesPage', () => {
     expect(screen.getByText('2 pages selected')).toBeInTheDocument();
   });
 
+  it('collapses the upload area into a compact input summary after file selection', async () => {
+    render(<ExtractPagesPage />);
+
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const file = new File([new Uint8Array([1, 2, 3])], 'source.pdf', { type: 'application/pdf' });
+    fireEvent.change(input, { target: { files: [file] } });
+
+    await waitFor(() => {
+      expect(screen.getByText('Input file')).toBeInTheDocument();
+    });
+
+    expect(screen.getByText('source.pdf')).toBeInTheDocument();
+    expect(screen.getByText('1 KB • 5 pages')).toBeInTheDocument();
+    expect(screen.queryByText('Drag & drop PDF files')).not.toBeInTheDocument();
+  });
+
+  it('reopens the upload flow when Replace is clicked and resets when Remove is clicked', async () => {
+    const user = userEvent.setup();
+    render(<ExtractPagesPage />);
+
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const file = new File([new Uint8Array([1, 2, 3])], 'source.pdf', { type: 'application/pdf' });
+    fireEvent.change(input, { target: { files: [file] } });
+
+    await waitFor(() => {
+      expect(screen.getByText('Input file')).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole('button', { name: 'Show file picker' }));
+    expect(screen.getByText('Drag & drop PDF files')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Hide file picker' }));
+    await waitFor(() => {
+      expect(screen.getByText('Input file')).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole('button', { name: 'Remove file' }));
+    expect(screen.queryByText('Input file')).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { level: 2, name: 'Select pages to extract' })).not.toBeInTheDocument();
+    expect(screen.getByText('Drag & drop PDF files')).toBeInTheDocument();
+  });
+
   it('applies typed ranges automatically to the page selection', async () => {
     const user = userEvent.setup();
     render(<ExtractPagesPage />);

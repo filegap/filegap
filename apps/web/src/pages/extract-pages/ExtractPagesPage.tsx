@@ -330,7 +330,7 @@ export function ExtractPagesPage() {
     setLastValidRangeInput('');
     setSelectedPages(new Set());
     setThumbnails([]);
-    setIsDropZoneCollapsed(false);
+    setIsDropZoneCollapsed(true);
     setStatus({ tone: 'info', message: 'Reading PDF metadata...' });
 
     const totalPages = await getPdfPageCount(file);
@@ -623,14 +623,17 @@ export function ExtractPagesPage() {
               loadedFileName={null}
             />
           ) : isDropZoneCollapsed ? (
-            <FileSelectionSummary
-              filename={sourceFile.name}
-              meta={`${formatFileSize(sourceFile.size)}${pageCount ? ` • ${pageCount} pages` : ''}`}
-              onReplace={() => setIsDropZoneCollapsed(false)}
-              onRemove={removeSourceFile}
-            />
+            <div className='animate-[fade-in_180ms_ease-out]'>
+              <FileSelectionSummary
+                label='Input file'
+                filename={sourceFile.name}
+                meta={`${formatFileSize(sourceFile.size)}${pageCount ? ` • ${pageCount} pages` : ''}`}
+                onReplace={() => setIsDropZoneCollapsed(false)}
+                onRemove={removeSourceFile}
+              />
+            </div>
           ) : (
-            <div className='relative'>
+            <div className='relative animate-[fade-in_180ms_ease-out]'>
               <button
                 type='button'
                 onClick={() => setIsDropZoneCollapsed(true)}

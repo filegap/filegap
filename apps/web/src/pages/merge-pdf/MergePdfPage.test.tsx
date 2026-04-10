@@ -38,9 +38,32 @@ describe('MergePdfPage', () => {
     const fileA = new File([new Uint8Array([1])], 'a.pdf', { type: 'application/pdf' });
     fireEvent.change(input, { target: { files: [fileA] } });
 
-    expect(screen.getByText('1 PDF file queued')).toBeInTheDocument();
+    expect(screen.getAllByText('1 PDF ready').length).toBeGreaterThan(0);
     expect(screen.getByText('Add at least 2 PDF files to merge.')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Merge PDF' })).toBeDisabled();
+  });
+
+  it('shows compact process flow and workflow builder bridge after files are added', () => {
+    render(<MergePdfPage />);
+
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const fileA = new File([new Uint8Array([1])], 'a.pdf', { type: 'application/pdf' });
+    const fileB = new File([new Uint8Array([2])], 'b.pdf', { type: 'application/pdf' });
+    fireEvent.change(input, { target: { files: [fileA, fileB] } });
+
+    expect(screen.getByRole('heading', { name: 'Processing steps' })).toBeInTheDocument();
+    expect(screen.getByText('Input')).toBeInTheDocument();
+    expect(screen.getByText('Merge')).toBeInTheDocument();
+    expect(screen.getByText('Output')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Open in Workflow Builder' })).toHaveAttribute(
+      'href',
+      '/workflow-builder?template=merge'
+    );
+    expect(screen.getByText('Runs locally on your files.')).toBeInTheDocument();
+    expect(screen.getAllByText('2 PDFs ready').length).toBeGreaterThan(0);
+    expect(screen.getByText('Ready to merge.')).toBeInTheDocument();
+    expect(screen.getByText('Input files')).toBeInTheDocument();
+    expect(screen.queryByText('Drag & drop PDF files')).not.toBeInTheDocument();
   });
 
   it('shows completed feedback and download CTA after successful merge', async () => {
@@ -60,23 +83,30 @@ describe('MergePdfPage', () => {
       expect(screen.getByText('Merge completed')).toBeInTheDocument();
     });
 
+    expect(screen.getByText('Your merged PDF is ready. The local process finished on this device.')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Merge PDF' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'New merge' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Download PDF' })).toBeInTheDocument();
   });
 
-  it('adds files to queue with subsequent selections', () => {
+  it('adds files to queue with subsequent selections', async () => {
+    const user = userEvent.setup();
     render(<MergePdfPage />);
 
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    let input = document.querySelector('input[type="file"]') as HTMLInputElement;
     const fileA = new File([new Uint8Array([1])], 'a.pdf', { type: 'application/pdf' });
     const fileB = new File([new Uint8Array([2])], 'b.pdf', { type: 'application/pdf' });
 
     fireEvent.change(input, { target: { files: [fileA] } });
+    await user.click(screen.getByRole('button', { name: /add more/i }));
+    input = document.querySelector('input[type="file"]') as HTMLInputElement;
     fireEvent.change(input, { target: { files: [fileB] } });
 
-    expect(screen.getByText('a.pdf')).toBeInTheDocument();
-    expect(screen.getByText('b.pdf')).toBeInTheDocument();
+    const names = screen
+      .getAllByTestId('uploaded-file-name')
+      .map((node) => node.textContent?.trim());
+    expect(names).toContain('a.pdf');
+    expect(names).toContain('b.pdf');
     expect(screen.getAllByText(/KB/i).length).toBeGreaterThan(0);
   });
 
@@ -91,10 +121,10 @@ describe('MergePdfPage', () => {
 
     await user.click(screen.getByRole('button', { name: 'Remove a.pdf' }));
 
-    expect(screen.queryByText(/a\.pdf/i)).not.toBeInTheDocument();
     const names = screen
       .getAllByTestId('uploaded-file-name')
       .map((node) => node.textContent?.trim());
+    expect(names).not.toContain('a.pdf');
     expect(names).toContain('b.pdf');
   });
 
@@ -118,7 +148,7 @@ describe('MergePdfPage', () => {
       .map((node) => node.textContent?.trim());
     expect(names[0]).toContain('b.pdf');
     expect(names[1]).toContain('a.pdf');
-    expect(screen.getByText('File order updated.')).toBeInTheDocument();
+    expect(screen.getByText('Ready to merge.')).toBeInTheDocument();
   });
 
   it('opens modal on Download PDF click and confirms download', async () => {
@@ -151,5 +181,47 @@ describe('MergePdfPage', () => {
 
     createObjectURLSpy.mockRestore();
     revokeObjectURLSpy.mockRestore();
+  });
+
+  it('shows CLI preview connected to the same merge process', () => {
+    render(<MergePdfPage />);
+
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const fileA = new File([new Uint8Array([1])], 'alpha.pdf', { type: 'application/pdf' });
+    const fileB = new File([new Uint8Array([2])], 'beta.pdf', { type: 'application/pdf' });
+    fireEvent.change(input, { target: { files: [fileA, fileB] } });
+
+    expect(screen.getByRole('heading', { name: 'CLI preview' })).toBeInTheDocument();
+    expect(screen.getByText('Run the same merge from your terminal.')).toBeInTheDocument();
+    expect(screen.getByText('filegap merge "alpha.pdf" "beta.pdf" > merged.pdf')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Try the CLI →' })).toHaveAttribute('href', '/cli?example=merge');
+    expect(screen.getByRole('button', { name: 'Copy CLI command' })).toBeInTheDocument();
+  });
+
+  it('reopens the picker from compact state and can clear the queued files', async () => {
+    const user = userEvent.setup();
+    render(<MergePdfPage />);
+
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const fileA = new File([new Uint8Array([1])], 'alpha.pdf', { type: 'application/pdf' });
+    const fileB = new File([new Uint8Array([2])], 'beta.pdf', { type: 'application/pdf' });
+    fireEvent.change(input, { target: { files: [fileA, fileB] } });
+
+    await waitFor(() => {
+      expect(screen.getByText('Input files')).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole('button', { name: /add more/i }));
+    expect(screen.getByText('Drag & drop PDF files')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Hide file picker' }));
+    await waitFor(() => {
+      expect(screen.getByText('Input files')).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole('button', { name: 'Clear files' }));
+    expect(screen.queryByText('Input files')).not.toBeInTheDocument();
+    expect(screen.getByText('Drag & drop PDF files')).toBeInTheDocument();
+    expect(screen.queryByText('Uploaded files')).not.toBeInTheDocument();
   });
 });
