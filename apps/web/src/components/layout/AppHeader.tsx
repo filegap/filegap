@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-type ToolIcon = 'merge' | 'split' | 'extract' | 'reorder' | 'optimize' | 'compress' | 'workflow';
+type ToolIcon = 'merge' | 'split' | 'extract' | 'reorder' | 'optimize' | 'compress';
 
 const TOOL_NAV_LINKS: Array<{ href: string; label: string; icon: ToolIcon }> = [
   { href: '/merge-pdf', label: 'Merge PDF', icon: 'merge' },
@@ -9,7 +9,6 @@ const TOOL_NAV_LINKS: Array<{ href: string; label: string; icon: ToolIcon }> = [
   { href: '/reorder-pdf', label: 'Reorder PDF', icon: 'reorder' },
   { href: '/optimize-pdf', label: 'Optimize PDF', icon: 'optimize' },
   { href: '/compress-pdf', label: 'Compress PDF', icon: 'compress' },
-  { href: '/workflow-builder', label: 'Workflow Builder', icon: 'workflow' },
 ];
 
 function ToolMenuIcon({ icon }: { icon: ToolIcon }) {
@@ -67,18 +66,6 @@ function ToolMenuIcon({ icon }: { icon: ToolIcon }) {
     );
   }
 
-  if (icon === 'workflow') {
-    return (
-      <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' aria-hidden='true' className='h-4 w-4'>
-        <circle cx='5' cy='6' r='2' stroke='currentColor' strokeWidth='2' />
-        <circle cx='12' cy='12' r='2' stroke='currentColor' strokeWidth='2' />
-        <circle cx='19' cy='18' r='2' stroke='currentColor' strokeWidth='2' />
-        <path d='m7 7.4 3.3 3.2' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
-        <path d='m13.7 13.6 3.3 3.1' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
-      </svg>
-    );
-  }
-
   return (
     <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' aria-hidden='true' className='h-4 w-4'>
       <path d='m21 16-4 4-4-4' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' />
@@ -91,7 +78,9 @@ function ToolMenuIcon({ icon }: { icon: ToolIcon }) {
 
 export function AppHeader() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isDesktopToolsOpen, setIsDesktopToolsOpen] = useState(false);
   const activePath = window.location.pathname;
+  const isToolPath = TOOL_NAV_LINKS.some((link) => link.href === activePath);
 
   function closeMobileMenu(): void {
     setIsMobileMenuOpen(false);
@@ -138,23 +127,82 @@ export function AppHeader() {
           </span>
         </a>
 
-        <nav aria-label='PDF tools navigation' className='hidden items-center gap-3 overflow-x-auto py-1 md:flex'>
-          {TOOL_NAV_LINKS.map((link) => {
-            const isActive = activePath === link.href;
-            return (
-              <a
-                key={link.href}
-                href={link.href}
-                className={`whitespace-nowrap rounded-lg border px-4 py-2 text-sm font-medium transition ${
-                  isActive
-                    ? 'border-brand-primary/25 bg-brand-primary/10 text-brand-primary'
-                    : 'border-transparent text-ui-muted hover:border-ui-border hover:bg-ui-bg hover:text-ui-text'
-                }`}
+        <nav aria-label='Primary navigation' className='hidden items-center gap-3 py-1 md:flex'>
+          <div className='relative'>
+            <button
+              type='button'
+              aria-haspopup='menu'
+              aria-expanded={isDesktopToolsOpen}
+              onClick={() => setIsDesktopToolsOpen((prev) => !prev)}
+              onBlur={(event) => {
+                if (!event.currentTarget.parentElement?.contains(event.relatedTarget as Node | null)) {
+                  setIsDesktopToolsOpen(false);
+                }
+              }}
+              className={`inline-flex items-center gap-2 whitespace-nowrap rounded-lg border px-4 py-2 text-sm font-medium transition ${
+                isToolPath || isDesktopToolsOpen
+                  ? 'border-brand-primary/25 bg-brand-primary/10 text-brand-primary'
+                  : 'border-transparent text-ui-muted hover:border-ui-border hover:bg-ui-bg hover:text-ui-text'
+              }`}
+            >
+              Tools
+              <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' aria-hidden='true' className='h-4 w-4'>
+                <path d='m6 9 6 6 6-6' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' />
+              </svg>
+            </button>
+
+            {isDesktopToolsOpen ? (
+              <div
+                role='menu'
+                aria-label='PDF tools'
+                className='absolute left-0 top-[calc(100%+10px)] z-50 w-[240px] rounded-xl border border-ui-border bg-ui-surface p-2 shadow-lg'
               >
-                {link.label}
-              </a>
-            );
-          })}
+                <p className='px-3 pb-1 pt-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-ui-muted'>
+                  PDF tools
+                </p>
+                {TOOL_NAV_LINKS.map((link) => {
+                  const isActive = activePath === link.href;
+                  return (
+                    <a
+                      key={link.href}
+                      href={link.href}
+                      role='menuitem'
+                      onClick={() => setIsDesktopToolsOpen(false)}
+                      className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${
+                        isActive
+                          ? 'bg-brand-primary/10 text-brand-primary'
+                          : 'text-ui-muted hover:bg-ui-bg hover:text-ui-text'
+                      }`}
+                    >
+                      <ToolMenuIcon icon={link.icon} />
+                      {link.label}
+                    </a>
+                  );
+                })}
+              </div>
+            ) : null}
+          </div>
+
+          <a
+            href='/workflow-builder'
+            className={`whitespace-nowrap rounded-lg border px-4 py-2 text-sm font-medium transition ${
+              activePath === '/workflow-builder'
+                ? 'border-brand-primary/25 bg-brand-primary/10 text-brand-primary'
+                : 'border-transparent text-ui-muted hover:border-ui-border hover:bg-ui-bg hover:text-ui-text'
+            }`}
+          >
+            Workflow Builder
+          </a>
+          <a
+            href='/privacy'
+            className={`whitespace-nowrap rounded-lg border px-4 py-2 text-sm font-medium transition ${
+              activePath === '/privacy'
+                ? 'border-brand-primary/25 bg-brand-primary/10 text-brand-primary'
+                : 'border-transparent text-ui-muted hover:border-ui-border hover:bg-ui-bg hover:text-ui-text'
+            }`}
+          >
+            Privacy
+          </a>
         </nav>
 
         <div className='relative md:hidden'>
@@ -202,9 +250,37 @@ export function AppHeader() {
           {isMobileMenuOpen ? (
             <nav
               id='mobile-tools-menu'
-              aria-label='Mobile PDF tools navigation'
+              aria-label='Mobile navigation'
               className='absolute right-0 top-[calc(100%+10px)] z-50 w-[220px] rounded-xl border border-ui-border bg-ui-surface p-2 shadow-lg'
             >
+              <p className='px-3 pb-1 pt-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-ui-muted'>
+                Filegap
+              </p>
+              <a
+                href='/workflow-builder'
+                onClick={closeMobileMenu}
+                className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${
+                  activePath === '/workflow-builder'
+                    ? 'bg-brand-primary/10 text-brand-primary'
+                    : 'text-ui-muted hover:bg-ui-bg hover:text-ui-text'
+                }`}
+              >
+                Workflow Builder
+              </a>
+              <a
+                href='/privacy'
+                onClick={closeMobileMenu}
+                className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${
+                  activePath === '/privacy'
+                    ? 'bg-brand-primary/10 text-brand-primary'
+                    : 'text-ui-muted hover:bg-ui-bg hover:text-ui-text'
+                }`}
+              >
+                Privacy
+              </a>
+              <p className='px-3 pb-1 pt-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-ui-muted'>
+                PDF tools
+              </p>
               {TOOL_NAV_LINKS.map((link) => {
                 const isActive = activePath === link.href;
                 return (
