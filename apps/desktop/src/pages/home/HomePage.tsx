@@ -1,8 +1,9 @@
+import { useEffect, useRef, useState } from 'react';
 import { AppShell } from '../../components/layout/AppShell';
 import { PageContainer } from '../../components/layout/PageContainer';
 import { ToolCard } from '../../components/ui/ToolCard';
 import { TrustNotice } from '../../components/ui/TrustNotice';
-import { ArrowUpDown, Files, GitBranch, Minimize2, Scissors, Split, Zap } from 'lucide-react';
+import { ArrowDown, ArrowUpDown, Files, GitBranch, Minimize2, Scissors, Split, Zap } from 'lucide-react';
 
 const FEATURED_TOOL = {
   name: 'Workflow Builder',
@@ -40,7 +41,7 @@ const ORGANIZE_TOOLS = [
   },
   {
     name: 'Reorder PDF',
-    description: 'Rearrange PDF pages and export a new file in seconds.',
+    description: 'Rearrange PDF pages and export a new file.',
     actionLabel: 'Reorder pages',
     href: '/reorder-pdf',
     icon: <ArrowUpDown />,
@@ -68,9 +69,48 @@ const REDUCE_TOOLS = [
 ];
 
 export function HomePage() {
+  const scrollContainerRef = useRef<HTMLElement | null>(null);
+  const [showScrollCta, setShowScrollCta] = useState(false);
+
+  useEffect(() => {
+    const scrollContainer = scrollContainerRef.current;
+
+    if (!scrollContainer) {
+      return;
+    }
+
+    const updateScrollCtaVisibility = () => {
+      const remainingScroll = scrollContainer.scrollHeight - scrollContainer.clientHeight - scrollContainer.scrollTop;
+      const hasScrollableContent = scrollContainer.scrollHeight - scrollContainer.clientHeight > 8;
+      setShowScrollCta(hasScrollableContent && remainingScroll > 12);
+    };
+
+    updateScrollCtaVisibility();
+    scrollContainer.addEventListener('scroll', updateScrollCtaVisibility);
+    window.addEventListener('resize', updateScrollCtaVisibility);
+
+    return () => {
+      scrollContainer.removeEventListener('scroll', updateScrollCtaVisibility);
+      window.removeEventListener('resize', updateScrollCtaVisibility);
+    };
+  }, []);
+
+  const handleScrollDown = () => {
+    const scrollContainer = scrollContainerRef.current;
+
+    if (!scrollContainer) {
+      return;
+    }
+
+    scrollContainer.scrollBy({
+      top: Math.max(scrollContainer.clientHeight * 0.82, 320),
+      behavior: 'smooth',
+    });
+  };
+
   return (
     <AppShell>
-      <PageContainer className="home-page-container">
+      <PageContainer ref={scrollContainerRef} className="home-page-container">
         <section className="home-main-center">
           <h1 className="home-title">Filegap — Private PDF tools</h1>
           <div className="home-trust-banner">
@@ -137,6 +177,17 @@ export function HomePage() {
           </section>
         </section>
       </PageContainer>
+      {showScrollCta ? (
+        <button
+          type="button"
+          className="home-scroll-cta"
+          onClick={handleScrollDown}
+          aria-label="Scroll down to discover more tools"
+          title="Discover more tools"
+        >
+          <ArrowDown />
+        </button>
+      ) : null}
     </AppShell>
   );
 }

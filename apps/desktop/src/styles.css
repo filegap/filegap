@@ -742,6 +742,43 @@ p {
   margin-top: 18px;
 }
 
+.home-scroll-cta {
+  position: fixed;
+  right: 28px;
+  bottom: 56px;
+  width: 48px;
+  height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 92%, #f3f4f6);
+  color: var(--muted);
+  cursor: pointer;
+  z-index: 25;
+  transition: border-color 180ms ease, background-color 180ms ease;
+}
+
+.home-scroll-cta svg {
+  width: 20px;
+  height: 20px;
+}
+
+.home-scroll-cta:hover {
+  border-color: color-mix(in srgb, var(--muted) 38%, var(--border));
+  background: color-mix(in srgb, var(--surface-alt) 70%, #e5e7eb);
+}
+
+.home-scroll-cta:hover svg {
+  animation: home-scroll-arrow-bounce 820ms ease-in-out infinite;
+}
+
+.home-scroll-cta:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent) 52%, white);
+  outline-offset: 2px;
+}
+
 .tool-card-link {
   display: block;
   cursor: pointer;
@@ -805,6 +842,7 @@ p {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  min-height: 44px;
   padding: 10px 16px;
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -908,6 +946,15 @@ p {
   overflow: hidden;
 }
 
+.tool-left-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  padding-right: 6px;
+}
+
 .tool-right-panel {
   flex: 0 0 380px;
   min-width: 0;
@@ -917,6 +964,9 @@ p {
   padding: 18px 16px 14px;
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
 }
 
 .card {
@@ -949,6 +999,10 @@ p {
 }
 
 .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   border: 1px solid transparent;
   border-radius: var(--radius-md);
   font-size: 0.82rem;
@@ -962,6 +1016,12 @@ p {
     box-shadow var(--motion-fast) var(--motion-ease),
     color var(--motion-fast) var(--motion-ease),
     transform var(--motion-fast) var(--motion-ease);
+}
+
+.btn svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
 }
 
 .btn:disabled {
@@ -1072,14 +1132,12 @@ p {
   color: var(--accent);
 }
 
-.workflow-builder-input-mode {
+.workflow-builder-input-section {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  max-width: 220px;
+  gap: 12px;
 }
 
-.workflow-builder-input-mode label,
 .workflow-step-field label {
   font-size: 0.75rem;
   font-weight: 600;
@@ -1108,9 +1166,11 @@ p {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: nowrap;
 }
 
 .workflow-step-badge {
+  flex: 0 0 auto;
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--surface);
@@ -1118,10 +1178,12 @@ p {
   font-size: 0.74rem;
   font-weight: 600;
   color: var(--muted);
+  white-space: nowrap;
 }
 
 .workflow-step-select {
   min-width: 180px;
+  flex: 1 1 auto;
 }
 
 .workflow-step-actions {
@@ -1129,6 +1191,7 @@ p {
   display: flex;
   align-items: center;
   gap: 6px;
+  flex: 0 0 auto;
 }
 
 .workflow-step-field {
@@ -1138,16 +1201,6 @@ p {
   max-width: 320px;
 }
 
-.workflow-errors-list {
-  margin: 0;
-  padding-left: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  color: #9a3412;
-  font-size: 0.8rem;
-}
-
 .workflow-valid-state {
   border: 1px solid color-mix(in srgb, var(--success) 35%, var(--border));
   border-radius: 10px;
@@ -1155,6 +1208,38 @@ p {
   color: color-mix(in srgb, var(--success) 88%, black);
   padding: 10px;
   font-size: 0.82rem;
+}
+
+.workflow-warning-state {
+  border: 1px solid color-mix(in srgb, #f59e0b 38%, var(--border));
+  border-radius: 10px;
+  background: color-mix(in srgb, #f59e0b 10%, white);
+  color: color-mix(in srgb, #92400e 92%, black);
+  padding: 10px;
+  display: grid;
+  gap: 6px;
+  font-size: 0.82rem;
+}
+
+.workflow-warning-state p {
+  margin: 0;
+}
+
+.workflow-imported-state {
+  display: grid;
+  gap: 4px;
+}
+
+.workflow-imported-label {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.workflow-imported-files {
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
 }
 
 .workflow-cli-preview {
@@ -1167,6 +1252,20 @@ p {
   overflow: auto;
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+.workflow-builder-actions {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.workflow-builder-add-step {
+  align-self: flex-start;
+}
+
+.workflow-run-btn {
+  width: 100%;
 }
 
 .file-list {
@@ -1231,13 +1330,11 @@ p {
 }
 
 .merge-left-panel {
-  height: 100%;
-  flex: 1;
-  min-height: 0;
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .dropzone {
@@ -1878,6 +1975,76 @@ p {
   font-weight: 700;
 }
 
+.tool-process-flow-helper,
+.tool-cli-preview-helper {
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.tool-process-flow-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tool-process-flow-step-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tool-process-flow-step {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.82rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+}
+
+.tool-process-flow-step-active {
+  border-color: color-mix(in srgb, var(--accent) 46%, var(--border));
+  background: color-mix(in srgb, var(--accent) 9%, white);
+  color: var(--accent);
+}
+
+.tool-process-flow-arrow {
+  width: 14px;
+  height: 14px;
+  color: var(--muted);
+}
+
+.tool-process-flow-builder-btn {
+  justify-content: center;
+}
+
+.tool-cli-preview-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.tool-cli-preview-code {
+  margin: 0;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface-alt);
+  padding: 12px 14px;
+  color: var(--text);
+  font-family: 'JetBrains Mono', 'SFMono-Regular', 'Menlo', monospace;
+  font-size: 0.79rem;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 .output-label {
   color: var(--muted);
   font-size: 0.76rem;
@@ -2151,6 +2318,13 @@ p {
     font-size: 0.95rem;
   }
 
+  .home-scroll-cta {
+    right: 16px;
+    bottom: 50px;
+    width: 44px;
+    height: 44px;
+  }
+
   .file-item {
     flex-direction: column;
     align-items: flex-start;
@@ -2173,6 +2347,16 @@ p {
   .dropzone {
     min-height: 170px;
     padding: 14px;
+  }
+}
+
+@keyframes home-scroll-arrow-bounce {
+  0%,
+  100% {
+    transform: translateY(-1px);
+  }
+  45% {
+    transform: translateY(3px);
   }
 }
 

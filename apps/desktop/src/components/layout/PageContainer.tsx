@@ -1,10 +1,17 @@
-import type { PropsWithChildren } from 'react';
+import { forwardRef, type PropsWithChildren } from 'react';
 
 type PageContainerProps = PropsWithChildren<{
   className?: string;
 }>;
 
-export function PageContainer({ children, className }: PageContainerProps) {
+export const PageContainer = forwardRef<HTMLElement, PageContainerProps>(function PageContainer(
+  { children, className },
+  ref,
+) {
   const classes = ['page-container', className].filter(Boolean).join(' ');
-  return <main className={classes}>{children}</main>;
-}
+  return (
+    <main ref={ref} className={classes}>
+      {children}
+    </main>
+  );
+});
