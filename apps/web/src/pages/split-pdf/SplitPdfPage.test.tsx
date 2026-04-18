@@ -131,7 +131,13 @@ describe('SplitPdfPage', () => {
     await user.clear(rangesInput);
     await user.type(rangesInput, '1-2,3');
 
-    expect(screen.getByText('filegap split "source.pdf" --pages "1-2,3" > output.zip')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(
+        screen.getByText((_, node) =>
+          node?.tagName === 'CODE' && node.textContent === 'filegap split "source.pdf" --pages "1-2,3" > output.zip'
+        )
+      ).toBeInTheDocument();
+    });
     expect(screen.getByRole('link', { name: 'Try the CLI →' })).toHaveAttribute('href', '/cli?example=split');
   });
 
@@ -192,6 +198,8 @@ describe('SplitPdfPage', () => {
 
     expect(screen.getByRole('heading', { name: 'Build PDF workflow — fast, private, and local' })).toBeInTheDocument();
     expect(screen.getAllByText('source.pdf').length).toBeGreaterThan(0);
-    expect(screen.getByDisplayValue('1-2,3')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('1-2,3')).toBeInTheDocument();
+    });
   });
 });

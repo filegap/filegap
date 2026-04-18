@@ -157,6 +157,8 @@ describe('ReorderPdfPage', () => {
 
     expect(screen.getByRole('heading', { name: 'Build PDF workflow — fast, private, and local' })).toBeInTheDocument();
     expect(screen.getAllByText('source.pdf').length).toBeGreaterThan(0);
-    expect(screen.getByDisplayValue('2,1,3,4')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('2,1,3,4')).toBeInTheDocument();
+    });
   });
 });
