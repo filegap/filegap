@@ -253,10 +253,10 @@ describe('MergePdfPage', () => {
 
     await user.click(screen.getByRole('button', { name: 'Open in Workflow Builder' }));
 
-    expect(screen.getByRole('heading', { name: 'Workflow Builder (Preview)' })).toBeInTheDocument();
-    expect(screen.getByDisplayValue('Multiple PDFs')).toBeInTheDocument();
-    expect(screen.getByText('Workflow imported locally. Review the flow and run it when ready.')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Build PDF workflow — fast, private, and local' })).toBeInTheDocument();
+    expect(screen.getByText(/Imported from merge/i)).toBeInTheDocument();
     expect(screen.getByText('alpha.pdf')).toBeInTheDocument();
     expect(screen.getByText('beta.pdf')).toBeInTheDocument();
+    expect(screen.getByText(/filegap merge/)).toBeInTheDocument();
   });
 });

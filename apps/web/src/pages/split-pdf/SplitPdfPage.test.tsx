@@ -190,8 +190,8 @@ describe('SplitPdfPage', () => {
     await user.type(rangesInput, '1-2,3');
     await user.click(screen.getByRole('button', { name: 'Open in Workflow Builder' }));
 
-    expect(screen.getByRole('heading', { name: 'Workflow Builder (Preview)' })).toBeInTheDocument();
-    expect(screen.getByText('source.pdf')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Build PDF workflow — fast, private, and local' })).toBeInTheDocument();
+    expect(screen.getAllByText('source.pdf').length).toBeGreaterThan(0);
     expect(screen.getByDisplayValue('1-2,3')).toBeInTheDocument();
   });
 });

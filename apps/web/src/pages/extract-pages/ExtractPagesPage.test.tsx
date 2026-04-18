@@ -138,7 +138,7 @@ describe('ExtractPagesPage', () => {
       expect(screen.getByText('Input file')).toBeInTheDocument();
     });
 
-    expect(screen.getByText('source.pdf')).toBeInTheDocument();
+    expect(screen.getAllByText('source.pdf').length).toBeGreaterThan(0);
     expect(screen.getByText('1 KB • 5 pages')).toBeInTheDocument();
     expect(screen.queryByText('Drag & drop PDF files')).not.toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Processing steps' })).toBeInTheDocument();
@@ -218,8 +218,8 @@ describe('ExtractPagesPage', () => {
     await user.type(rangesInput, '1-2,4');
     await user.click(screen.getByRole('button', { name: 'Open in Workflow Builder' }));
 
-    expect(screen.getByRole('heading', { name: 'Workflow Builder (Preview)' })).toBeInTheDocument();
-    expect(screen.getByText('source.pdf')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Build PDF workflow — fast, private, and local' })).toBeInTheDocument();
+    expect(screen.getAllByText('source.pdf').length).toBeGreaterThan(0);
     expect(screen.getByDisplayValue('1-2,4')).toBeInTheDocument();
   });
 

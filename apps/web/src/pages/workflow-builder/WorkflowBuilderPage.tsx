@@ -1,11 +1,16 @@
-import { ArrowDown, ArrowUp, GitBranch, Plus, Trash2 } from 'lucide-react';
+import { ArrowDown, ArrowUp, FileText, Plus, Trash2, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { PDFDocument } from 'pdf-lib';
 
 import { ToolLayout } from '../../components/layout/ToolLayout';
+import { ToolActionCard } from '../../components/layout/ToolActionCard';
+import { SectionBlock } from '../../components/layout/SectionBlock';
 import { Button } from '../../components/ui/Button';
+import { CliPreviewCard } from '../../components/ui/CliPreviewCard';
 import { DropZone } from '../../components/ui/DropZone';
+import { SimpleProcessFlow } from '../../components/ui/SimpleProcessFlow';
+import { UploadedFilesTable } from '../../components/ui/UploadedFilesTable';
 import {
   compressPdfBuffer,
   extractPdfByRanges,
@@ -19,8 +24,8 @@ import {
 import {
   buildWorkflowCliPreview,
   createWorkflowStep,
-  type WorkflowDraft,
   type WorkflowBuilderNavigationState,
+  type WorkflowDraft,
   type WorkflowOperation,
   validateWorkflowDraft,
 } from '../../lib/workflowBuilder';
@@ -34,6 +39,30 @@ const STEP_OPTIONS: Array<{ value: WorkflowOperation; label: string }> = [
   { value: 'split', label: 'Split' },
 ];
 
+const WORKFLOW_PAGE_CONTENT = {
+  howTitle: 'How to build a PDF workflow',
+  howSteps: [
+    'Add one or more PDF files.',
+    'Choose your processing steps in order.',
+    'Run the workflow locally and download the result.',
+  ],
+  whyTitle: 'Why use this tool',
+  whyItems: [
+    {
+      title: 'Simple linear flow',
+      text: 'Build predictable V1 workflows with clear step-by-step processing.',
+    },
+    {
+      title: 'Private by design',
+      text: 'Everything runs on your device with no file uploads.',
+    },
+    {
+      title: 'Reusable from CLI',
+      text: 'Copy the equivalent command and run the same flow in scripts.',
+    },
+  ],
+};
+
 type StatusTone = 'neutral' | 'info' | 'error' | 'success';
 
 type WorkflowOutput = {
@@ -42,6 +71,14 @@ type WorkflowOutput = {
   bytes: Uint8Array;
   pageCount: number;
 };
+
+function normalizeDraftInputMode(draft: WorkflowDraft): WorkflowDraft {
+  const inputMode = draft.steps[0]?.operation === 'merge' ? 'multiple' : 'single';
+  if (draft.inputMode === inputMode) {
+    return draft;
+  }
+  return { ...draft, inputMode };
+}
 
 function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
   const copy = new Uint8Array(bytes.byteLength);
@@ -74,44 +111,109 @@ function buildOutputName(baseName: string, index: number, total: number): string
   return `${stem}-workflow-part-${index + 1}.pdf`;
 }
 
+function formatFileSize(sizeBytes: number): string {
+  if (!Number.isFinite(sizeBytes) || sizeBytes <= 0) {
+    return '0 B';
+  }
+
+  const units = ['B', 'KB', 'MB', 'GB'];
+  const exponent = Math.min(Math.floor(Math.log(sizeBytes) / Math.log(1024)), units.length - 1);
+  const value = sizeBytes / 1024 ** exponent;
+  const precision = value >= 100 || exponent === 0 ? 0 : value >= 10 ? 1 : 2;
+  return `${new Intl.NumberFormat('en-US', { maximumFractionDigits: precision }).format(value)} ${units[exponent]}`;
+}
+
+function stepLabel(operation: WorkflowOperation): string {
+  return STEP_OPTIONS.find((option) => option.value === operation)?.label ?? 'Step';
+}
+
 export function WorkflowBuilderPage() {
   const location = useLocation();
   const navigationState = (location.state ?? null) as WorkflowBuilderNavigationState | null;
-  const initialDraft = navigationState?.draft ?? {
-    inputMode: 'single',
-    steps: [createWorkflowStep('optimize')],
-  };
+  const initialDraft = normalizeDraftInputMode(
+    navigationState?.draft ?? {
+      inputMode: 'single',
+      steps: [createWorkflowStep('optimize')],
+    }
+  );
   const initialSourceFiles = navigationState?.sourceFiles ?? [];
+
   const [draft, setDraft] = useState<WorkflowDraft>(initialDraft);
   const [sourceFiles, setSourceFiles] = useState<File[]>(initialSourceFiles);
   const [outputs, setOutputs] = useState<WorkflowOutput[]>([]);
   const [isRunning, setIsRunning] = useState(false);
+  const [isDropZoneCollapsed, setIsDropZoneCollapsed] = useState(initialSourceFiles.length > 0);
   const [status, setStatus] = useState<{ tone: StatusTone; message: string }>({
     tone: initialSourceFiles.length > 0 ? 'info' : 'neutral',
     message:
       initialSourceFiles.length > 0
-        ? 'Workflow imported locally. Review the flow and run it when ready.'
+        ? 'Workflow imported locally. Review steps and run when ready.'
         : 'Select input PDF files and run your workflow.',
   });
-  const [copyFeedback, setCopyFeedback] = useState('');
+
   const errors = useMemo(() => validateWorkflowDraft(draft), [draft]);
   const cliPreview = useMemo(() => buildWorkflowCliPreview(draft), [draft]);
   const requiredInputCount = draft.inputMode === 'multiple' ? 2 : 1;
+  const hasAnyInputs = sourceFiles.length > 0;
   const hasEnoughInputs = sourceFiles.length >= requiredInputCount;
-  const canRun = !isRunning && hasEnoughInputs && errors.length === 0;
+  const canRun = !isRunning && hasAnyInputs && hasEnoughInputs && errors.length === 0;
+  const runStepsLabel = `${draft.steps.length} ${draft.steps.length === 1 ? 'step' : 'steps'} ready`;
+  const chainSteps = ['Input', ...draft.steps.map((step) => stepLabel(step.operation)), 'Output'];
+  const inputError =
+    draft.inputMode === 'multiple' && sourceFiles.length === 1
+      ? 'Merge requires at least two input PDFs.'
+      : draft.inputMode === 'single' && sourceFiles.length > 1
+        ? 'Use Merge as the first step to process multiple input PDFs.'
+        : null;
+
+  const stepErrors = useMemo(() => {
+    const byStep = new Map<string, string[]>();
+    draft.steps.forEach((step, index) => {
+      const messages: string[] = [];
+      if (step.operation === 'merge' && index !== 0) {
+        messages.push('Merge can only be used as the first step in Workflow V1.');
+      }
+      if (step.operation === 'split' && index !== draft.steps.length - 1) {
+        messages.push('Split must be the last step because it produces multiple outputs.');
+      }
+      byStep.set(step.id, messages);
+    });
+    return byStep;
+  }, [draft.steps]);
+
+  const uploadedFiles = sourceFiles.map((file, index) => ({
+    id: `${file.name}-${file.size}-${file.lastModified}-${index}`,
+    filename: file.name,
+    sizeBytes: file.size,
+    pages: null,
+    pagesStatus: 'loading' as const,
+  }));
+  const dropZoneLoadedName =
+    sourceFiles.length === 0
+      ? null
+      : sourceFiles.length === 1
+        ? sourceFiles[0].name
+        : `${sourceFiles[0].name} + ${sourceFiles.length - 1} more`;
+  const totalSizeBytes = sourceFiles.reduce((sum, file) => sum + file.size, 0);
+  const inputSummaryMeta = `${sourceFiles.length} file${sourceFiles.length === 1 ? '' : 's'} • ${formatFileSize(totalSizeBytes)}`;
+  const actionMessageClassName = status.tone === 'error' ? 'text-sm text-red-600' : 'text-sm text-ui-muted';
 
   function addStep() {
-    setDraft((current) => ({
-      ...current,
-      steps: [...current.steps, createWorkflowStep('compress')],
-    }));
+    setDraft((current) =>
+      normalizeDraftInputMode({
+        ...current,
+        steps: [...current.steps, createWorkflowStep('compress')],
+      })
+    );
   }
 
   function removeStep(stepId: string) {
-    setDraft((current) => ({
-      ...current,
-      steps: current.steps.filter((step) => step.id !== stepId),
-    }));
+    setDraft((current) =>
+      normalizeDraftInputMode({
+        ...current,
+        steps: current.steps.filter((step) => step.id !== stepId),
+      })
+    );
   }
 
   function moveStep(stepId: string, direction: 'up' | 'down') {
@@ -127,15 +229,17 @@ export function WorkflowBuilderPage() {
       const next = [...current.steps];
       const [item] = next.splice(index, 1);
       next.splice(targetIndex, 0, item);
-      return { ...current, steps: next };
+      return normalizeDraftInputMode({ ...current, steps: next });
     });
   }
 
   function updateStep(stepId: string, patch: Partial<WorkflowDraft['steps'][number]>) {
-    setDraft((current) => ({
-      ...current,
-      steps: current.steps.map((step) => (step.id === stepId ? { ...step, ...patch } : step)),
-    }));
+    setDraft((current) =>
+      normalizeDraftInputMode({
+        ...current,
+        steps: current.steps.map((step) => (step.id === stepId ? { ...step, ...patch } : step)),
+      })
+    );
   }
 
   function handleSourceSelected(files: File[]) {
@@ -143,20 +247,24 @@ export function WorkflowBuilderPage() {
       return;
     }
     setOutputs([]);
-    if (draft.inputMode === 'single') {
-      setSourceFiles([files[0]]);
-      return;
-    }
     setSourceFiles((current) => [...current, ...files]);
+    setIsDropZoneCollapsed(true);
   }
 
   function removeSourceFile(index: number) {
-    setSourceFiles((current) => current.filter((_, itemIndex) => itemIndex !== index));
+    setSourceFiles((current) => {
+      const next = current.filter((_, itemIndex) => itemIndex !== index);
+      if (next.length === 0) {
+        setIsDropZoneCollapsed(false);
+      }
+      return next;
+    });
   }
 
   function clearSourceFiles() {
     setSourceFiles([]);
     setOutputs([]);
+    setIsDropZoneCollapsed(false);
     setStatus({ tone: 'neutral', message: 'Select input PDF files and run your workflow.' });
   }
 
@@ -165,7 +273,7 @@ export function WorkflowBuilderPage() {
       setStatus({
         tone: 'error',
         message: hasEnoughInputs
-          ? 'Fix validation issues before running.'
+          ? 'Fix inline errors before running.'
           : `Select at least ${requiredInputCount} input PDF file${requiredInputCount > 1 ? 's' : ''}.`,
       });
       return;
@@ -176,9 +284,7 @@ export function WorkflowBuilderPage() {
     setStatus({ tone: 'info', message: 'Running workflow locally in your browser...' });
 
     try {
-      let currentDocs: Uint8Array[] = await Promise.all(
-        sourceFiles.map(async (file) => new Uint8Array(await file.arrayBuffer()))
-      );
+      let currentDocs: Uint8Array[] = await Promise.all(sourceFiles.map(async (file) => new Uint8Array(await file.arrayBuffer())));
 
       for (const step of draft.steps) {
         if (step.operation === 'merge') {
@@ -238,6 +344,7 @@ export function WorkflowBuilderPage() {
           pageCount: await getPageCountFromBytes(bytes),
         }))
       );
+
       setOutputs(finalOutputs);
       setStatus({
         tone: 'success',
@@ -261,279 +368,303 @@ export function WorkflowBuilderPage() {
     outputs.forEach((output) => downloadOutput(output));
   }
 
-  async function copyCliPreview() {
-    try {
-      await navigator.clipboard.writeText(cliPreview);
-      setCopyFeedback('CLI preview copied.');
-      setTimeout(() => setCopyFeedback(''), 1600);
-    } catch {
-      setCopyFeedback('Copy failed.');
-      setTimeout(() => setCopyFeedback(''), 1600);
-    }
-  }
-
   return (
     <ToolLayout
-      title='Workflow Builder (Preview)'
-      description='Compose local PDF pipelines with visual blocks. Workflow V1 supports linear chains.'
-      trustLine='Local processing only · No uploads'
-      metaTitle='Workflow Builder Preview | Filegap'
-      metaDescription='Build visual local PDF workflows in Filegap with a linear pipeline preview.'
+      title='Build PDF workflow — fast, private, and local'
+      description='Create a simple linear chain of local PDF steps and run it directly in your browser.'
+      trustLine='Processed locally on your device — no uploads'
+      metaTitle='Workflow Builder | Filegap'
+      metaDescription='Build linear local PDF workflows in Filegap with a simple, task-focused flow.'
     >
-      <section className='space-y-3 rounded-2xl border border-ui-border bg-ui-surface p-4 sm:p-5 lg:p-6'>
-        <div className='flex items-center gap-2'>
-          <GitBranch className='h-4 w-4 text-brand-primary' aria-hidden='true' />
-          <h2 className='font-heading text-xl font-semibold text-ui-text'>Pipeline blocks</h2>
-        </div>
-        <p className='text-sm text-ui-muted'>
-          Desktop view uses a visual pipeline canvas. On mobile, controls stay linear for faster interaction.
-        </p>
+      <ToolActionCard className='space-y-6'>
+        {navigationState?.template ? (
+          <section className='rounded-2xl border border-ui-border bg-ui-bg/55 px-4 py-3'>
+            <p className='text-sm font-medium text-ui-text'>Imported from {navigationState.template}</p>
+            <p className='mt-1 text-xs text-ui-muted'>Existing files and step draft were loaded into this workflow.</p>
+          </section>
+        ) : null}
 
-        <div className='grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.85fr)] lg:gap-5'>
-          <div className='rounded-2xl border border-ui-border bg-ui-bg/70 p-3 sm:p-4'>
-            <h3 className='text-sm font-semibold uppercase tracking-[0.08em] text-ui-muted'>Flow canvas</h3>
-            <div className='mt-4 space-y-3'>
-              <div className='relative rounded-xl border border-brand-primary/30 bg-brand-primary/5 p-3 sm:p-4'>
-                <span className='rounded-md border border-brand-primary/30 bg-ui-surface px-2 py-1 text-xs font-semibold text-ui-text'>
-                  Input
+        <section className='space-y-3'>
+          {hasAnyInputs ? <h2 className='font-heading text-xl font-semibold text-ui-text'>Input files</h2> : null}
+          {sourceFiles.length === 0 ? (
+            <DropZone onFilesSelected={handleSourceSelected} multiple disabled={isRunning} />
+          ) : isDropZoneCollapsed ? (
+            <div className='animate-[fade-in_180ms_ease-out] space-y-2'>
+              <div className='flex w-full items-center gap-3 rounded-xl border border-ui-border/70 bg-ui-surface px-3 py-2.5 text-left transition-all duration-200 hover:border-brand-primary/35 hover:bg-ui-bg'>
+                <span className='inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-ui-bg text-ui-muted'>
+                  <FileText className='h-4.5 w-4.5' />
                 </span>
-                <p className='mt-2 text-sm text-ui-text'>
-                  {sourceFiles.length > 0 ? `${sourceFiles.length} file${sourceFiles.length > 1 ? 's' : ''} loaded` : 'No files selected'}
-                </p>
+                <span className='min-w-0 flex-1'>
+                  <span className='block text-sm font-semibold text-ui-text'>
+                    {sourceFiles.length === 1 ? sourceFiles[0].name : `${sourceFiles.length} PDFs ready`}
+                  </span>
+                  <span className='block text-xs text-ui-muted'>{inputSummaryMeta}</span>
+                </span>
+                <button
+                  type='button'
+                  onClick={() => setIsDropZoneCollapsed(false)}
+                  className='inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-ui-muted transition hover:bg-ui-bg hover:text-ui-text'
+                >
+                  <span className='hidden sm:inline'>Add more</span>
+                  <Plus className='h-4 w-4' />
+                </button>
+                <button
+                  type='button'
+                  onClick={clearSourceFiles}
+                  aria-label='Clear files'
+                  title='Clear files'
+                  className='inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-ui-muted transition hover:bg-ui-bg hover:text-ui-text'
+                >
+                  <Trash2 className='h-4 w-4' />
+                </button>
               </div>
-
-              {draft.steps.map((step, index) => (
-                <div key={step.id} className='relative'>
-                  <div className='mx-auto h-4 w-px bg-ui-border' aria-hidden='true' />
-                  <div className='rounded-xl border border-ui-border bg-ui-surface p-3 sm:p-4'>
-                    <div className='flex flex-wrap items-center gap-2'>
-                      <span className='rounded-md border border-ui-border bg-ui-bg px-2 py-1 text-xs font-semibold text-ui-muted'>
-                        Step {index + 1}
-                      </span>
-                      <select
-                        value={step.operation}
-                        onChange={(event) => updateStep(step.id, { operation: event.target.value as WorkflowOperation })}
-                        className='min-w-[180px] flex-1 rounded-lg border border-ui-border bg-ui-surface px-3 py-2 text-sm text-ui-text outline-none transition focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20'
-                      >
-                        {STEP_OPTIONS.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
-                      <div className='ml-auto flex items-center gap-2'>
-                        <Button variant='secondary' size='md' onClick={() => moveStep(step.id, 'up')} disabled={index === 0}>
-                          <ArrowUp className='h-4 w-4' aria-hidden='true' />
-                        </Button>
-                        <Button variant='secondary' size='md' onClick={() => moveStep(step.id, 'down')} disabled={index === draft.steps.length - 1}>
-                          <ArrowDown className='h-4 w-4' aria-hidden='true' />
-                        </Button>
-                        <Button variant='secondary' size='md' onClick={() => removeStep(step.id)} disabled={draft.steps.length === 1}>
-                          <Trash2 className='h-4 w-4' aria-hidden='true' />
-                        </Button>
-                      </div>
-                    </div>
-
-                    {step.operation === 'extract' ? (
-                      <div className='mt-3'>
-                        <label className='text-xs font-semibold uppercase tracking-[0.08em] text-ui-muted'>Page ranges</label>
-                        <input
-                          value={step.pageRanges}
-                          onChange={(event) => updateStep(step.id, { pageRanges: event.target.value })}
-                          className='mt-1 w-full rounded-lg border border-ui-border bg-ui-surface px-3 py-2 text-sm text-ui-text outline-none transition focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20'
-                          placeholder='1-3, 5'
-                        />
-                      </div>
-                    ) : null}
-
-                    {step.operation === 'reorder' ? (
-                      <div className='mt-3'>
-                        <label className='text-xs font-semibold uppercase tracking-[0.08em] text-ui-muted'>Page order</label>
-                        <input
-                          value={step.pageOrder}
-                          onChange={(event) => updateStep(step.id, { pageOrder: event.target.value })}
-                          className='mt-1 w-full rounded-lg border border-ui-border bg-ui-surface px-3 py-2 text-sm text-ui-text outline-none transition focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20'
-                          placeholder='3,2,1'
-                        />
-                      </div>
-                    ) : null}
-
-                    {step.operation === 'split' ? (
-                      <div className='mt-3'>
-                        <label className='text-xs font-semibold uppercase tracking-[0.08em] text-ui-muted'>Split ranges</label>
-                        <input
-                          value={step.splitRanges}
-                          onChange={(event) => updateStep(step.id, { splitRanges: event.target.value })}
-                          className='mt-1 w-full rounded-lg border border-ui-border bg-ui-surface px-3 py-2 text-sm text-ui-text outline-none transition focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20'
-                          placeholder='1-2,3-4'
-                        />
-                      </div>
-                    ) : null}
-
-                    {step.operation === 'compress' ? (
-                      <div className='mt-3 max-w-[220px]'>
-                        <label className='text-xs font-semibold uppercase tracking-[0.08em] text-ui-muted'>Preset</label>
-                        <select
-                          value={step.compressionPreset}
-                          onChange={(event) =>
-                            updateStep(
-                              step.id,
-                              { compressionPreset: event.target.value as WorkflowDraft['steps'][number]['compressionPreset'] }
-                            )
-                          }
-                          className='mt-1 w-full rounded-lg border border-ui-border bg-ui-surface px-3 py-2 text-sm text-ui-text outline-none transition focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20'
-                        >
-                          <option value='low'>Low</option>
-                          <option value='balanced'>Balanced</option>
-                          <option value='strong'>Strong</option>
-                        </select>
-                      </div>
-                    ) : null}
-                  </div>
-                </div>
-              ))}
-
-              <div className='mx-auto h-4 w-px bg-ui-border' aria-hidden='true' />
+            </div>
+          ) : (
+            <div className='relative animate-[fade-in_180ms_ease-out]'>
               <button
                 type='button'
-                onClick={addStep}
-                className='flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-ui-border bg-ui-surface px-3 py-3 text-sm font-semibold text-ui-muted transition hover:border-brand-primary/40 hover:text-ui-text'
+                onClick={() => setIsDropZoneCollapsed(true)}
+                aria-label='Hide file picker'
+                title='Hide file picker'
+                className='absolute right-3 top-3 z-10 inline-flex h-9 w-9 items-center justify-center rounded-lg border border-ui-border bg-ui-surface text-ui-text transition hover:bg-ui-bg'
               >
-                <Plus className='h-4 w-4' aria-hidden='true' />
-                Add step
+                <X className='h-4 w-4' />
+              </button>
+              <DropZone onFilesSelected={handleSourceSelected} multiple disabled={isRunning} loadedFileName={dropZoneLoadedName} />
+            </div>
+          )}
+          {uploadedFiles.length > 0 ? (
+            <div className='flex items-center justify-end gap-3'>
+              <button
+                type='button'
+                onClick={clearSourceFiles}
+                className='rounded-md border border-ui-border px-2.5 py-1 text-xs font-medium text-ui-muted transition hover:bg-ui-bg hover:text-ui-text'
+              >
+                Clear all
               </button>
             </div>
-          </div>
-
-          <aside className='space-y-4 rounded-2xl border border-ui-border bg-ui-surface p-3 sm:p-4'>
-            <div className='space-y-1.5'>
-              <label htmlFor='workflow-input-mode' className='text-xs font-semibold uppercase tracking-[0.08em] text-ui-muted'>
-                Input mode
-              </label>
-              <select
-                id='workflow-input-mode'
-                value={draft.inputMode}
-                onChange={(event) => {
-                  const mode = event.target.value as WorkflowDraft['inputMode'];
-                  setDraft((current) => ({ ...current, inputMode: mode }));
-                  setSourceFiles((current) => (mode === 'single' ? current.slice(0, 1) : current));
-                  setOutputs([]);
+          ) : null}
+          {uploadedFiles.length > 0 ? (
+            <section className='space-y-2'>
+              <h2 className='font-heading text-xl font-semibold text-ui-text'>Uploaded files</h2>
+              <UploadedFilesTable
+                files={uploadedFiles}
+                reorderable
+                showTitle={false}
+                showHeaderRow={false}
+                onRemove={(id) => {
+                  const index = uploadedFiles.findIndex((file) => file.id === id);
+                  if (index < 0) {
+                    return;
+                  }
+                  removeSourceFile(index);
                 }}
-                className='w-full rounded-lg border border-ui-border bg-ui-surface px-3 py-2 text-sm text-ui-text outline-none transition focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20'
-              >
-                <option value='single'>Single PDF</option>
-                <option value='multiple'>Multiple PDFs</option>
-              </select>
-            </div>
+                onReorder={(fromIndex, toIndex) => {
+                  setSourceFiles((current) => {
+                    if (toIndex < 0 || toIndex >= current.length) {
+                      return current;
+                    }
+                    const next = [...current];
+                    const [item] = next.splice(fromIndex, 1);
+                    next.splice(toIndex, 0, item);
+                    return next;
+                  });
+                }}
+              />
+            </section>
+          ) : null}
+          {inputError ? <p className='text-sm text-red-600'>{inputError}</p> : null}
+        </section>
 
-            <div className='space-y-2'>
-              <h3 className='text-sm font-semibold text-ui-text'>Input files</h3>
-              <DropZone onFilesSelected={handleSourceSelected} multiple={draft.inputMode === 'multiple'} disabled={isRunning} />
-              {sourceFiles.length > 0 ? (
-                <ul className='space-y-2'>
-                  {sourceFiles.map((file, index) => (
-                    <li key={`${file.name}-${index}`} className='flex items-center justify-between gap-3 rounded-lg border border-ui-border bg-ui-bg/70 px-3 py-2'>
-                      <span className='truncate text-sm text-ui-text'>{file.name}</span>
-                      <button
-                        type='button'
-                        onClick={() => removeSourceFile(index)}
-                        className='rounded-md border border-ui-border px-2 py-1 text-xs font-medium text-ui-muted transition hover:bg-ui-bg hover:text-ui-text'
+        {hasAnyInputs ? (
+          <section className='space-y-3'>
+            <h2 className='font-heading text-xl font-semibold text-ui-text'>Processing steps</h2>
+            <SimpleProcessFlow
+              showTitle={false}
+              description='Input and output are fixed; steps run in order between them.'
+              steps={chainSteps}
+              activeStepIndex={Math.min(1, chainSteps.length - 1)}
+            />
+
+            <div className='space-y-3'>
+              {draft.steps.map((step, index) => (
+                <article key={step.id} className='rounded-xl border border-ui-border bg-ui-bg/55 p-3 sm:p-4'>
+                  <div className='flex flex-wrap items-center gap-2'>
+                    <span className='rounded-md border border-ui-border bg-ui-surface px-2 py-1 text-xs font-semibold text-ui-muted'>
+                      Step {index + 1}
+                    </span>
+                    <select
+                      value={step.operation}
+                      onChange={(event) => updateStep(step.id, { operation: event.target.value as WorkflowOperation })}
+                      className='min-w-[180px] flex-1 rounded-lg border border-ui-border bg-ui-surface px-3 py-2 text-sm text-ui-text outline-none transition focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20'
+                    >
+                      {STEP_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                    <div className='ml-auto flex items-center gap-2'>
+                      <Button variant='secondary' size='md' onClick={() => moveStep(step.id, 'up')} disabled={index === 0}>
+                        <ArrowUp className='h-4 w-4' aria-hidden='true' />
+                      </Button>
+                      <Button variant='secondary' size='md' onClick={() => moveStep(step.id, 'down')} disabled={index === draft.steps.length - 1}>
+                        <ArrowDown className='h-4 w-4' aria-hidden='true' />
+                      </Button>
+                      <Button variant='secondary' size='md' onClick={() => removeStep(step.id)} disabled={draft.steps.length === 1}>
+                        <Trash2 className='h-4 w-4' aria-hidden='true' />
+                      </Button>
+                    </div>
+                  </div>
+
+                  {step.operation === 'extract' ? (
+                    <div className='mt-3'>
+                      <label className='text-xs font-semibold uppercase tracking-[0.08em] text-ui-muted'>Page ranges</label>
+                      <input
+                        value={step.pageRanges}
+                        onChange={(event) => updateStep(step.id, { pageRanges: event.target.value })}
+                        className='mt-1 w-full rounded-lg border border-ui-border bg-ui-surface px-3 py-2 text-sm text-ui-text outline-none transition focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20'
+                        placeholder='1-3, 5'
+                      />
+                    </div>
+                  ) : null}
+
+                  {step.operation === 'reorder' ? (
+                    <div className='mt-3'>
+                      <label className='text-xs font-semibold uppercase tracking-[0.08em] text-ui-muted'>Page order</label>
+                      <input
+                        value={step.pageOrder}
+                        onChange={(event) => updateStep(step.id, { pageOrder: event.target.value })}
+                        className='mt-1 w-full rounded-lg border border-ui-border bg-ui-surface px-3 py-2 text-sm text-ui-text outline-none transition focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20'
+                        placeholder='3,2,1'
+                      />
+                    </div>
+                  ) : null}
+
+                  {step.operation === 'split' ? (
+                    <div className='mt-3'>
+                      <label className='text-xs font-semibold uppercase tracking-[0.08em] text-ui-muted'>Split ranges</label>
+                      <input
+                        value={step.splitRanges}
+                        onChange={(event) => updateStep(step.id, { splitRanges: event.target.value })}
+                        className='mt-1 w-full rounded-lg border border-ui-border bg-ui-surface px-3 py-2 text-sm text-ui-text outline-none transition focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20'
+                        placeholder='1-2,3-4'
+                      />
+                    </div>
+                  ) : null}
+
+                  {step.operation === 'compress' ? (
+                    <div className='mt-3 max-w-[220px]'>
+                      <label className='text-xs font-semibold uppercase tracking-[0.08em] text-ui-muted'>Preset</label>
+                      <select
+                        value={step.compressionPreset}
+                        onChange={(event) =>
+                          updateStep(step.id, {
+                            compressionPreset: event.target.value as WorkflowDraft['steps'][number]['compressionPreset'],
+                          })
+                        }
+                        className='mt-1 w-full rounded-lg border border-ui-border bg-ui-surface px-3 py-2 text-sm text-ui-text outline-none transition focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20'
                       >
-                        Remove
-                      </button>
-                    </li>
+                        <option value='low'>Low</option>
+                        <option value='balanced'>Balanced</option>
+                        <option value='strong'>Strong</option>
+                      </select>
+                    </div>
+                  ) : null}
+
+                  {stepErrors.get(step.id)?.map((message) => (
+                    <p key={`${step.id}-${message}`} className='mt-2 text-sm text-red-600'>
+                      {message}
+                    </p>
                   ))}
-                </ul>
-              ) : null}
-              {sourceFiles.length > 0 ? (
-                <div className='flex flex-wrap items-center justify-between gap-2'>
-                  <p className='text-xs text-ui-muted'>
-                    {sourceFiles.length} selected · requires {requiredInputCount}+
-                  </p>
-                  <button
-                    type='button'
-                    onClick={clearSourceFiles}
-                    className='rounded-md border border-ui-border px-2.5 py-1 text-xs font-medium text-ui-muted transition hover:bg-ui-bg hover:text-ui-text'
-                  >
-                    Clear
-                  </button>
-                </div>
-              ) : null}
+                </article>
+              ))}
             </div>
 
-            <section className='space-y-3 rounded-xl border border-ui-border bg-ui-bg/70 p-3'>
-              <h2 className='font-heading text-lg font-semibold text-ui-text'>Validation</h2>
-              {errors.length > 0 ? (
-                <ul className='space-y-2 rounded-xl border border-amber-400/45 bg-amber-50 p-3 text-sm text-ui-text/90'>
-                  {errors.map((error) => (
-                    <li key={error}>• {error}</li>
-                  ))}
-                </ul>
-              ) : (
-                <p className='rounded-xl border border-emerald-300/45 bg-emerald-50 p-3 text-sm text-ui-text/90'>
-                  Workflow shape is valid for V1.
-                </p>
-              )}
-            </section>
+            <Button variant='secondary' onClick={addStep} disabled={isRunning}>
+              <Plus className='h-4 w-4' aria-hidden='true' />
+              Add step
+            </Button>
+          </section>
+        ) : null}
 
-            <section className='space-y-2 rounded-xl border border-ui-border bg-ui-bg/70 p-3'>
-              <div className='flex flex-wrap items-center justify-between gap-3'>
-                <h2 className='font-heading text-lg font-semibold text-ui-text'>Run workflow</h2>
-                <Button onClick={() => void runWorkflow()} loading={isRunning} disabled={!canRun}>
-                  Run locally
-                </Button>
-              </div>
-              <p
-                className={`text-sm ${
-                  status.tone === 'error'
-                    ? 'text-red-600'
-                    : status.tone === 'success'
-                    ? 'text-emerald-700'
-                    : 'text-ui-muted'
-                }`}
-              >
-                {status.message}
-              </p>
-            </section>
-          </aside>
-        </div>
-      </section>
-
-      {outputs.length > 0 ? (
-        <section className='space-y-3 rounded-2xl border border-ui-border bg-ui-surface p-4'>
-          <div className='flex flex-wrap items-center justify-between gap-3'>
-            <h2 className='font-heading text-xl font-semibold text-ui-text'>Outputs</h2>
-            {outputs.length > 1 ? (
-              <Button variant='secondary' onClick={downloadAllOutputs}>
-                Download all
-              </Button>
-            ) : null}
-          </div>
-          <ul className='space-y-2'>
-            {outputs.map((output) => (
-              <li key={output.id} className='flex items-center justify-between gap-3 rounded-lg border border-ui-border bg-ui-bg/70 px-3 py-2'>
-                <div className='min-w-0'>
-                  <p className='truncate text-sm font-semibold text-ui-text'>{output.filename}</p>
-                  <p className='text-xs text-ui-muted'>{output.pageCount} pages</p>
+        {hasAnyInputs && outputs.length === 0 ? (
+          <div className='sticky bottom-4 z-10 pt-2'>
+            <div className='flex flex-col gap-3 rounded-2xl border border-ui-border/80 bg-ui-surface/95 px-4 py-4 shadow-[0_10px_30px_rgba(15,23,42,0.05)] backdrop-blur sm:flex-row sm:items-center sm:justify-between'>
+              <div className='min-w-0'>
+                <p className='text-sm font-semibold text-ui-text'>{runStepsLabel}</p>
+                <div className='mt-2 flex flex-wrap items-center gap-2'>
+                  <p className={actionMessageClassName}>
+                    {canRun ? 'Ready to run locally.' : status.tone === 'error' ? status.message : 'Complete required inputs to continue.'}
+                  </p>
                 </div>
-                <Button variant='secondary' onClick={() => downloadOutput(output)}>
-                  Download
+              </div>
+              <Button onClick={() => void runWorkflow()} loading={isRunning} disabled={!canRun}>
+                Run workflow
+              </Button>
+            </div>
+          </div>
+        ) : null}
+
+        {outputs.length > 0 ? (
+          <section className='space-y-3 rounded-2xl border border-ui-border bg-ui-surface p-4'>
+            <div className='flex flex-wrap items-center justify-between gap-3'>
+              <h2 className='font-heading text-xl font-semibold text-ui-text'>Outputs</h2>
+              {outputs.length > 1 ? (
+                <Button variant='secondary' onClick={downloadAllOutputs}>
+                  Download all
                 </Button>
+              ) : null}
+            </div>
+            <ul className='space-y-2'>
+              {outputs.map((output) => (
+                <li key={output.id} className='flex items-center justify-between gap-3 rounded-lg border border-ui-border bg-ui-bg/70 px-3 py-2'>
+                  <div className='min-w-0'>
+                    <p className='truncate text-sm font-semibold text-ui-text'>{output.filename}</p>
+                    <p className='text-xs text-ui-muted'>{output.pageCount} pages</p>
+                  </div>
+                  <Button variant='secondary' onClick={() => downloadOutput(output)}>
+                    Download
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+
+        {hasAnyInputs ? (
+          <section className='space-y-3'>
+            <h2 className='font-heading text-xl font-semibold text-ui-text'>CLI preview</h2>
+            <CliPreviewCard
+              command={cliPreview}
+              helperText='Run this workflow in your terminal or scripts.'
+              learnHref='/cli'
+              learnLabel='Try the CLI →'
+              showTitle={false}
+            />
+          </section>
+        ) : null}
+      </ToolActionCard>
+
+      <section className='mt-10 grid gap-6 md:grid-cols-2'>
+        <SectionBlock title={WORKFLOW_PAGE_CONTENT.howTitle} className='md:flex md:h-full md:flex-col' contentClassName='md:flex-1'>
+          <ol className='list-decimal space-y-2.5 pl-5 text-sm leading-relaxed text-ui-muted'>
+            {WORKFLOW_PAGE_CONTENT.howSteps.map((step) => (
+              <li key={step}>{step}</li>
+            ))}
+          </ol>
+        </SectionBlock>
+
+        <SectionBlock title={WORKFLOW_PAGE_CONTENT.whyTitle} className='md:flex md:h-full md:flex-col' contentClassName='md:flex-1'>
+          <ul className='space-y-5'>
+            {WORKFLOW_PAGE_CONTENT.whyItems.map((item) => (
+              <li key={item.title}>
+                <h3 className='text-base font-semibold text-ui-text'>{item.title}</h3>
+                <p className='mt-1.5 text-sm leading-relaxed text-ui-muted'>{item.text}</p>
               </li>
             ))}
           </ul>
-        </section>
-      ) : null}
-
-      <section className='space-y-3 rounded-2xl border border-ui-border bg-ui-surface p-4'>
-        <div className='flex flex-wrap items-center justify-between gap-3'>
-          <h2 className='font-heading text-xl font-semibold text-ui-text'>CLI preview</h2>
-          <Button variant='secondary' onClick={() => void copyCliPreview()}>Copy CLI</Button>
-        </div>
-        <pre className='overflow-x-auto rounded-xl border border-ui-border bg-ui-bg p-3 text-xs text-ui-text'>
-          <code>{cliPreview}</code>
-        </pre>
-        {copyFeedback ? <p className='text-xs text-ui-muted'>{copyFeedback}</p> : null}
+        </SectionBlock>
       </section>
     </ToolLayout>
   );

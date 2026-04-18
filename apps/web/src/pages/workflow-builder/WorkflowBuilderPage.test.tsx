@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { WorkflowBuilderPage } from './WorkflowBuilderPage';
 
 describe('WorkflowBuilderPage', () => {
-  it('renders builder sections and CLI preview', () => {
+  it('renders dropzone-only state before files are loaded', () => {
     render(
       <MemoryRouter initialEntries={['/workflow-builder']}>
         <Routes>
@@ -14,14 +14,15 @@ describe('WorkflowBuilderPage', () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByRole('heading', { name: 'Workflow Builder (Preview)' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Pipeline blocks' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Validation' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Run workflow' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'CLI preview' })).toBeInTheDocument();
-    expect(screen.getByText(/Workflow shape is valid for V1/i)).toBeInTheDocument();
-    expect(screen.getByText(/filegap optimize/)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Run locally' })).toBeDisabled();
+    expect(screen.getByRole('heading', { name: 'Build PDF workflow — fast, private, and local' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Input files' })).not.toBeInTheDocument();
+    expect(screen.getByText('Drag & drop PDF files')).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Uploaded files' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Processing steps' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'CLI preview' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Run workflow' })).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: 'How to build a PDF workflow' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: 'Why use this tool' })).toBeInTheDocument();
   });
 
   it('bootstraps merge workflows from navigation state', () => {
@@ -62,8 +63,8 @@ describe('WorkflowBuilderPage', () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByDisplayValue('Multiple PDFs')).toBeInTheDocument();
-    expect(screen.getByText('Workflow imported locally. Review the flow and run it when ready.')).toBeInTheDocument();
+    expect(screen.getByText('Imported from merge')).toBeInTheDocument();
+    expect(screen.getByText('Existing files and step draft were loaded into this workflow.')).toBeInTheDocument();
     expect(screen.getByText('alpha.pdf')).toBeInTheDocument();
     expect(screen.getByText('beta.pdf')).toBeInTheDocument();
     expect(screen.getByText(/filegap merge input-1\.pdf input-2\.pdf/)).toBeInTheDocument();
