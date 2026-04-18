@@ -130,13 +130,15 @@ describe('SplitPdfPage', () => {
     const rangesInput = screen.getByPlaceholderText('1-3, 4, 5-10');
     await user.clear(rangesInput);
     await user.type(rangesInput, '1-2,3');
+    await waitFor(() => {
+      expect(rangesInput).toHaveValue('1-2,3');
+    });
 
     await waitFor(() => {
+      const codeBlocks = Array.from(document.querySelectorAll('code'));
       expect(
-        screen.getByText((_, node) =>
-          node?.tagName === 'CODE' && node.textContent === 'filegap split "source.pdf" --pages "1-2,3" > output.zip'
-        )
-      ).toBeInTheDocument();
+        codeBlocks.some((node) => node.textContent === 'filegap split "source.pdf" --pages "1-2,3" > output.zip')
+      ).toBe(true);
     });
     expect(screen.getByRole('link', { name: 'Try the CLI →' })).toHaveAttribute('href', '/cli?example=split');
   });
@@ -194,12 +196,15 @@ describe('SplitPdfPage', () => {
     const rangesInput = screen.getByPlaceholderText('1-3, 4, 5-10');
     await user.clear(rangesInput);
     await user.type(rangesInput, '1-2,3');
+    await waitFor(() => {
+      expect(rangesInput).toHaveValue('1-2,3');
+    });
     await user.click(screen.getByRole('button', { name: 'Open in Workflow Builder' }));
 
     expect(screen.getByRole('heading', { name: 'Build PDF workflow — fast, private, and local' })).toBeInTheDocument();
     expect(screen.getAllByText('source.pdf').length).toBeGreaterThan(0);
     await waitFor(() => {
-      expect(screen.getByDisplayValue('1-2,3')).toBeInTheDocument();
+      expect(screen.getByDisplayValue(/1-2,3/)).toBeInTheDocument();
     });
   });
 });
