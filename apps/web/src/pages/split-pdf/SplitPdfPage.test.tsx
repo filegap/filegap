@@ -94,8 +94,7 @@ describe('SplitPdfPage', () => {
     });
 
     const splitRangesInput = screen.getByPlaceholderText('1-3, 4, 5-10');
-    await user.clear(splitRangesInput);
-    await user.type(splitRangesInput, '1-2,3,4-4');
+    fireEvent.change(splitRangesInput, { target: { value: '1-2,3,4-4' } });
     await user.click(screen.getByRole('button', { name: 'Split PDF' }));
 
     await waitFor(() => {
@@ -128,8 +127,7 @@ describe('SplitPdfPage', () => {
     expect(screen.getByText('Run the same split step from your terminal.')).toBeInTheDocument();
 
     const rangesInput = screen.getByPlaceholderText('1-3, 4, 5-10');
-    await user.clear(rangesInput);
-    await user.type(rangesInput, '1-2,3');
+    fireEvent.change(rangesInput, { target: { value: '1-2,3' } });
     await waitFor(() => {
       expect(rangesInput).toHaveValue('1-2,3');
     });
@@ -158,8 +156,7 @@ describe('SplitPdfPage', () => {
     });
 
     const splitRangesInput = screen.getByPlaceholderText('1-3, 4, 5-10');
-    await user.clear(splitRangesInput);
-    await user.type(splitRangesInput, '1');
+    fireEvent.change(splitRangesInput, { target: { value: '1' } });
     await user.click(screen.getByRole('button', { name: 'Split PDF' }));
 
     await waitFor(() => {
@@ -194,8 +191,7 @@ describe('SplitPdfPage', () => {
     });
 
     const rangesInput = screen.getByPlaceholderText('1-3, 4, 5-10');
-    await user.clear(rangesInput);
-    await user.type(rangesInput, '1-2,3');
+    fireEvent.change(rangesInput, { target: { value: '1-2,3' } });
     await waitFor(() => {
       expect(rangesInput).toHaveValue('1-2,3');
     });
