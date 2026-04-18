@@ -1,6 +1,6 @@
 [package]
 name = "filegap-desktop"
-version = "0.1.5"
+version = "0.1.6"
 description = "Filegap desktop app"
 authors = ["filegap contributors"]
 edition = "2021"
