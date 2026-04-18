@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Trash2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { ToolLayout } from '../../components/layout/ToolLayout';
 import { Button } from '../../components/ui/Button';
 import { OptimizeOutputPanel } from '../../components/ui/OptimizeOutputPanel';
 import { SingleFilePicker } from '../../components/ui/SingleFilePicker';
+import { ToolCliPreview } from '../../components/ui/ToolCliPreview';
+import { ToolProcessFlow } from '../../components/ui/ToolProcessFlow';
 import { WorkingFileHeader } from '../../components/ui/WorkingFileHeader';
 import {
   chooseOutputDirectory,
@@ -18,9 +21,10 @@ import {
   type PdfMetadata,
 } from '../../lib/desktop';
 import { renderFilenameTemplate, resolveOutputPathByOverwrite } from '../../lib/outputSettings';
-import { joinPath, parsePath, readErrorMessage } from '../../lib/pageHelpers';
+import { joinPath, parsePath, quoteCliArg, readErrorMessage } from '../../lib/pageHelpers';
 import { fileNameFromPath } from '../../lib/pathUtils';
 import { useDesktopSettings } from '../../lib/settings';
+import { createWorkflowStep, type WorkflowBuilderImportState } from '../../lib/workflowBuilder';
 
 type StatusTone = 'neutral' | 'info' | 'error' | 'success';
 
@@ -84,6 +88,7 @@ function formatPdfDate(value: string | null | undefined): string {
 }
 
 export function OptimizePdfPage() {
+  const navigate = useNavigate();
   const [settings] = useDesktopSettings();
   const [files, setFiles] = useState<OptimizeFile[]>([]);
   const [outputDirectory, setOutputDirectory] = useState('');
@@ -111,6 +116,12 @@ export function OptimizePdfPage() {
 
   const actionLabel = isProcessing ? 'Optimizing...' : hasCompleted ? 'Optimize again' : 'Optimize PDF';
   const selectedFile = files[0] ?? null;
+  const shouldShowWorkflowExtras = files.length === 1;
+  const cliPreview = useMemo(() => {
+    const input = selectedFile ? quoteCliArg(fileNameFromPath(selectedFile.path)) : '"input.pdf"';
+    const target = outputName.trim().length > 0 ? outputName.trim() : 'optimized.pdf';
+    return `filegap optimize ${input}\n> ${quoteCliArg(target)}`;
+  }, [outputName, selectedFile]);
 
   useEffect(() => {
     let cancelled = false;
@@ -271,6 +282,19 @@ export function OptimizePdfPage() {
     setStatus({ tone: 'neutral', message: 'Idle' });
   }
 
+  function handleOpenWorkflowBuilder() {
+    const draft = {
+      inputMode: 'single' as const,
+      steps: [createWorkflowStep('optimize')],
+    };
+    const state: WorkflowBuilderImportState = {
+      sourceLabel: 'Optimize PDF',
+      inputPaths: selectedFile ? [selectedFile.path] : [],
+      draft,
+    };
+    navigate('/workflow-builder', { state });
+  }
+
   const destinationFriendlyLabel = outputDirectory || defaultDownloadDirectory || 'Choose destination';
   const footerMessage =
     status.tone === 'success'
@@ -359,6 +383,18 @@ export function OptimizePdfPage() {
           onNewOptimize={startNewOptimize}
           onOpenFile={() => void handleOpenFile()}
           onShowInFolder={() => void handleShowInFolder()}
+          afterActionContent={shouldShowWorkflowExtras ? (
+            <>
+              <ToolProcessFlow
+                steps={['Input', 'Optimize', 'Output']}
+                activeStep={1}
+                onOpenWorkflowBuilder={handleOpenWorkflowBuilder}
+                disabled={isProcessing || isLoadingFiles}
+              />
+              <div className="output-panel-divider" />
+              <ToolCliPreview helperText="Run the same optimize step from your terminal." command={cliPreview} />
+            </>
+          ) : null}
         />
       }
     />

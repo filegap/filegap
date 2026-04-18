@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ToolLayout } from '../../components/layout/ToolLayout';
 import { Button } from '../../components/ui/Button';
+import { ToolCliPreview } from '../../components/ui/ToolCliPreview';
 import { Dropzone } from '../../components/ui/Dropzone';
 import { FileTable } from '../../components/ui/FileTable';
 import { OutputPanel } from '../../components/ui/OutputPanel';
+import { ToolProcessFlow } from '../../components/ui/ToolProcessFlow';
 import {
   chooseOutputDirectory,
   choosePdfInputs,
@@ -16,9 +19,10 @@ import {
   type PdfFileInfo,
 } from '../../lib/desktop';
 import { renderFilenameTemplate, resolveOutputPathByOverwrite } from '../../lib/outputSettings';
-import { formatKilobytes, joinPath, parsePath, readErrorMessage } from '../../lib/pageHelpers';
+import { formatKilobytes, joinPath, parsePath, quoteCliArg, readErrorMessage } from '../../lib/pageHelpers';
 import { fileNameFromPath } from '../../lib/pathUtils';
 import { useDesktopSettings } from '../../lib/settings';
+import { createWorkflowStep, type WorkflowBuilderImportState } from '../../lib/workflowBuilder';
 
 type StatusTone = 'neutral' | 'info' | 'error' | 'success';
 
@@ -49,6 +53,7 @@ function waitForNextFrame(): Promise<void> {
 }
 
 export function MergePdfPage() {
+  const navigate = useNavigate();
   const [settings] = useDesktopSettings();
   const [files, setFiles] = useState<MergeFile[]>([]);
   const [outputDirectory, setOutputDirectory] = useState('');
@@ -81,6 +86,12 @@ export function MergePdfPage() {
   );
 
   const mergeActionLabel = isProcessing ? 'Merging...' : hasCompleted ? 'Merge again' : 'Merge PDF';
+  const shouldShowWorkflowExtras = files.length >= 2;
+  const cliPreview = useMemo(() => {
+    const inputs = files.length > 0 ? files.map((file) => quoteCliArg(fileNameFromPath(file.path))).join(' ') : 'input-1.pdf input-2.pdf';
+    const target = outputName.trim().length > 0 ? outputName.trim() : 'merged.pdf';
+    return `filegap merge ${inputs}\n> ${quoteCliArg(target)}`;
+  }, [files, outputName]);
 
   useEffect(() => {
     let cancelled = false;
@@ -235,6 +246,19 @@ export function MergePdfPage() {
     setStatus({ tone: 'neutral', message: 'Idle' });
   }
 
+  function handleOpenWorkflowBuilder() {
+    const draft = {
+      inputMode: 'multiple' as const,
+      steps: [createWorkflowStep('merge')],
+    };
+    const state: WorkflowBuilderImportState = {
+      sourceLabel: 'Merge PDF',
+      inputPaths: files.map((file) => file.path),
+      draft,
+    };
+    navigate('/workflow-builder', { state });
+  }
+
   async function handleMerge() {
     if (!canMerge || isProcessing) {
       return;
@@ -384,6 +408,18 @@ export function MergePdfPage() {
           onNewMerge={startNewMerge}
           onOpenFile={() => void handleOpenFile()}
           onShowInFolder={() => void handleShowInFolder()}
+          afterActionContent={shouldShowWorkflowExtras ? (
+            <>
+              <ToolProcessFlow
+                steps={['Input', 'Merge', 'Output']}
+                activeStep={1}
+                onOpenWorkflowBuilder={handleOpenWorkflowBuilder}
+                disabled={isProcessing || isLoadingFiles}
+              />
+              <div className="output-panel-divider" />
+              <ToolCliPreview helperText="Run the same merge from your terminal." command={cliPreview} />
+            </>
+          ) : null}
         />
       }
     />

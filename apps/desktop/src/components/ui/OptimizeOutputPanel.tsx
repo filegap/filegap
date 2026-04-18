@@ -1,4 +1,4 @@
-import type { RefObject } from 'react';
+import type { ReactNode, RefObject } from 'react';
 import { OutputActionSection } from './OutputActionSection';
 import { OutputDestinationField } from './OutputDestinationField';
 import { SidebarSection } from './SidebarSection';
@@ -19,6 +19,7 @@ type OptimizeOutputPanelProps = {
   onNewOptimize: () => void;
   onOpenFile: () => void;
   onShowInFolder: () => void;
+  afterActionContent?: ReactNode;
 };
 
 export function OptimizeOutputPanel({
@@ -36,6 +37,7 @@ export function OptimizeOutputPanel({
   onNewOptimize,
   onOpenFile,
   onShowInFolder,
+  afterActionContent,
 }: OptimizeOutputPanelProps) {
   const showCompletionState = hasCompleted && !isProcessing;
 
@@ -85,6 +87,13 @@ export function OptimizeOutputPanel({
         onNewAction={onNewOptimize}
         newActionLabel="New optimize"
       />
+
+      {afterActionContent ? (
+        <>
+          <div className="output-panel-divider" />
+          {afterActionContent}
+        </>
+      ) : null}
 
       <TrustNotice className="output-panel-trust" />
     </div>

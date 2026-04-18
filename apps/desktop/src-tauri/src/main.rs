@@ -12,6 +12,7 @@ pub fn run() {
             commands::reorder_pdf,
             commands::optimize_pdf,
             commands::compress_pdf,
+            commands::execute_workflow,
             commands::inspect_pdf_files,
             commands::inspect_pdf_metadata,
             commands::read_pdf_bytes,

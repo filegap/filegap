@@ -18,7 +18,7 @@ export function ToolLayout({ title, subtitle, leftPanel, rightPanel, footerMessa
         <section className="tool-split-layout">
           <section className="tool-left-panel">
             <ToolHeader title={title} subtitle={subtitle} />
-            {leftPanel}
+            <div className="tool-left-scroll">{leftPanel}</div>
           </section>
           <aside className="tool-right-panel">{rightPanel}</aside>
         </section>

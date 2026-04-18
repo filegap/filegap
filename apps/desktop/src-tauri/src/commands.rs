@@ -13,7 +13,7 @@ use filegap_core::{
     InfoRequest, OptimizeRequest, ReorderRequest, SplitMode, SplitRequest,
 };
 use lopdf::Document;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize)]
 pub struct MergeResult {
@@ -46,6 +46,30 @@ pub struct OptimizeResult {
 #[derive(Debug, Serialize)]
 pub struct CompressResult {
     pub output_path: String,
+}
+
+#[derive(Debug, Serialize)]
+pub struct WorkflowRunResult {
+    pub output_path: String,
+    pub output_count: usize,
+    pub is_split_output: bool,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WorkflowDraftInput {
+    pub input_mode: String,
+    pub steps: Vec<WorkflowStepInput>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WorkflowStepInput {
+    pub operation: String,
+    pub page_ranges: String,
+    pub page_order: String,
+    pub split_ranges: String,
+    pub compression_preset: String,
 }
 
 #[derive(Debug, Serialize)]
@@ -84,6 +108,69 @@ fn parse_compression_preset(preset: &str) -> Result<CompressionPreset, String> {
         "strong" => Ok(CompressionPreset::Strong),
         _ => Err("Invalid compression preset.".to_string()),
     }
+}
+
+fn normalize_pdf_output_name(name: &str) -> String {
+    let trimmed = name.trim();
+    if trimmed.to_ascii_lowercase().ends_with(".pdf") {
+        trimmed.to_string()
+    } else {
+        format!("{trimmed}.pdf")
+    }
+}
+
+fn normalize_split_base_name(name: &str) -> String {
+    name.trim().trim_end_matches(".pdf").to_string()
+}
+
+fn page_count_from_bytes(bytes: &[u8]) -> Result<u32, String> {
+    Document::load_mem(bytes)
+        .map(|doc| doc.get_pages().len() as u32)
+        .map_err(|_| "Failed to inspect workflow PDF step.".to_string())
+}
+
+fn parse_page_order_input(value: &str, page_count: u32) -> Result<Vec<u32>, String> {
+    let cleaned = value.trim();
+    if cleaned.is_empty() {
+        return Err("Page order is required.".to_string());
+    }
+    if page_count == 0 {
+        return Err("No pages are available to reorder.".to_string());
+    }
+
+    let tokens: Vec<&str> = cleaned
+        .split(',')
+        .map(|item| item.trim())
+        .filter(|item| !item.is_empty())
+        .collect();
+
+    if tokens.len() != page_count as usize {
+        return Err(format!(
+            "Provide exactly {} pages in the new order.",
+            page_count
+        ));
+    }
+
+    let mut pages = Vec::with_capacity(tokens.len());
+    for token in tokens {
+        let page = token
+            .parse::<u32>()
+            .map_err(|_| "Page order must contain numbers separated by commas.".to_string())?;
+        if page < 1 || page > page_count {
+            return Err(format!("Page order must stay within 1-{}.", page_count));
+        }
+        if pages.contains(&page) {
+            return Err("Page order contains duplicate page numbers.".to_string());
+        }
+        pages.push(page);
+    }
+
+    Ok(pages)
+}
+
+enum WorkflowState {
+    Single(Vec<u8>),
+    Multiple(Vec<Vec<u8>>),
 }
 
 fn inspect_pdf_file(path: &str) -> PdfFileInfo {
@@ -298,6 +385,205 @@ pub async fn compress_pdf(
     })
     .await
     .map_err(|_| "Failed to complete compress operation.".to_string())?
+}
+
+#[tauri::command]
+pub async fn execute_workflow(
+    input_paths: Vec<String>,
+    output_dir: String,
+    output_name: String,
+    draft: WorkflowDraftInput,
+) -> Result<WorkflowRunResult, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        if input_paths.is_empty() {
+            return Err("Select one or more PDF files.".to_string());
+        }
+        if output_dir.trim().is_empty() {
+            return Err("Select a valid output destination.".to_string());
+        }
+        if output_name.trim().is_empty() {
+            return Err("Provide a valid output file name.".to_string());
+        }
+        if draft.steps.is_empty() {
+            return Err("Add at least one workflow step.".to_string());
+        }
+
+        let mut loaded_inputs = Vec::with_capacity(input_paths.len());
+        for path in &input_paths {
+            let bytes = fs::read(path).map_err(|_| "Failed to read one or more input PDF files.".to_string())?;
+            if bytes.is_empty() {
+                return Err("One or more input files are empty.".to_string());
+            }
+            loaded_inputs.push(bytes);
+        }
+
+        let _ = draft.input_mode.as_str();
+
+        let mut state = if loaded_inputs.len() == 1 {
+            WorkflowState::Single(loaded_inputs.remove(0))
+        } else {
+            WorkflowState::Multiple(loaded_inputs)
+        };
+
+        let last_step_index = draft.steps.len() - 1;
+
+        for (index, step) in draft.steps.iter().enumerate() {
+            match step.operation.trim().to_ascii_lowercase().as_str() {
+                "merge" => {
+                    if index != 0 {
+                        return Err("Merge can only be the first workflow step.".to_string());
+                    }
+                    let documents = match state {
+                        WorkflowState::Multiple(docs) if docs.len() >= 2 => docs,
+                        _ => return Err("Merge requires at least two input PDFs.".to_string()),
+                    };
+                    let merged =
+                        core_merge_pdfs(&MergeRequest { documents }).map_err(map_core_error)?;
+                    state = WorkflowState::Single(merged);
+                }
+                "extract" => {
+                    let document = match state {
+                        WorkflowState::Single(doc) => doc,
+                        WorkflowState::Multiple(_) => {
+                            return Err(
+                                "Use Merge as the first step to work with multiple input PDFs."
+                                    .to_string(),
+                            )
+                        }
+                    };
+                    let ranges = if step.page_ranges.trim().is_empty() {
+                        "1-3".to_string()
+                    } else {
+                        step.page_ranges.trim().to_string()
+                    };
+                    let extracted = core_extract_pages(&ExtractRequest {
+                        document,
+                        page_ranges: ranges,
+                    })
+                    .map_err(map_core_error)?;
+                    state = WorkflowState::Single(extracted);
+                }
+                "reorder" => {
+                    let document = match state {
+                        WorkflowState::Single(doc) => doc,
+                        WorkflowState::Multiple(_) => {
+                            return Err(
+                                "Use Merge as the first step to work with multiple input PDFs."
+                                    .to_string(),
+                            )
+                        }
+                    };
+                    let page_count = page_count_from_bytes(&document)?;
+                    let page_order = parse_page_order_input(&step.page_order, page_count)?;
+                    let reordered = core_reorder_pages(&ReorderRequest {
+                        document,
+                        page_order,
+                    })
+                    .map_err(map_core_error)?;
+                    state = WorkflowState::Single(reordered);
+                }
+                "optimize" => {
+                    let document = match state {
+                        WorkflowState::Single(doc) => doc,
+                        WorkflowState::Multiple(_) => {
+                            return Err(
+                                "Use Merge as the first step to work with multiple input PDFs."
+                                    .to_string(),
+                            )
+                        }
+                    };
+                    let optimized =
+                        core_optimize_pdf(&OptimizeRequest { document }).map_err(map_core_error)?;
+                    state = WorkflowState::Single(optimized);
+                }
+                "compress" => {
+                    let document = match state {
+                        WorkflowState::Single(doc) => doc,
+                        WorkflowState::Multiple(_) => {
+                            return Err(
+                                "Use Merge as the first step to work with multiple input PDFs."
+                                    .to_string(),
+                            )
+                        }
+                    };
+                    let preset = parse_compression_preset(&step.compression_preset)?;
+                    let compressed = core_compress_pdf(&CompressRequest { document, preset })
+                        .map_err(map_core_error)?;
+                    state = WorkflowState::Single(compressed);
+                }
+                "split" => {
+                    if index != last_step_index {
+                        return Err("Split must be the last workflow step.".to_string());
+                    }
+                    let document = match state {
+                        WorkflowState::Single(doc) => doc,
+                        WorkflowState::Multiple(_) => {
+                            return Err(
+                                "Use Merge as the first step to work with multiple input PDFs."
+                                    .to_string(),
+                            )
+                        }
+                    };
+                    let split_ranges = if step.split_ranges.trim().is_empty() {
+                        "1-2,3-4".to_string()
+                    } else {
+                        step.split_ranges.trim().to_string()
+                    };
+                    let parts = core_split_pdf(&SplitRequest {
+                        document,
+                        mode: SplitMode::ByPageRanges(split_ranges),
+                    })
+                    .map_err(map_core_error)?;
+
+                    let base_name = normalize_split_base_name(&output_name);
+                    if base_name.is_empty() {
+                        return Err("Provide a valid output file name.".to_string());
+                    }
+
+                    let mut first_output_path = String::new();
+                    for (part_index, part) in parts.iter().enumerate() {
+                        let part_path = Path::new(&output_dir)
+                            .join(format!("{base_name}-part-{}.pdf", part_index + 1))
+                            .to_string_lossy()
+                            .to_string();
+                        fs::write(&part_path, part)
+                            .map_err(|_| "Failed to write workflow output PDF.".to_string())?;
+                        if part_index == 0 {
+                            first_output_path = part_path;
+                        }
+                    }
+
+                    return Ok(WorkflowRunResult {
+                        output_path: first_output_path,
+                        output_count: parts.len(),
+                        is_split_output: true,
+                    });
+                }
+                _ => return Err("Unsupported workflow step.".to_string()),
+            }
+        }
+
+        let document = match state {
+            WorkflowState::Single(doc) => doc,
+            WorkflowState::Multiple(_) => {
+                return Err("Use Merge as the first step to combine multiple inputs.".to_string())
+            }
+        };
+        let final_name = normalize_pdf_output_name(&output_name);
+        let output_path = Path::new(&output_dir)
+            .join(final_name)
+            .to_string_lossy()
+            .to_string();
+        fs::write(&output_path, document).map_err(|_| "Failed to write workflow output PDF.".to_string())?;
+
+        Ok(WorkflowRunResult {
+            output_path,
+            output_count: 1,
+            is_split_output: false,
+        })
+    })
+    .await
+    .map_err(|_| "Failed to complete workflow operation.".to_string())?
 }
 
 #[tauri::command]

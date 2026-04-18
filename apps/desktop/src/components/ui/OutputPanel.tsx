@@ -1,4 +1,4 @@
-import type { RefObject } from 'react';
+import type { ReactNode, RefObject } from 'react';
 import { Button } from './Button';
 import { OutputActionSection } from './OutputActionSection';
 import { OutputDestinationField } from './OutputDestinationField';
@@ -21,6 +21,7 @@ type OutputPanelProps = {
   onNewMerge: () => void;
   onOpenFile: () => void;
   onShowInFolder: () => void;
+  afterActionContent?: ReactNode;
 };
 
 export function OutputPanel({
@@ -39,6 +40,7 @@ export function OutputPanel({
   onNewMerge,
   onOpenFile,
   onShowInFolder,
+  afterActionContent,
 }: OutputPanelProps) {
   const showCompletionState = hasCompleted && !isProcessing && completedMergeCount !== null;
 
@@ -80,6 +82,13 @@ export function OutputPanel({
         onNewAction={onNewMerge}
         newActionLabel="New merge"
       />
+
+      {afterActionContent ? (
+        <>
+          <div className="output-panel-divider" />
+          {afterActionContent}
+        </>
+      ) : null}
 
       <TrustNotice className="output-panel-trust" />
     </div>

@@ -1,4 +1,4 @@
-import type { RefObject } from 'react';
+import type { ReactNode, RefObject } from 'react';
 import { OutputActionSection } from './OutputActionSection';
 import { OutputDestinationField } from './OutputDestinationField';
 import { SidebarSection } from './SidebarSection';
@@ -23,6 +23,7 @@ type CompressOutputPanelProps = {
   onNewCompress: () => void;
   onOpenFile: () => void;
   onShowInFolder: () => void;
+  afterActionContent?: ReactNode;
 };
 
 export function CompressOutputPanel({
@@ -42,6 +43,7 @@ export function CompressOutputPanel({
   onNewCompress,
   onOpenFile,
   onShowInFolder,
+  afterActionContent,
 }: CompressOutputPanelProps) {
   const showCompletionState = hasCompleted && !isProcessing;
 
@@ -104,6 +106,13 @@ export function CompressOutputPanel({
         onNewAction={onNewCompress}
         newActionLabel="New compress"
       />
+
+      {afterActionContent ? (
+        <>
+          <div className="output-panel-divider" />
+          {afterActionContent}
+        </>
+      ) : null}
 
       <TrustNotice className="output-panel-trust" />
     </div>

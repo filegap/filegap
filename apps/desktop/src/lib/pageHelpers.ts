@@ -43,3 +43,7 @@ export function formatKilobytes(sizeBytes: number): string {
   }
   return `${Math.max(1, Math.round(sizeBytes / 1024))} KB`;
 }
+
+export function quoteCliArg(value: string): string {
+  return `"${value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
+}

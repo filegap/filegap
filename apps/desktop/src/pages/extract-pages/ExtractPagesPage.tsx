@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Trash2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { ToolLayout } from '../../components/layout/ToolLayout';
 import { Button } from '../../components/ui/Button';
 import { ExtractOutputPanel } from '../../components/ui/ExtractOutputPanel';
 import { PdfThumbnailGrid } from '../../components/ui/PdfThumbnailGrid';
 import { SingleFilePicker } from '../../components/ui/SingleFilePicker';
+import { ToolCliPreview } from '../../components/ui/ToolCliPreview';
+import { ToolProcessFlow } from '../../components/ui/ToolProcessFlow';
 import { WorkingFileHeader } from '../../components/ui/WorkingFileHeader';
 import {
   chooseOutputDirectory,
@@ -18,10 +21,11 @@ import {
   revealInFolder,
 } from '../../lib/desktop';
 import { renderFilenameTemplate, resolveOutputPathByOverwrite } from '../../lib/outputSettings';
-import { joinPath, parsePath, readErrorMessage } from '../../lib/pageHelpers';
+import { joinPath, parsePath, quoteCliArg, readErrorMessage } from '../../lib/pageHelpers';
 import { renderPdfThumbnails, type PageThumbnail } from '../../lib/pdfPreview';
 import { fileNameFromPath } from '../../lib/pathUtils';
 import { useDesktopSettings } from '../../lib/settings';
+import { createWorkflowStep, type WorkflowBuilderImportState } from '../../lib/workflowBuilder';
 
 type StatusTone = 'neutral' | 'info' | 'error' | 'success';
 
@@ -104,6 +108,7 @@ function parseRangesInput(value: string, maxPage: number): number[] {
 }
 
 export function ExtractPagesPage() {
+  const navigate = useNavigate();
   const [settings] = useDesktopSettings();
   const [files, setFiles] = useState<ExtractFile[]>([]);
   const [outputDirectory, setOutputDirectory] = useState('');
@@ -156,6 +161,14 @@ export function ExtractPagesPage() {
     : selectedPageCount > 0
       ? `Extract ${selectedPageCount} ${selectedPageCount === 1 ? 'page' : 'pages'}`
       : 'Extract pages';
+  const selectedFile = files[0] ?? null;
+  const shouldShowWorkflowExtras = files.length === 1;
+  const cliPreview = useMemo(() => {
+    const input = selectedFile ? quoteCliArg(fileNameFromPath(selectedFile.path)) : '"input.pdf"';
+    const ranges = pageRanges.trim().length > 0 ? pageRanges.trim() : '1-3';
+    const target = outputName.trim().length > 0 ? outputName.trim() : 'extracted.pdf';
+    return `filegap extract ${input} --pages ${quoteCliArg(ranges)}\n> ${quoteCliArg(target)}`;
+  }, [outputName, pageRanges, selectedFile]);
 
   useEffect(() => {
     let cancelled = false;
@@ -308,6 +321,20 @@ export function ExtractPagesPage() {
     setOutputName(createDefaultExtractOutputName(settings.extractFilenameTemplate));
     setPageRanges('');
     setStatus({ tone: 'neutral', message: 'Idle' });
+  }
+
+  function handleOpenWorkflowBuilder() {
+    const step = createWorkflowStep('extract');
+    step.pageRanges = pageRanges.trim().length > 0 ? pageRanges.trim() : step.pageRanges;
+    const state: WorkflowBuilderImportState = {
+      sourceLabel: 'Extract Pages',
+      inputPaths: selectedFile ? [selectedFile.path] : [],
+      draft: {
+        inputMode: 'single',
+        steps: [step],
+      },
+    };
+    navigate('/workflow-builder', { state });
   }
 
   async function handleExtract() {
@@ -623,6 +650,18 @@ export function ExtractPagesPage() {
           onNewExtract={startNewExtract}
           onOpenFile={() => void handleOpenFile()}
           onShowInFolder={() => void handleShowInFolder()}
+          afterActionContent={shouldShowWorkflowExtras ? (
+            <>
+              <ToolProcessFlow
+                steps={['Input', 'Extract', 'Output']}
+                activeStep={1}
+                onOpenWorkflowBuilder={handleOpenWorkflowBuilder}
+                disabled={isProcessing || isLoadingFiles || isRenderingPreviews}
+              />
+              <div className="output-panel-divider" />
+              <ToolCliPreview helperText="Run the same extract step from your terminal." command={cliPreview} />
+            </>
+          ) : null}
         />
       }
     />

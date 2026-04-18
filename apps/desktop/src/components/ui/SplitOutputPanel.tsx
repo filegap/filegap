@@ -1,4 +1,4 @@
-import type { RefObject } from 'react';
+import type { ReactNode, RefObject } from 'react';
 import { Button } from './Button';
 import { OutputActionSection } from './OutputActionSection';
 import { OutputDestinationField } from './OutputDestinationField';
@@ -31,6 +31,7 @@ type SplitOutputPanelProps = {
   onNewSplit: () => void;
   onOpenFile: () => void;
   onShowInFolder: () => void;
+  afterActionContent?: ReactNode;
 };
 
 export function SplitOutputPanel({
@@ -59,6 +60,7 @@ export function SplitOutputPanel({
   onNewSplit,
   onOpenFile,
   onShowInFolder,
+  afterActionContent,
 }: SplitOutputPanelProps) {
   const showCompletionState = hasCompleted && !isProcessing && completedOutputCount !== null;
   const pageWord = pagesPerFile === 1 ? 'page' : 'pages';
@@ -164,6 +166,13 @@ export function SplitOutputPanel({
         onNewAction={onNewSplit}
         newActionLabel="New split"
       />
+
+      {afterActionContent ? (
+        <>
+          <div className="output-panel-divider" />
+          {afterActionContent}
+        </>
+      ) : null}
 
       <TrustNotice className="output-panel-trust" />
     </div>

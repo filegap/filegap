@@ -16,6 +16,16 @@ export type WorkflowDraft = {
   steps: WorkflowStep[];
 };
 
+export type WorkflowBuilderImportState = {
+  sourceLabel: string;
+  inputPaths: string[];
+  draft: WorkflowDraft;
+};
+
+export function getWorkflowInputMode(draft: WorkflowDraft): WorkflowInputMode {
+  return draft.steps[0]?.operation === 'merge' ? 'multiple' : 'single';
+}
+
 export function createWorkflowStep(operation: WorkflowOperation): WorkflowStep {
   return {
     id: `${operation}-${Math.random().toString(16).slice(2)}`,
@@ -27,7 +37,7 @@ export function createWorkflowStep(operation: WorkflowOperation): WorkflowStep {
   };
 }
 
-export function validateWorkflowDraft(draft: WorkflowDraft): string[] {
+export function validateWorkflowDraft(draft: WorkflowDraft, inputCount = 0): string[] {
   const errors: string[] = [];
   if (draft.steps.length === 0) {
     errors.push('Add at least one operation step.');
@@ -36,9 +46,18 @@ export function validateWorkflowDraft(draft: WorkflowDraft): string[] {
 
   const first = draft.steps[0];
   const last = draft.steps[draft.steps.length - 1];
+  const inputMode = getWorkflowInputMode(draft);
 
-  if (draft.inputMode === 'multiple' && first.operation !== 'merge') {
+  if (inputMode === 'multiple' && first.operation !== 'merge') {
     errors.push('With multiple input mode, the first step must be Merge.');
+  }
+
+  if (inputMode === 'multiple' && inputCount === 1) {
+    errors.push('Merge requires at least two input PDFs.');
+  }
+
+  if (inputMode === 'single' && inputCount > 1) {
+    errors.push('Use Merge as the first step to work with multiple input PDFs.');
   }
 
   for (let index = 0; index < draft.steps.length; index += 1) {
@@ -73,16 +92,36 @@ function stepToCli(step: WorkflowStep): string {
   return `filegap split --pages "${step.splitRanges.trim() || '1-2,3-4'}" --format zip`;
 }
 
-export function buildWorkflowCliPreview(draft: WorkflowDraft): string {
+function normalizeWorkflowCliOutputName(draft: WorkflowDraft, outputName?: string): string {
+  const trimmed = outputName?.trim() ?? '';
+  const isSplitOutput = draft.steps[draft.steps.length - 1]?.operation === 'split';
+
+  if (trimmed.length > 0) {
+    if (isSplitOutput) {
+      return trimmed.replace(/\.pdf$/i, '') || 'workflow-output';
+    }
+    return trimmed.toLowerCase().endsWith('.pdf') ? trimmed : `${trimmed}.pdf`;
+  }
+
+  return isSplitOutput ? 'workflow-output' : 'workflow-output.pdf';
+}
+
+export function buildWorkflowCliPreview(draft: WorkflowDraft, inputNames?: string[], outputName?: string): string {
   if (draft.steps.length === 0) {
     return '# Add one or more steps to generate a pipeline preview.';
   }
 
-  let command = draft.inputMode === 'multiple' ? 'filegap merge input-1.pdf input-2.pdf' : 'cat input.pdf';
+  const inputMode = getWorkflowInputMode(draft);
+  const normalizedInputs = (inputNames ?? []).filter((item) => item.trim().length > 0);
+  const multipleInputs =
+    normalizedInputs.length > 0 ? normalizedInputs.map((item) => `"${item}"`).join(' ') : 'input-1.pdf input-2.pdf';
+  const singleInput = normalizedInputs[0] ? `"${normalizedInputs[0]}"` : 'input.pdf';
+
+  let command = inputMode === 'multiple' ? `filegap merge ${multipleInputs}` : `cat ${singleInput}`;
 
   draft.steps.forEach((step, index) => {
     const stepCommand = stepToCli(step);
-    if (index === 0 && step.operation === 'merge' && draft.inputMode === 'multiple') {
+    if (index === 0 && step.operation === 'merge' && inputMode === 'multiple') {
       command = stepCommand;
       return;
     }
@@ -91,5 +130,23 @@ export function buildWorkflowCliPreview(draft: WorkflowDraft): string {
   });
 
   const isSplitOutput = draft.steps[draft.steps.length - 1]?.operation === 'split';
-  return `${command}\n> ${isSplitOutput ? 'output.zip' : 'output.pdf'}`;
+  const normalizedOutput = normalizeWorkflowCliOutputName(draft, outputName);
+  return `${command}\n> ${isSplitOutput ? `${normalizedOutput}.zip` : normalizedOutput}`;
+}
+
+export function isWorkflowBuilderImportState(value: unknown): value is WorkflowBuilderImportState {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
+  const candidate = value as Partial<WorkflowBuilderImportState>;
+  return (
+    typeof candidate.sourceLabel === 'string' &&
+    Array.isArray(candidate.inputPaths) &&
+    candidate.inputPaths.every((item) => typeof item === 'string') &&
+    Boolean(candidate.draft) &&
+    typeof candidate.draft === 'object' &&
+    Array.isArray(candidate.draft.steps) &&
+    (candidate.draft.inputMode === 'single' || candidate.draft.inputMode === 'multiple')
+  );
 }

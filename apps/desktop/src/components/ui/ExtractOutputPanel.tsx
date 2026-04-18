@@ -1,4 +1,4 @@
-import type { RefObject } from 'react';
+import type { ReactNode, RefObject } from 'react';
 import { OutputActionSection } from './OutputActionSection';
 import { OutputDestinationField } from './OutputDestinationField';
 import { SidebarSection } from './SidebarSection';
@@ -25,6 +25,7 @@ type ExtractOutputPanelProps = {
   onNewExtract: () => void;
   onOpenFile: () => void;
   onShowInFolder: () => void;
+  afterActionContent?: ReactNode;
 };
 
 export function ExtractOutputPanel({
@@ -48,6 +49,7 @@ export function ExtractOutputPanel({
   onNewExtract,
   onOpenFile,
   onShowInFolder,
+  afterActionContent,
 }: ExtractOutputPanelProps) {
   const showCompletionState = hasCompleted && !isProcessing;
 
@@ -116,6 +118,13 @@ export function ExtractOutputPanel({
         onNewAction={onNewExtract}
         newActionLabel="New extract"
       />
+
+      {afterActionContent ? (
+        <>
+          <div className="output-panel-divider" />
+          {afterActionContent}
+        </>
+      ) : null}
 
       <TrustNotice className="output-panel-trust" />
     </div>

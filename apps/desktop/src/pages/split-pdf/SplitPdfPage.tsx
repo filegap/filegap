@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Trash2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { ToolLayout } from '../../components/layout/ToolLayout';
 import { Button } from '../../components/ui/Button';
 import { SingleFilePicker } from '../../components/ui/SingleFilePicker';
 import { SplitOutputPanel } from '../../components/ui/SplitOutputPanel';
 import { SplitThumbnailGrid } from '../../components/ui/SplitThumbnailGrid';
+import { ToolCliPreview } from '../../components/ui/ToolCliPreview';
+import { ToolProcessFlow } from '../../components/ui/ToolProcessFlow';
 import { WorkingFileHeader } from '../../components/ui/WorkingFileHeader';
 import {
   chooseOutputDirectory,
@@ -18,10 +21,11 @@ import {
   splitPdf,
 } from '../../lib/desktop';
 import { renderFilenameTemplate, resolveOutputPathByOverwrite } from '../../lib/outputSettings';
-import { readErrorMessage } from '../../lib/pageHelpers';
+import { quoteCliArg, readErrorMessage } from '../../lib/pageHelpers';
 import { renderPdfThumbnails, type PageThumbnail } from '../../lib/pdfPreview';
 import { fileNameFromPath } from '../../lib/pathUtils';
 import { useDesktopSettings } from '../../lib/settings';
+import { createWorkflowStep, type WorkflowBuilderImportState } from '../../lib/workflowBuilder';
 
 type StatusTone = 'neutral' | 'info' | 'error' | 'success';
 
@@ -105,6 +109,7 @@ function buildSplitRangesFromStarts(starts: Set<number>, maxPage: number): Split
 }
 
 export function SplitPdfPage() {
+  const navigate = useNavigate();
   const [settings] = useDesktopSettings();
   const [files, setFiles] = useState<SplitFile[]>([]);
   const [outputDirectory, setOutputDirectory] = useState('');
@@ -182,6 +187,17 @@ export function SplitPdfPage() {
   );
 
   const actionLabel = isProcessing ? 'Splitting...' : hasCompleted ? 'Split again' : 'Split PDF';
+  const selectedFile = files[0] ?? null;
+  const shouldShowWorkflowExtras = files.length === 1;
+  const cliPreview = useMemo(() => {
+    const input = selectedFile ? quoteCliArg(fileNameFromPath(selectedFile.path)) : '"input.pdf"';
+    const target = 'output.zip';
+    if (splitMode === 'pages') {
+      return `filegap split ${input} --pages-per-file ${pagesPerFile} --format zip\n> ${quoteCliArg(target)}`;
+    }
+    const ranges = pageRanges.trim().length > 0 ? pageRanges.trim() : '1-2,3-4';
+    return `filegap split ${input} --pages ${quoteCliArg(ranges)} --format zip\n> ${quoteCliArg(target)}`;
+  }, [pageRanges, pagesPerFile, selectedFile, splitMode]);
 
   useEffect(() => {
     if (files.length !== 1) {
@@ -326,6 +342,20 @@ export function SplitPdfPage() {
     }
     setOutputDirectory(chosen);
     setStatus({ tone: 'info', message: 'Destination selected' });
+  }
+
+  function handleOpenWorkflowBuilder() {
+    const step = createWorkflowStep('split');
+    step.splitRanges = splitMode === 'ranges' && pageRanges.trim().length > 0 ? pageRanges.trim() : step.splitRanges;
+    const state: WorkflowBuilderImportState = {
+      sourceLabel: 'Split PDF',
+      inputPaths: selectedFile ? [selectedFile.path] : [],
+      draft: {
+        inputMode: 'single',
+        steps: [step],
+      },
+    };
+    navigate('/workflow-builder', { state });
   }
 
   function clearSelectedFile() {
@@ -618,6 +648,18 @@ export function SplitPdfPage() {
           onNewSplit={startNewSplit}
           onOpenFile={() => void handleOpenFile()}
           onShowInFolder={() => void handleShowInFolder()}
+          afterActionContent={shouldShowWorkflowExtras ? (
+            <>
+              <ToolProcessFlow
+                steps={['Input', 'Split', 'Output']}
+                activeStep={1}
+                onOpenWorkflowBuilder={handleOpenWorkflowBuilder}
+                disabled={isProcessing || isLoadingFiles || isRenderingPreviews}
+              />
+              <div className="output-panel-divider" />
+              <ToolCliPreview helperText="Run the same split step from your terminal." command={cliPreview} />
+            </>
+          ) : null}
         />
       }
     />

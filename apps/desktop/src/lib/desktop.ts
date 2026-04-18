@@ -2,6 +2,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { downloadDir } from '@tauri-apps/api/path';
 import { open } from '@tauri-apps/plugin-dialog';
 import { openUrl } from '@tauri-apps/plugin-opener';
+import type { WorkflowDraft } from './workflowBuilder';
 
 export type MergeResult = {
   output_path: string;
@@ -28,6 +29,12 @@ export type OptimizeResult = {
 
 export type CompressResult = {
   output_path: string;
+};
+
+export type WorkflowRunResult = {
+  output_path: string;
+  output_count: number;
+  is_split_output: boolean;
 };
 
 export type CompressPreset = 'low' | 'balanced' | 'strong';
@@ -154,6 +161,20 @@ export async function compressPdf(
     inputPath,
     outputPath,
     preset,
+  });
+}
+
+export async function executeWorkflow(
+  inputPaths: string[],
+  outputDir: string,
+  outputName: string,
+  draft: WorkflowDraft
+): Promise<WorkflowRunResult> {
+  return invoke<WorkflowRunResult>('execute_workflow', {
+    inputPaths,
+    outputDir,
+    outputName,
+    draft,
   });
 }
 

@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Trash2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { ToolLayout } from '../../components/layout/ToolLayout';
 import { Button } from '../../components/ui/Button';
 import { ReorderOutputPanel } from '../../components/ui/ReorderOutputPanel';
 import { ReorderThumbnailGrid, type ReorderThumbnailItem } from '../../components/ui/ReorderThumbnailGrid';
 import { SingleFilePicker } from '../../components/ui/SingleFilePicker';
+import { ToolCliPreview } from '../../components/ui/ToolCliPreview';
+import { ToolProcessFlow } from '../../components/ui/ToolProcessFlow';
 import { WorkingFileHeader } from '../../components/ui/WorkingFileHeader';
 import {
   chooseOutputDirectory,
@@ -18,10 +21,11 @@ import {
   revealInFolder,
 } from '../../lib/desktop';
 import { renderFilenameTemplate, resolveOutputPathByOverwrite } from '../../lib/outputSettings';
-import { joinPath, parsePath, readErrorMessage } from '../../lib/pageHelpers';
+import { joinPath, parsePath, quoteCliArg, readErrorMessage } from '../../lib/pageHelpers';
 import { renderPdfThumbnails } from '../../lib/pdfPreview';
 import { fileNameFromPath } from '../../lib/pathUtils';
 import { useDesktopSettings } from '../../lib/settings';
+import { createWorkflowStep, type WorkflowBuilderImportState } from '../../lib/workflowBuilder';
 
 type StatusTone = 'neutral' | 'info' | 'error' | 'success';
 
@@ -77,6 +81,7 @@ function parsePageOrderInput(value: string, pageCount: number): number[] {
 }
 
 export function ReorderPdfPage() {
+  const navigate = useNavigate();
   const [settings] = useDesktopSettings();
   const [files, setFiles] = useState<ReorderFile[]>([]);
   const [thumbnails, setThumbnails] = useState<ReorderThumbnailItem[]>([]);
@@ -136,6 +141,13 @@ export function ReorderPdfPage() {
   );
 
   const actionLabel = isProcessing ? 'Reordering...' : hasCompleted ? 'Reorder again' : 'Reorder PDF';
+  const shouldShowWorkflowExtras = files.length === 1;
+  const cliPreview = useMemo(() => {
+    const input = selectedFile ? quoteCliArg(fileNameFromPath(selectedFile.path)) : '"input.pdf"';
+    const order = pageOrderInput.trim().length > 0 ? pageOrderInput.trim() : '1,2,3';
+    const target = outputName.trim().length > 0 ? outputName.trim() : 'reordered.pdf';
+    return `filegap reorder ${input} --pages ${quoteCliArg(order)}\n> ${quoteCliArg(target)}`;
+  }, [outputName, pageOrderInput, selectedFile]);
 
   useEffect(() => {
     let cancelled = false;
@@ -286,6 +298,20 @@ export function ReorderPdfPage() {
     setLastOutputPath('');
     setOutputName(createDefaultOutputName(settings.reorderFilenameTemplate));
     setStatus({ tone: 'neutral', message: 'Idle' });
+  }
+
+  function handleOpenWorkflowBuilder() {
+    const step = createWorkflowStep('reorder');
+    step.pageOrder = pageOrderInput.trim().length > 0 ? pageOrderInput.trim() : step.pageOrder;
+    const state: WorkflowBuilderImportState = {
+      sourceLabel: 'Reorder PDF',
+      inputPaths: selectedFile ? [selectedFile.path] : [],
+      draft: {
+        inputMode: 'single',
+        steps: [step],
+      },
+    };
+    navigate('/workflow-builder', { state });
   }
 
   async function handleReorder() {
@@ -518,6 +544,18 @@ export function ReorderPdfPage() {
           onNewReorder={startNewReorder}
           onOpenFile={() => void handleOpenFile()}
           onShowInFolder={() => void handleShowInFolder()}
+          afterActionContent={shouldShowWorkflowExtras ? (
+            <>
+              <ToolProcessFlow
+                steps={['Input', 'Reorder', 'Output']}
+                activeStep={1}
+                onOpenWorkflowBuilder={handleOpenWorkflowBuilder}
+                disabled={isProcessing || isLoadingFiles || isRenderingPreviews}
+              />
+              <div className="output-panel-divider" />
+              <ToolCliPreview helperText="Run the same reorder step from your terminal." command={cliPreview} />
+            </>
+          ) : null}
         />
       }
     />
