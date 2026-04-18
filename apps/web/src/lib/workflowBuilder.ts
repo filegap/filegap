@@ -30,14 +30,52 @@ export type WorkflowBuilderNavigationState = {
   sourceFiles?: File[];
 };
 
-export function createWorkflowStep(operation: WorkflowOperation): WorkflowStep {
+function buildDefaultPageRanges(pageCount?: number): string {
+  if (!pageCount || pageCount < 1) {
+    return '1-3';
+  }
+  if (pageCount === 1) {
+    return '1';
+  }
+  return `1-${pageCount}`;
+}
+
+function buildDefaultPageOrder(pageCount?: number): string {
+  if (!pageCount || pageCount < 1) {
+    return '3,2,1';
+  }
+  return Array.from({ length: pageCount }, (_, index) => index + 1).join(',');
+}
+
+function buildDefaultSplitRanges(pageCount?: number): string {
+  if (!pageCount || pageCount < 1) {
+    return '1-2,3-4';
+  }
+  if (pageCount === 1) {
+    return '1';
+  }
+
+  const midpoint = Math.ceil(pageCount / 2);
+  if (midpoint >= pageCount) {
+    return `1-${pageCount - 1},${pageCount}`;
+  }
+  return `1-${midpoint},${midpoint + 1}-${pageCount}`;
+}
+
+export function getWorkflowStepDefaults(operation: WorkflowOperation, pageCount?: number): Omit<WorkflowStep, 'id' | 'operation'> {
+  return {
+    pageRanges: buildDefaultPageRanges(pageCount),
+    pageOrder: buildDefaultPageOrder(pageCount),
+    splitRanges: buildDefaultSplitRanges(pageCount),
+    compressionPreset: 'balanced',
+  };
+}
+
+export function createWorkflowStep(operation: WorkflowOperation, pageCount?: number): WorkflowStep {
   return {
     id: `${operation}-${Math.random().toString(16).slice(2)}`,
     operation,
-    pageRanges: '1-3',
-    pageOrder: '3,2,1',
-    splitRanges: '1-2,3-4',
-    compressionPreset: 'balanced',
+    ...getWorkflowStepDefaults(operation, pageCount),
   };
 }
 

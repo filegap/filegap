@@ -1,5 +1,5 @@
 import { ArrowDown, ArrowUp, FileText, Plus, Trash2, X } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { PDFDocument } from 'pdf-lib';
 
@@ -9,6 +9,7 @@ import { SectionBlock } from '../../components/layout/SectionBlock';
 import { Button } from '../../components/ui/Button';
 import { CliPreviewCard } from '../../components/ui/CliPreviewCard';
 import { DropZone } from '../../components/ui/DropZone';
+import { PreDownloadModal } from '../../components/ui/PreDownloadModal';
 import { SimpleProcessFlow } from '../../components/ui/SimpleProcessFlow';
 import { UploadedFilesTable } from '../../components/ui/UploadedFilesTable';
 import {
@@ -24,6 +25,7 @@ import {
 import {
   buildWorkflowCliPreview,
   createWorkflowStep,
+  getWorkflowStepDefaults,
   type WorkflowBuilderNavigationState,
   type WorkflowDraft,
   type WorkflowOperation,
@@ -72,6 +74,17 @@ type WorkflowOutput = {
   pageCount: number;
 };
 
+type WorkflowOutputSummary = {
+  fileCount: number;
+  pageCount: number | null;
+  sizeBytes: number;
+};
+
+type SourceFileMetadata = {
+  pageCount: number | null;
+  status: 'loading' | 'ready' | 'error';
+};
+
 function normalizeDraftInputMode(draft: WorkflowDraft): WorkflowDraft {
   const inputMode = draft.steps[0]?.operation === 'merge' ? 'multiple' : 'single';
   if (draft.inputMode === inputMode) {
@@ -98,17 +111,72 @@ function saveBlob(filename: string, bytes: Uint8Array): void {
   URL.revokeObjectURL(url);
 }
 
+async function fileToArrayBuffer(file: File): Promise<ArrayBuffer> {
+  if (typeof file.arrayBuffer === 'function') {
+    return file.arrayBuffer();
+  }
+
+  return new Response(file).arrayBuffer();
+}
+
 async function getPageCountFromBytes(bytes: Uint8Array): Promise<number> {
   const doc = await PDFDocument.load(toArrayBuffer(bytes));
   return doc.getPageCount();
 }
 
-function buildOutputName(baseName: string, index: number, total: number): string {
-  const stem = baseName.toLowerCase().endsWith('.pdf') ? baseName.slice(0, -4) : baseName;
-  if (total === 1) {
-    return `${stem}-workflow.pdf`;
+async function getPdfPageCount(file: File): Promise<number | null> {
+  try {
+    const bytes = await fileToArrayBuffer(file);
+    const doc = await PDFDocument.load(bytes);
+    return doc.getPageCount();
+  } catch {
+    return null;
   }
-  return `${stem}-workflow-part-${index + 1}.pdf`;
+}
+
+function sourceFileKey(file: File): string {
+  return `${file.name}-${file.size}-${file.lastModified}`;
+}
+
+function isPlaceholderStepValue(step: WorkflowDraft['steps'][number]): boolean {
+  const genericDefaults = getWorkflowStepDefaults(step.operation);
+  if (step.operation === 'extract') {
+    return step.pageRanges === genericDefaults.pageRanges;
+  }
+  if (step.operation === 'reorder') {
+    return step.pageOrder === genericDefaults.pageOrder;
+  }
+  if (step.operation === 'split') {
+    return step.splitRanges === genericDefaults.splitRanges;
+  }
+  return false;
+}
+
+function outputSlug(operation: WorkflowOperation): string {
+  if (operation === 'merge') {
+    return 'merge-pdf';
+  }
+  if (operation === 'extract') {
+    return 'extract-pages';
+  }
+  if (operation === 'reorder') {
+    return 'reorder-pdf';
+  }
+  if (operation === 'optimize') {
+    return 'optimize-pdf';
+  }
+  if (operation === 'compress') {
+    return 'compress-pdf';
+  }
+  return 'split-pdf';
+}
+
+function buildOutputName(operation: WorkflowOperation, index: number, total: number): string {
+  const stem = `filegap-${outputSlug(operation)}-output`;
+  if (total === 1) {
+    return `${stem}.pdf`;
+  }
+  return `${stem}-part-${index + 1}.pdf`;
 }
 
 function formatFileSize(sizeBytes: number): string {
@@ -140,7 +208,9 @@ export function WorkflowBuilderPage() {
 
   const [draft, setDraft] = useState<WorkflowDraft>(initialDraft);
   const [sourceFiles, setSourceFiles] = useState<File[]>(initialSourceFiles);
+  const [sourceFileMetadata, setSourceFileMetadata] = useState<Record<string, SourceFileMetadata>>({});
   const [outputs, setOutputs] = useState<WorkflowOutput[]>([]);
+  const [showDownloadGate, setShowDownloadGate] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
   const [isDropZoneCollapsed, setIsDropZoneCollapsed] = useState(initialSourceFiles.length > 0);
   const [status, setStatus] = useState<{ tone: StatusTone; message: string }>({
@@ -159,6 +229,9 @@ export function WorkflowBuilderPage() {
   const canRun = !isRunning && hasAnyInputs && hasEnoughInputs && errors.length === 0;
   const runStepsLabel = `${draft.steps.length} ${draft.steps.length === 1 ? 'step' : 'steps'} ready`;
   const chainSteps = ['Input', ...draft.steps.map((step) => stepLabel(step.operation)), 'Output'];
+  const finalOperation = draft.steps[draft.steps.length - 1]?.operation ?? 'optimize';
+  const singleSourcePageCount =
+    sourceFiles.length === 1 ? sourceFileMetadata[sourceFileKey(sourceFiles[0])]?.pageCount ?? null : null;
   const inputError =
     draft.inputMode === 'multiple' && sourceFiles.length === 1
       ? 'Merge requires at least two input PDFs.'
@@ -181,13 +254,16 @@ export function WorkflowBuilderPage() {
     return byStep;
   }, [draft.steps]);
 
-  const uploadedFiles = sourceFiles.map((file, index) => ({
-    id: `${file.name}-${file.size}-${file.lastModified}-${index}`,
+  const uploadedFiles = sourceFiles.map((file, index) => {
+    const metadata = sourceFileMetadata[sourceFileKey(file)];
+    return {
+      id: `${file.name}-${file.size}-${file.lastModified}-${index}`,
     filename: file.name,
     sizeBytes: file.size,
-    pages: null,
-    pagesStatus: 'loading' as const,
-  }));
+      pages: metadata?.pageCount ?? null,
+      pagesStatus: metadata?.status ?? 'loading',
+    };
+  });
   const dropZoneLoadedName =
     sourceFiles.length === 0
       ? null
@@ -197,12 +273,80 @@ export function WorkflowBuilderPage() {
   const totalSizeBytes = sourceFiles.reduce((sum, file) => sum + file.size, 0);
   const inputSummaryMeta = `${sourceFiles.length} file${sourceFiles.length === 1 ? '' : 's'} • ${formatFileSize(totalSizeBytes)}`;
   const actionMessageClassName = status.tone === 'error' ? 'text-sm text-red-600' : 'text-sm text-ui-muted';
+  const outputSummary = useMemo<WorkflowOutputSummary | null>(() => {
+    if (outputs.length === 0) {
+      return null;
+    }
+
+    return {
+      fileCount: outputs.length,
+      pageCount: outputs.length === 1 ? outputs[0].pageCount : null,
+      sizeBytes: outputs.reduce((sum, output) => sum + output.bytes.byteLength, 0),
+    };
+  }, [outputs]);
+
+  useEffect(() => {
+    sourceFiles.forEach((file) => {
+      const key = sourceFileKey(file);
+      if (sourceFileMetadata[key]) {
+        return;
+      }
+
+      setSourceFileMetadata((current) => ({
+        ...current,
+        [key]: { pageCount: null, status: 'loading' },
+      }));
+
+      void getPdfPageCount(file).then((pageCount) => {
+        setSourceFileMetadata((current) => ({
+          ...current,
+          [key]: {
+            pageCount,
+            status: pageCount === null ? 'error' : 'ready',
+          },
+        }));
+      });
+    });
+  }, [sourceFileMetadata, sourceFiles]);
+
+  useEffect(() => {
+    if (sourceFiles.length !== 1 || !singleSourcePageCount) {
+      return;
+    }
+
+    setDraft((current) => {
+      let changed = false;
+      const steps = current.steps.map((step) => {
+        if (!isPlaceholderStepValue(step)) {
+          return step;
+        }
+
+        const nextDefaults = getWorkflowStepDefaults(step.operation, singleSourcePageCount);
+        if (
+          (step.operation === 'extract' && step.pageRanges === nextDefaults.pageRanges) ||
+          (step.operation === 'reorder' && step.pageOrder === nextDefaults.pageOrder) ||
+          (step.operation === 'split' && step.splitRanges === nextDefaults.splitRanges)
+        ) {
+          return step;
+        }
+
+        changed = true;
+        return {
+          ...step,
+          ...nextDefaults,
+          compressionPreset: step.compressionPreset,
+        };
+      });
+
+      return changed ? { ...current, steps } : current;
+    });
+  }, [singleSourcePageCount, sourceFiles.length]);
 
   function addStep() {
     setDraft((current) =>
       normalizeDraftInputMode({
         ...current,
-        steps: [...current.steps, createWorkflowStep('compress')],
+        steps: [...current.steps, createWorkflowStep('compress', singleSourcePageCount ?? undefined)],
       })
     );
   }
@@ -237,7 +381,21 @@ export function WorkflowBuilderPage() {
     setDraft((current) =>
       normalizeDraftInputMode({
         ...current,
-        steps: current.steps.map((step) => (step.id === stepId ? { ...step, ...patch } : step)),
+        steps: current.steps.map((step) => {
+          if (step.id !== stepId) {
+            return step;
+          }
+
+          if (patch.operation && patch.operation !== step.operation) {
+            return {
+              ...step,
+              ...getWorkflowStepDefaults(patch.operation, singleSourcePageCount ?? undefined),
+              ...patch,
+            };
+          }
+
+          return { ...step, ...patch };
+        }),
       })
     );
   }
@@ -247,6 +405,7 @@ export function WorkflowBuilderPage() {
       return;
     }
     setOutputs([]);
+    setShowDownloadGate(false);
     setSourceFiles((current) => [...current, ...files]);
     setIsDropZoneCollapsed(true);
   }
@@ -263,7 +422,18 @@ export function WorkflowBuilderPage() {
 
   function clearSourceFiles() {
     setSourceFiles([]);
+    setSourceFileMetadata({});
     setOutputs([]);
+    setShowDownloadGate(false);
+    setIsDropZoneCollapsed(false);
+    setStatus({ tone: 'neutral', message: 'Select input PDF files and run your workflow.' });
+  }
+
+  function startNewWorkflow() {
+    setSourceFiles([]);
+    setSourceFileMetadata({});
+    setOutputs([]);
+    setShowDownloadGate(false);
     setIsDropZoneCollapsed(false);
     setStatus({ tone: 'neutral', message: 'Select input PDF files and run your workflow.' });
   }
@@ -284,7 +454,9 @@ export function WorkflowBuilderPage() {
     setStatus({ tone: 'info', message: 'Running workflow locally in your browser...' });
 
     try {
-      let currentDocs: Uint8Array[] = await Promise.all(sourceFiles.map(async (file) => new Uint8Array(await file.arrayBuffer())));
+      let currentDocs: Uint8Array[] = await Promise.all(
+        sourceFiles.map(async (file) => new Uint8Array(await fileToArrayBuffer(file)))
+      );
 
       for (const step of draft.steps) {
         if (step.operation === 'merge') {
@@ -335,11 +507,10 @@ export function WorkflowBuilderPage() {
         currentDocs = splitOutputs.map((bytes) => new Uint8Array(bytes));
       }
 
-      const baseName = sourceFiles[0]?.name ?? 'workflow-output.pdf';
       const finalOutputs = await Promise.all(
         currentDocs.map(async (bytes, index) => ({
           id: `output-${index}`,
-          filename: buildOutputName(baseName, index, currentDocs.length),
+          filename: buildOutputName(finalOperation, index, currentDocs.length),
           bytes,
           pageCount: await getPageCountFromBytes(bytes),
         }))
@@ -366,6 +537,19 @@ export function WorkflowBuilderPage() {
 
   function downloadAllOutputs() {
     outputs.forEach((output) => downloadOutput(output));
+  }
+
+  function handleDownloadCta() {
+    setShowDownloadGate(true);
+  }
+
+  function handleConfirmDownload() {
+    if (outputs.length === 1) {
+      downloadOutput(outputs[0]);
+    } else {
+      downloadAllOutputs();
+    }
+    setShowDownloadGate(false);
   }
 
   return (
@@ -607,29 +791,28 @@ export function WorkflowBuilderPage() {
         ) : null}
 
         {outputs.length > 0 ? (
-          <section className='space-y-3 rounded-2xl border border-ui-border bg-ui-surface p-4'>
-            <div className='flex flex-wrap items-center justify-between gap-3'>
-              <h2 className='font-heading text-xl font-semibold text-ui-text'>Outputs</h2>
-              {outputs.length > 1 ? (
-                <Button variant='secondary' onClick={downloadAllOutputs}>
-                  Download all
-                </Button>
-              ) : null}
+          <div className='rounded-2xl border border-brand-primary/40 bg-brand-primary/10 p-5'>
+            <p className='font-heading text-lg font-semibold text-ui-text'>Workflow completed</p>
+            <p className='mt-1 text-sm text-ui-text/85'>
+              Your PDF is ready. The local process finished on this device.
+            </p>
+            {outputSummary ? (
+              <p className='mt-2 text-sm text-ui-muted'>
+                {outputSummary.pageCount ? `${outputSummary.pageCount} pages` : `${outputSummary.fileCount} PDF files`} •{' '}
+                {formatFileSize(outputSummary.sizeBytes)}
+              </p>
+            ) : null}
+            <div className='mt-4 flex flex-wrap gap-3'>
+              <Button onClick={handleDownloadCta}>Download PDF</Button>
+              <button
+                type='button'
+                onClick={startNewWorkflow}
+                className='rounded-xl border border-ui-border bg-ui-surface px-4 py-3 text-sm font-semibold text-ui-text transition hover:bg-ui-bg'
+              >
+                New workflow
+              </button>
             </div>
-            <ul className='space-y-2'>
-              {outputs.map((output) => (
-                <li key={output.id} className='flex items-center justify-between gap-3 rounded-lg border border-ui-border bg-ui-bg/70 px-3 py-2'>
-                  <div className='min-w-0'>
-                    <p className='truncate text-sm font-semibold text-ui-text'>{output.filename}</p>
-                    <p className='text-xs text-ui-muted'>{output.pageCount} pages</p>
-                  </div>
-                  <Button variant='secondary' onClick={() => downloadOutput(output)}>
-                    Download
-                  </Button>
-                </li>
-              ))}
-            </ul>
-          </section>
+          </div>
         ) : null}
 
         {hasAnyInputs ? (
@@ -666,6 +849,12 @@ export function WorkflowBuilderPage() {
           </ul>
         </SectionBlock>
       </section>
+
+      <PreDownloadModal
+        open={showDownloadGate && outputs.length > 0}
+        onConfirm={handleConfirmDownload}
+        onClose={() => setShowDownloadGate(false)}
+      />
     </ToolLayout>
   );
 }

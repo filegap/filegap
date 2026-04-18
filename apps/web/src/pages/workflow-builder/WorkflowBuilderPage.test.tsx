@@ -1,8 +1,27 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { WorkflowBuilderPage } from './WorkflowBuilderPage';
+
+vi.mock('pdf-lib', () => ({
+  PDFDocument: {
+    load: vi.fn().mockResolvedValue({
+      getPageCount: () => 4,
+    }),
+  },
+}));
+
+vi.mock('../../adapters/pdfEngine', async () => {
+  const actual = await vi.importActual<typeof import('../../adapters/pdfEngine')>(
+    '../../adapters/pdfEngine'
+  );
+  return {
+    ...actual,
+    optimizePdfBuffer: vi.fn().mockResolvedValue(new Uint8Array([1, 2, 3])),
+  };
+});
 
 describe('WorkflowBuilderPage', () => {
   it('renders dropzone-only state before files are loaded', () => {
@@ -68,5 +87,82 @@ describe('WorkflowBuilderPage', () => {
     expect(screen.getByText('alpha.pdf')).toBeInTheDocument();
     expect(screen.getByText('beta.pdf')).toBeInTheDocument();
     expect(screen.getByText(/filegap merge input-1\.pdf input-2\.pdf/)).toBeInTheDocument();
+  });
+
+  it('shows completed state with gated download and filegap output naming', async () => {
+    const user = userEvent.setup();
+    const createObjectURLSpy = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:test');
+    const revokeObjectURLSpy = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+    const originalCreateElement = document.createElement.bind(document);
+    const createdAnchors: HTMLAnchorElement[] = [];
+    const createElementSpy = vi.spyOn(document, 'createElement').mockImplementation(((tagName: string) => {
+      const element = originalCreateElement(tagName);
+      if (tagName === 'a') {
+        createdAnchors.push(element as HTMLAnchorElement);
+      }
+      return element;
+    }) as typeof document.createElement);
+
+    render(
+      <MemoryRouter initialEntries={['/workflow-builder']}>
+        <Routes>
+          <Route path='/workflow-builder' element={<WorkflowBuilderPage />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const file = new File([new Uint8Array([1, 2, 3])], 'source.pdf', { type: 'application/pdf' });
+    fireEvent.change(input, { target: { files: [file] } });
+
+    expect(screen.getByText(/> output\.pdf/)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Run workflow' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('Workflow completed')).toBeInTheDocument();
+    });
+
+    expect(screen.getByText('Your PDF is ready. The local process finished on this device.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'New workflow' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Download PDF' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Run workflow' })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Download PDF' }));
+    expect(screen.getByText('Your PDF is ready')).toBeInTheDocument();
+
+    const modalDownloadButton = screen.getAllByRole('button', { name: 'Download PDF' })[1];
+    await user.click(modalDownloadButton);
+
+    expect(createdAnchors.some((anchor) => anchor.download === 'filegap-optimize-pdf-output.pdf')).toBe(true);
+    expect(createObjectURLSpy).toHaveBeenCalledTimes(1);
+    expect(revokeObjectURLSpy).toHaveBeenCalledTimes(1);
+
+    createElementSpy.mockRestore();
+    createObjectURLSpy.mockRestore();
+    revokeObjectURLSpy.mockRestore();
+  });
+
+  it('shows uploaded page count and derives reorder defaults from the real PDF length', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={['/workflow-builder']}>
+        <Routes>
+          <Route path='/workflow-builder' element={<WorkflowBuilderPage />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const file = new File([new Uint8Array([1, 2, 3])], 'source.pdf', { type: 'application/pdf' });
+    fireEvent.change(input, { target: { files: [file] } });
+
+    await waitFor(() => {
+      expect(within(screen.getAllByTestId('uploaded-file-row')[0]).getByText('4')).toBeInTheDocument();
+    });
+
+    await user.selectOptions(screen.getByRole('combobox'), 'reorder');
+    expect(screen.getByDisplayValue('1,2,3,4')).toBeInTheDocument();
   });
 });
