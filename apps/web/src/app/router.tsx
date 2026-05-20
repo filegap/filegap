@@ -7,6 +7,7 @@ import { HomePage } from '../pages/home/HomePage';
 import { MergePdfPage } from '../pages/merge-pdf/MergePdfPage';
 import { NotFoundPage } from '../pages/not-found/NotFoundPage';
 import { OptimizePdfPage } from '../pages/optimize-pdf/OptimizePdfPage';
+import { PdfToImagesPage } from '../pages/pdf-to-images/PdfToImagesPage';
 import { PrivacyPage } from '../pages/privacy/PrivacyPage';
 import { ReorderPdfPage } from '../pages/reorder-pdf/ReorderPdfPage';
 import { SplitPdfPage } from '../pages/split-pdf/SplitPdfPage';
@@ -45,6 +46,10 @@ export const router = createBrowserRouter([
   {
     path: '/optimize-pdf',
     element: <OptimizePdfPage />,
+  },
+  {
+    path: '/pdf-to-images',
+    element: <PdfToImagesPage />,
   },
   {
     path: '/privacy',

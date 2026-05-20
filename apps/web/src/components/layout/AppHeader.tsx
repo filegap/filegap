@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-type ToolIcon = 'merge' | 'split' | 'extract' | 'reorder' | 'optimize' | 'compress';
+type ToolIcon = 'merge' | 'split' | 'extract' | 'reorder' | 'optimize' | 'compress' | 'images';
 
 const TOOL_NAV_LINKS: Array<{ href: string; label: string; icon: ToolIcon }> = [
   { href: '/merge-pdf', label: 'Merge PDF', icon: 'merge' },
@@ -9,6 +9,7 @@ const TOOL_NAV_LINKS: Array<{ href: string; label: string; icon: ToolIcon }> = [
   { href: '/reorder-pdf', label: 'Reorder PDF', icon: 'reorder' },
   { href: '/optimize-pdf', label: 'Optimize PDF', icon: 'optimize' },
   { href: '/compress-pdf', label: 'Compress PDF', icon: 'compress' },
+  { href: '/pdf-to-images', label: 'PDF to Images', icon: 'images' },
 ];
 
 function ToolMenuIcon({ icon }: { icon: ToolIcon }) {
@@ -62,6 +63,16 @@ function ToolMenuIcon({ icon }: { icon: ToolIcon }) {
         <path d='M4 8h16' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' />
         <path d='M7 12h10' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' />
         <path d='M10 16h4' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' />
+      </svg>
+    );
+  }
+
+  if (icon === 'images') {
+    return (
+      <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' aria-hidden='true' className='h-4 w-4'>
+        <rect x='3' y='3' width='18' height='18' rx='2' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' />
+        <circle cx='9' cy='9' r='2' stroke='currentColor' strokeWidth='2' />
+        <path d='m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' />
       </svg>
     );
   }

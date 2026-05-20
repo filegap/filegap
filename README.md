@@ -24,6 +24,7 @@ MVP operations:
 - Extract selected pages
 - Split a PDF
 - Reorder pages
+- Convert PDF pages to images in the web app
 - Optimize PDF structure without intentional quality reduction
 - Compress PDFs locally with quality presets
 - Inspect PDF metadata and structure (`info`)

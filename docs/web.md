@@ -22,7 +22,7 @@
 - Merge queue supports incremental add, remove, and drag-and-drop reorder
 - Split parser supports range input including single pages (for example `1-3,4,5-10`) with preview-ready architecture
 - No backend/API dependency for file processing
-- Public routes implemented: `/`, `/workflow-builder`, `/merge-pdf`, `/split-pdf`, `/extract-pages`, `/reorder-pdf`, `/optimize-pdf`, `/compress-pdf`, `/download`
+- Public routes implemented: `/`, `/workflow-builder`, `/merge-pdf`, `/split-pdf`, `/extract-pages`, `/reorder-pdf`, `/optimize-pdf`, `/compress-pdf`, `/pdf-to-images`, `/download`
 - Shared tool layout is app-like and compact:
   - sticky top header with tool links
   - title/subtitle directly in page flow (no hero card)
@@ -102,6 +102,15 @@ Rule:
 - Result state with `New reorder` to reset and start again
 - Dropzone disabled while reorder is processing
 
+### `/pdf-to-images`
+
+- Single source PDF flow with JPEG and PNG export formats
+- Screen and print resolution presets for local page rendering
+- Uses `pdfjs-dist` in the browser to render each page to canvas
+- Packages one image per page into a local ZIP file without adding upload or backend processing
+- Result state with `Download ZIP` and `New conversion`
+- Dropzone disabled while conversion is processing
+
 Run locally:
 
 ```bash
@@ -133,6 +142,6 @@ npm run dev
 ## Implementation Checklist
 
 1. All file handling uses `File`, `ArrayBuffer`, `Uint8Array`, and `Blob` in browser runtime.
-2. Heavy processing runs in a Web Worker to avoid UI blocking.
+2. PDF manipulation runs in a Web Worker where available; page rendering uses the local PDF.js worker plus browser canvas.
 3. Output is generated locally and downloaded via object URL.
 4. No request body ever contains PDF binary payload.

@@ -9,7 +9,7 @@ declare global {
   }
 }
 
-export type ToolName = 'merge' | 'split' | 'extract' | 'reorder' | 'optimize' | 'compress';
+export type ToolName = 'merge' | 'split' | 'extract' | 'reorder' | 'optimize' | 'compress' | 'images';
 type ToolEventAction = 'started' | 'completed' | 'selection_made';
 
 const ALLOWED_EVENTS = new Set([
@@ -19,12 +19,14 @@ const ALLOWED_EVENTS = new Set([
   'reorder_started',
   'optimize_started',
   'compress_started',
+  'images_started',
   'merge_completed',
   'split_completed',
   'extract_completed',
   'reorder_completed',
   'optimize_completed',
   'compress_completed',
+  'images_completed',
   'selection_made',
   'download_cli_clicked',
   'download_app_clicked',

@@ -7,9 +7,17 @@ type PreDownloadModalProps = {
   open: boolean;
   onClose: () => void;
   onConfirm: () => void;
+  title?: string;
+  confirmLabel?: string;
 };
 
-export function PreDownloadModal({ open, onClose, onConfirm }: PreDownloadModalProps) {
+export function PreDownloadModal({
+  open,
+  onClose,
+  onConfirm,
+  title = 'Your PDF is ready',
+  confirmLabel = 'Download PDF',
+}: PreDownloadModalProps) {
   useEffect(() => {
     if (!open) {
       return;
@@ -40,7 +48,7 @@ export function PreDownloadModal({ open, onClose, onConfirm }: PreDownloadModalP
         <div className='pr-10'>
           <p className='inline-flex items-center gap-2 font-heading text-2xl font-semibold text-ui-text'>
             <CheckCircle2 className='h-5 w-5 text-brand-primary' aria-hidden='true' />
-            <span>Your PDF is ready</span>
+            <span>{title}</span>
           </p>
         </div>
 
@@ -49,7 +57,7 @@ export function PreDownloadModal({ open, onClose, onConfirm }: PreDownloadModalP
           onClick={onConfirm}
           className='mt-7 inline-flex w-full items-center justify-center rounded-xl bg-brand-primary px-5 py-3.5 text-base font-semibold text-white transition hover:bg-brand-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/40 focus-visible:ring-offset-2'
         >
-          Download PDF
+          {confirmLabel}
         </button>
 
         <div className='mt-7'>

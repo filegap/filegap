@@ -6,6 +6,7 @@ import {
   Files,
   Github,
   GitBranch,
+  Images,
   Leaf,
   Scissors,
   ShieldCheck,
@@ -76,6 +77,13 @@ const TOOLS = [
     href: '/compress-pdf',
     ctaLabel: 'Compress PDF',
     icon: <Archive />,
+  },
+  {
+    name: 'PDF to Images',
+    description: 'Convert every PDF page into JPEG or PNG images locally.',
+    href: '/pdf-to-images',
+    ctaLabel: 'Convert pages',
+    icon: <Images />,
   },
 ];
 

@@ -11,7 +11,7 @@ describe('HomePage', () => {
     const heroPrimaryCta = heroPrimaryCtas[0];
     expect(heroPrimaryCta).toHaveAttribute(
       'href',
-      expect.stringMatching(/^\/(workflow-builder|merge-pdf|split-pdf|extract-pages|reorder-pdf|optimize-pdf|compress-pdf)$/)
+      expect.stringMatching(/^\/(workflow-builder|merge-pdf|split-pdf|extract-pages|reorder-pdf|optimize-pdf|compress-pdf|pdf-to-images)$/)
     );
 
     expect(
@@ -53,6 +53,7 @@ describe('HomePage', () => {
     expect(within(grid).getByRole('link', { name: /Reorder PDF/i })).toHaveAttribute('href', '/reorder-pdf');
     expect(within(grid).getByRole('link', { name: /Optimize PDF/i })).toHaveAttribute('href', '/optimize-pdf');
     expect(within(grid).getByRole('link', { name: /Compress PDF/i })).toHaveAttribute('href', '/compress-pdf');
+    expect(within(grid).getByRole('link', { name: /PDF to Images/i })).toHaveAttribute('href', '/pdf-to-images');
     expect(within(grid).getByText('Build workflow')).toBeInTheDocument();
     expect(within(grid).getByText('Merge PDFs')).toBeInTheDocument();
     expect(within(grid).getAllByText('Split PDF')).toHaveLength(2);
@@ -60,6 +61,8 @@ describe('HomePage', () => {
     expect(within(grid).getByText('Reorder pages')).toBeInTheDocument();
     expect(within(grid).getAllByText('Optimize PDF')).toHaveLength(2);
     expect(within(grid).getAllByText('Compress PDF')).toHaveLength(2);
+    expect(within(grid).getByText('PDF to Images')).toBeInTheDocument();
+    expect(within(grid).getByText('Convert pages')).toBeInTheDocument();
     expect(within(grid).getByText('Chain PDF operations visually like CLI pipelines (preview).')).toBeInTheDocument();
     expect(within(grid).getByText('Combine multiple PDFs into one — fast and private.')).toBeInTheDocument();
     expect(within(grid).getByText('Split a PDF into smaller files — no uploads required.')).toBeInTheDocument();
@@ -70,6 +73,9 @@ describe('HomePage', () => {
     ).toBeInTheDocument();
     expect(
       within(grid).getByText('Compress PDF files with local structural reduction and desktop fallback for heavier jobs.')
+    ).toBeInTheDocument();
+    expect(
+      within(grid).getByText('Convert every PDF page into JPEG or PNG images locally.')
     ).toBeInTheDocument();
 
     expect(screen.getByRole('heading', { level: 2, name: 'Why Filegap' })).toBeInTheDocument();
