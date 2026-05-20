@@ -587,6 +587,130 @@ pub async fn execute_workflow(
 }
 
 #[tauri::command]
+pub async fn prepare_workflow_pdf_bytes(
+    input_paths: Vec<String>,
+    draft: WorkflowDraftInput,
+) -> Result<Vec<u8>, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        if input_paths.is_empty() {
+            return Err("Select one or more PDF files.".to_string());
+        }
+        if draft.steps.is_empty() {
+            return Err("Add at least one workflow step.".to_string());
+        }
+
+        let mut loaded_inputs = Vec::with_capacity(input_paths.len());
+        for path in &input_paths {
+            let bytes = fs::read(path).map_err(|_| "Failed to read one or more input PDF files.".to_string())?;
+            if bytes.is_empty() {
+                return Err("One or more input files are empty.".to_string());
+            }
+            loaded_inputs.push(bytes);
+        }
+
+        let mut state = if loaded_inputs.len() == 1 {
+            WorkflowState::Single(loaded_inputs.remove(0))
+        } else {
+            WorkflowState::Multiple(loaded_inputs)
+        };
+
+        let last_step_index = draft.steps.len() - 1;
+
+        for (index, step) in draft.steps.iter().enumerate() {
+            match step.operation.trim().to_ascii_lowercase().as_str() {
+                "merge" => {
+                    if index != 0 {
+                        return Err("Merge can only be the first workflow step.".to_string());
+                    }
+                    let documents = match state {
+                        WorkflowState::Multiple(docs) if docs.len() >= 2 => docs,
+                        _ => return Err("Merge requires at least two input PDFs.".to_string()),
+                    };
+                    let merged =
+                        core_merge_pdfs(&MergeRequest { documents }).map_err(map_core_error)?;
+                    state = WorkflowState::Single(merged);
+                }
+                "extract" => {
+                    let document = match state {
+                        WorkflowState::Single(doc) => doc,
+                        WorkflowState::Multiple(_) => {
+                            return Err("Use Merge as the first step to work with multiple input PDFs.".to_string())
+                        }
+                    };
+                    let ranges = if step.page_ranges.trim().is_empty() {
+                        "1-3".to_string()
+                    } else {
+                        step.page_ranges.trim().to_string()
+                    };
+                    let extracted = core_extract_pages(&ExtractRequest {
+                        document,
+                        page_ranges: ranges,
+                    })
+                    .map_err(map_core_error)?;
+                    state = WorkflowState::Single(extracted);
+                }
+                "reorder" => {
+                    let document = match state {
+                        WorkflowState::Single(doc) => doc,
+                        WorkflowState::Multiple(_) => {
+                            return Err("Use Merge as the first step to work with multiple input PDFs.".to_string())
+                        }
+                    };
+                    let page_count = page_count_from_bytes(&document)?;
+                    let page_order = parse_page_order_input(&step.page_order, page_count)?;
+                    let reordered = core_reorder_pages(&ReorderRequest {
+                        document,
+                        page_order,
+                    })
+                    .map_err(map_core_error)?;
+                    state = WorkflowState::Single(reordered);
+                }
+                "optimize" => {
+                    let document = match state {
+                        WorkflowState::Single(doc) => doc,
+                        WorkflowState::Multiple(_) => {
+                            return Err("Use Merge as the first step to work with multiple input PDFs.".to_string())
+                        }
+                    };
+                    let optimized =
+                        core_optimize_pdf(&OptimizeRequest { document }).map_err(map_core_error)?;
+                    state = WorkflowState::Single(optimized);
+                }
+                "compress" => {
+                    let document = match state {
+                        WorkflowState::Single(doc) => doc,
+                        WorkflowState::Multiple(_) => {
+                            return Err("Use Merge as the first step to work with multiple input PDFs.".to_string())
+                        }
+                    };
+                    let preset = parse_compression_preset(&step.compression_preset)?;
+                    let compressed = core_compress_pdf(&CompressRequest { document, preset })
+                        .map_err(map_core_error)?;
+                    state = WorkflowState::Single(compressed);
+                }
+                "images" => {
+                    if index != last_step_index {
+                        return Err("PDF to Images must be the last workflow step.".to_string());
+                    }
+                    break;
+                }
+                "split" => {
+                    return Err("Split cannot run before PDF to Images in Workflow V1.".to_string());
+                }
+                _ => return Err("Unsupported workflow step.".to_string()),
+            }
+        }
+
+        match state {
+            WorkflowState::Single(doc) => Ok(doc),
+            WorkflowState::Multiple(_) => Err("Use Merge as the first step to combine multiple inputs.".to_string()),
+        }
+    })
+    .await
+    .map_err(|_| "Failed to prepare workflow PDF bytes.".to_string())?
+}
+
+#[tauri::command]
 pub async fn inspect_pdf_files(paths: Vec<String>) -> Result<Vec<PdfFileInfo>, String> {
     tauri::async_runtime::spawn_blocking(move || {
         paths
@@ -636,6 +760,21 @@ pub async fn read_pdf_bytes(path: String) -> Result<Vec<u8>, String> {
     })
     .await
     .map_err(|_| "Failed to read input PDF file.".to_string())?
+}
+
+#[tauri::command]
+pub async fn write_binary_file(output_path: String, bytes: Vec<u8>) -> Result<(), String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        if output_path.trim().is_empty() {
+            return Err("Select a valid output destination.".to_string());
+        }
+        if bytes.is_empty() {
+            return Err("No output bytes were generated.".to_string());
+        }
+        fs::write(output_path, bytes).map_err(|_| "Failed to write output file.".to_string())
+    })
+    .await
+    .map_err(|_| "Failed to write output file.".to_string())?
 }
 
 #[tauri::command]

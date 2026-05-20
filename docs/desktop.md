@@ -13,6 +13,7 @@ MVP includes:
 - Reorder PDF flow
 - Optimize PDF flow
 - Compress PDF flow
+- PDF to Images flow
 - Workflow Builder preview flow (linear chain)
 - Tauri command boundary
 - Direct `filegap_core` integration (no CLI subprocess)
@@ -22,18 +23,18 @@ MVP includes:
 Desktop execution path:
 
 1. React UI gathers local file paths and output destination.
-2. UI invokes a Tauri command (`merge_pdfs`, `split_pdf`, `extract_pages`, `reorder_pdf`, `optimize_pdf`, `compress_pdf`, `read_pdf_bytes`).
-3. Rust command reads local files, calls `filegap_core` operation.
-4. Rust command writes output to selected destination.
-5. For Extract preview, UI renders thumbnails in-memory via bundled `pdf.js` worker (no network).
+2. UI invokes a Tauri command (`merge_pdfs`, `split_pdf`, `extract_pages`, `reorder_pdf`, `optimize_pdf`, `compress_pdf`, `read_pdf_bytes`, `write_binary_file`).
+3. Rust command reads local files, calls `filegap_core` operation where the tool is structure-based.
+4. Rust command writes output to selected destination, or writes UI-generated image ZIP bytes for page rendering workflows.
+5. For Extract preview and PDF to Images, UI renders pages in-memory via bundled `pdf.js` worker (no network).
 
 No server-side processing and no network dependency are required for PDF operations.
 
 ## Module Boundaries
 
 - `apps/desktop/src/*`:
-  - UI, route flow, and command invocation only.
-  - No PDF transformation logic.
+  - UI, route flow, command invocation, and local PDF.js page rendering only.
+  - No server-backed PDF transformation logic.
 - `apps/desktop/src-tauri/src/*`:
   - File-system orchestration and command-level input validation.
   - Maps internal errors to generic user-safe messages.
@@ -65,7 +66,7 @@ Rule:
 
 Purpose:
 
-- Run local PDF operations (`Merge`, `Split`, `Extract Pages`, `Reorder`, `Optimize`, `Compress`) with desktop-native UX.
+- Run local PDF operations (`Merge`, `Split`, `Extract Pages`, `Reorder`, `Optimize`, `Compress`, `PDF to Images`) with desktop-native UX.
 - Keep repetitive workflows efficient: run tool, verify result, start new operation.
 - Introduce a visual linear workflow composer (`Workflow Builder`) aligned with CLI chaining semantics.
 
@@ -74,7 +75,7 @@ User flow:
 1. Select local files via file picker.
 2. Review and reorder files in the left working area.
 3. Configure export options in the right sidebar (`File name`, `Location`, `Change`).
-4. Run operation from primary CTA (`Merge PDF`, `Split PDF`, `Extract pages`, `Reorder PDF`, `Optimize PDF`, `Compress PDF`).
+4. Run operation from primary CTA (`Merge PDF`, `Split PDF`, `Extract pages`, `Reorder PDF`, `Optimize PDF`, `Compress PDF`, `Convert to images`).
 5. Inspect completion result in sidebar result block.
 6. Use post-operation actions (`Open`, `Reveal`) or reset with `New ...`.
 
@@ -109,7 +110,7 @@ Key UX decisions:
 
 ## Reusable Components (Desktop)
 
-These components and patterns are reused across desktop tools (`Merge`, `Split`, `Extract`, `Reorder`, `Optimize`, `Compress`):
+These components and patterns are reused across desktop tools (`Merge`, `Split`, `Extract`, `Reorder`, `Optimize`, `Compress`, `PDF to Images`):
 
 - Result state block:
   - Completion title + result details + file actions.
@@ -143,6 +144,10 @@ These components and patterns are reused across desktop tools (`Merge`, `Split`,
   - In-memory page previews.
   - Direct page selection with range-assist actions (`Select all`, `Odd`, `Even`, `First page`).
   - Local-only rendering; no file upload and no remote fetch.
+- PDF to Images:
+  - In-memory page rendering via `pdfjs-dist`.
+  - JPEG/PNG format selection and screen/print resolution presets.
+  - One image per page packaged into a local ZIP file and written through Tauri.
 - Button variants:
   - Primary (`Merge`)
   - Secondary (supporting actions)
@@ -155,7 +160,8 @@ Workflow Builder preview specifics:
 - Linear-only workflow mode (no branching graph yet).
 - Operations can be reordered and parameterized in-place.
 - Validation rules prevent unsupported shapes (`merge` first only, `split` last only).
-- CLI preview string reflects current workflow draft for easier parity with terminal usage.
+- `PDF to Images` is available as a terminal workflow step because it exports image ZIP files.
+- CLI preview string reflects current workflow draft where a CLI equivalent exists; page image export is currently web/desktop-only.
 
 Current shared rollout status:
 

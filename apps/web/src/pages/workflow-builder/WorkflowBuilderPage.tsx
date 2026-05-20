@@ -31,6 +31,7 @@ import {
   type WorkflowOperation,
   validateWorkflowDraft,
 } from '../../lib/workflowBuilder';
+import { createStoredZip } from '../../lib/zip';
 
 const STEP_OPTIONS: Array<{ value: WorkflowOperation; label: string }> = [
   { value: 'merge', label: 'Merge' },
@@ -39,6 +40,7 @@ const STEP_OPTIONS: Array<{ value: WorkflowOperation; label: string }> = [
   { value: 'optimize', label: 'Optimize' },
   { value: 'compress', label: 'Compress' },
   { value: 'split', label: 'Split' },
+  { value: 'images', label: 'PDF to Images' },
 ];
 
 const WORKFLOW_PAGE_CONTENT = {
@@ -72,6 +74,7 @@ type WorkflowOutput = {
   filename: string;
   bytes: Uint8Array;
   pageCount: number;
+  kind: 'pdf' | 'zip';
 };
 
 type WorkflowOutputSummary = {
@@ -99,10 +102,10 @@ function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
   return copy.buffer;
 }
 
-function saveBlob(filename: string, bytes: Uint8Array): void {
+function saveBlob(filename: string, bytes: Uint8Array, mimeType = 'application/pdf'): void {
   const copy = new Uint8Array(bytes.length);
   copy.set(bytes);
-  const blob = new Blob([copy.buffer], { type: 'application/pdf' });
+  const blob = new Blob([copy.buffer], { type: mimeType });
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement('a');
   anchor.href = url;
@@ -168,11 +171,17 @@ function outputSlug(operation: WorkflowOperation): string {
   if (operation === 'compress') {
     return 'compress-pdf';
   }
+  if (operation === 'images') {
+    return 'pdf-to-images';
+  }
   return 'split-pdf';
 }
 
 function buildOutputName(operation: WorkflowOperation, index: number, total: number): string {
   const stem = `filegap-${outputSlug(operation)}-output`;
+  if (operation === 'images') {
+    return `${stem}.zip`;
+  }
   if (total === 1) {
     return `${stem}.pdf`;
   }
@@ -248,6 +257,9 @@ export function WorkflowBuilderPage() {
       }
       if (step.operation === 'split' && index !== draft.steps.length - 1) {
         messages.push('Split must be the last step because it produces multiple outputs.');
+      }
+      if (step.operation === 'images' && index !== draft.steps.length - 1) {
+        messages.push('PDF to Images must be the last step because it produces image files.');
       }
       byStep.set(step.id, messages);
     });
@@ -332,10 +344,12 @@ export function WorkflowBuilderPage() {
 
         changed = true;
         return {
-          ...step,
-          ...nextDefaults,
-          compressionPreset: step.compressionPreset,
-        };
+        ...step,
+        ...nextDefaults,
+        compressionPreset: step.compressionPreset,
+        imageFormat: step.imageFormat,
+        imagePreset: step.imagePreset,
+      };
       });
 
       return changed ? { ...current, steps } : current;
@@ -501,18 +515,39 @@ export function WorkflowBuilderPage() {
           continue;
         }
 
+        if (step.operation === 'images') {
+          const { renderPdfPagesToImages } = await import('../../lib/pdfImages');
+          const images = await renderPdfPagesToImages(source, {
+            format: step.imageFormat,
+            scale: step.imagePreset === 'print' ? 2 : 1,
+            jpegQuality: step.imagePreset === 'print' ? 0.9 : 0.78,
+            baseFilename: 'workflow-output.pdf',
+          });
+          currentDocs = [
+            createStoredZip(
+              images.map((image) => ({
+                name: image.filename,
+                bytes: image.bytes,
+              }))
+            ),
+          ];
+          continue;
+        }
+
         const pages = await getPageCountFromBytes(source);
         const ranges = parseSplitRanges(step.splitRanges, pages);
         const splitOutputs = await splitPdfByRanges(toArrayBuffer(source), ranges);
         currentDocs = splitOutputs.map((bytes) => new Uint8Array(bytes));
       }
 
+      const isZipOutput = finalOperation === 'images';
       const finalOutputs = await Promise.all(
         currentDocs.map(async (bytes, index) => ({
           id: `output-${index}`,
           filename: buildOutputName(finalOperation, index, currentDocs.length),
           bytes,
-          pageCount: await getPageCountFromBytes(bytes),
+          pageCount: isZipOutput ? 0 : await getPageCountFromBytes(bytes),
+          kind: isZipOutput ? 'zip' as const : 'pdf' as const,
         }))
       );
 
@@ -532,7 +567,7 @@ export function WorkflowBuilderPage() {
   }
 
   function downloadOutput(output: WorkflowOutput) {
-    saveBlob(output.filename, output.bytes);
+    saveBlob(output.filename, output.bytes, output.kind === 'zip' ? 'application/zip' : 'application/pdf');
   }
 
   function downloadAllOutputs() {
@@ -756,6 +791,41 @@ export function WorkflowBuilderPage() {
                     </div>
                   ) : null}
 
+                  {step.operation === 'images' ? (
+                    <div className='mt-3 grid gap-3 sm:grid-cols-2'>
+                      <div>
+                        <label className='text-xs font-semibold uppercase tracking-[0.08em] text-ui-muted'>Format</label>
+                        <select
+                          value={step.imageFormat}
+                          onChange={(event) =>
+                            updateStep(step.id, {
+                              imageFormat: event.target.value as WorkflowDraft['steps'][number]['imageFormat'],
+                            })
+                          }
+                          className='mt-1 w-full rounded-lg border border-ui-border bg-ui-surface px-3 py-2 text-sm text-ui-text outline-none transition focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20'
+                        >
+                          <option value='jpeg'>JPEG</option>
+                          <option value='png'>PNG</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className='text-xs font-semibold uppercase tracking-[0.08em] text-ui-muted'>Resolution</label>
+                        <select
+                          value={step.imagePreset}
+                          onChange={(event) =>
+                            updateStep(step.id, {
+                              imagePreset: event.target.value as WorkflowDraft['steps'][number]['imagePreset'],
+                            })
+                          }
+                          className='mt-1 w-full rounded-lg border border-ui-border bg-ui-surface px-3 py-2 text-sm text-ui-text outline-none transition focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20'
+                        >
+                          <option value='screen'>Screen</option>
+                          <option value='print'>Print</option>
+                        </select>
+                      </div>
+                    </div>
+                  ) : null}
+
                   {stepErrors.get(step.id)?.map((message) => (
                     <p key={`${step.id}-${message}`} className='mt-2 text-sm text-red-600'>
                       {message}
@@ -794,16 +864,25 @@ export function WorkflowBuilderPage() {
           <div className='rounded-2xl border border-brand-primary/40 bg-brand-primary/10 p-5'>
             <p className='font-heading text-lg font-semibold text-ui-text'>Workflow completed</p>
             <p className='mt-1 text-sm text-ui-text/85'>
-              Your PDF is ready. The local process finished on this device.
+              {outputs.some((output) => output.kind === 'zip')
+                ? 'Your image ZIP is ready. The local process finished on this device.'
+                : 'Your PDF is ready. The local process finished on this device.'}
             </p>
             {outputSummary ? (
               <p className='mt-2 text-sm text-ui-muted'>
-                {outputSummary.pageCount ? `${outputSummary.pageCount} pages` : `${outputSummary.fileCount} PDF files`} •{' '}
+                {outputs.some((output) => output.kind === 'zip')
+                  ? `${outputSummary.fileCount} ZIP file`
+                  : outputSummary.pageCount
+                    ? `${outputSummary.pageCount} pages`
+                    : `${outputSummary.fileCount} PDF files`}{' '}
+                •{' '}
                 {formatFileSize(outputSummary.sizeBytes)}
               </p>
             ) : null}
             <div className='mt-4 flex flex-wrap gap-3'>
-              <Button onClick={handleDownloadCta}>Download PDF</Button>
+              <Button onClick={handleDownloadCta}>
+                {outputs.some((output) => output.kind === 'zip') ? 'Download ZIP' : 'Download PDF'}
+              </Button>
               <button
                 type='button'
                 onClick={startNewWorkflow}
@@ -852,6 +931,8 @@ export function WorkflowBuilderPage() {
 
       <PreDownloadModal
         open={showDownloadGate && outputs.length > 0}
+        title={outputs.some((output) => output.kind === 'zip') ? 'Your image ZIP is ready' : 'Your PDF is ready'}
+        confirmLabel={outputs.some((output) => output.kind === 'zip') ? 'Download ZIP' : 'Download PDF'}
         onConfirm={handleConfirmDownload}
         onClose={() => setShowDownloadGate(false)}
       />

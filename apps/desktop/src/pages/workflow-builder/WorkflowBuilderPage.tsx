@@ -18,14 +18,18 @@ import {
   inspectPdfFiles,
   openFile,
   pathExists,
+  prepareWorkflowPdfBytes,
   revealInFolder,
   type PdfFileInfo,
   type WorkflowRunResult,
+  writeBinaryFile,
 } from '../../lib/desktop';
+import { renderPdfPagesToImages, type PdfImageFormat } from '../../lib/pdfImages';
 import { renderFilenameTemplate, resolveOutputPathByOverwrite } from '../../lib/outputSettings';
 import { formatKilobytes, joinPath, parsePath, readErrorMessage } from '../../lib/pageHelpers';
 import { fileNameFromPath } from '../../lib/pathUtils';
 import { useDesktopSettings } from '../../lib/settings';
+import { createStoredZip } from '../../lib/zip';
 import {
   buildWorkflowCliPreview,
   createWorkflowStep,
@@ -44,6 +48,7 @@ const STEP_OPTIONS: Array<{ value: WorkflowOperation; label: string }> = [
   { value: 'optimize', label: 'Optimize' },
   { value: 'compress', label: 'Compress' },
   { value: 'split', label: 'Split' },
+  { value: 'images', label: 'PDF to Images' },
 ];
 
 type WorkflowInputFile = {
@@ -343,6 +348,22 @@ export function WorkflowBuilderPage() {
         return;
       }
       resolvedOutputName = fileNameFromPath(resolvedFirstOutputPath).replace(/-part-1\.pdf$/i, '');
+    } else if (lastStep?.operation === 'images') {
+      const normalizedName = cleanName
+        .replace(/\.pdf$/i, '')
+        .replace(/\.zip$/i, '');
+      const requestedPath = joinPath(runDirectory, `${normalizedName || 'workflow-output'}.zip`, pathSeparator);
+      const resolvedOutputPath = await resolveOutputPathByOverwrite(
+        requestedPath,
+        settings.overwriteBehavior,
+        pathExists,
+        async (message) => window.confirm(message)
+      );
+      if (!resolvedOutputPath) {
+        setStatus({ tone: 'info', message: 'Workflow cancelled.' });
+        return;
+      }
+      resolvedOutputName = fileNameFromPath(resolvedOutputPath);
     } else {
       const normalizedName = cleanName.toLowerCase().endsWith('.pdf') ? cleanName : `${cleanName}.pdf`;
       const requestedPath = joinPath(runDirectory, normalizedName, pathSeparator);
@@ -366,18 +387,49 @@ export function WorkflowBuilderPage() {
     setStatus({ tone: 'info', message: 'Running workflow...' });
 
     try {
-      const result = await executeWorkflow(
-        inputFiles.map((file) => file.path),
-        runDirectory,
-        resolvedOutputName,
-        draft
-      );
+      const isImageWorkflow = lastStep?.operation === 'images';
+      const result = isImageWorkflow
+        ? await (async (): Promise<WorkflowRunResult> => {
+            const pdfBytes = await prepareWorkflowPdfBytes(
+              inputFiles.map((file) => file.path),
+              draft
+            );
+            const images = await renderPdfPagesToImages(pdfBytes, {
+              format: lastStep.imageFormat as PdfImageFormat,
+              scale: lastStep.imagePreset === 'print' ? 2 : 1,
+              jpegQuality: lastStep.imagePreset === 'print' ? 0.9 : 0.78,
+              baseFilename: 'workflow-output.pdf',
+            });
+            const zipBytes = createStoredZip(
+              images.map((image) => ({
+                name: image.filename,
+                bytes: image.bytes,
+              }))
+            );
+            const outputPath = joinPath(runDirectory, resolvedOutputName, pathSeparator);
+            await writeBinaryFile(outputPath, zipBytes);
+            return {
+              output_path: outputPath,
+              output_count: images.length,
+              is_split_output: true,
+            };
+          })()
+        : await executeWorkflow(
+            inputFiles.map((file) => file.path),
+            runDirectory,
+            resolvedOutputName,
+            draft
+          );
       setHasCompleted(true);
       setLastOutputPath(result.output_path);
       setLastRunResult(result);
       setStatus({
         tone: 'success',
-        message: result.is_split_output ? `Done: ${result.output_count} files created` : 'Done: workflow completed',
+        message: isImageWorkflow
+          ? `Done: ${result.output_count} images exported`
+          : result.is_split_output
+            ? `Done: ${result.output_count} files created`
+            : 'Done: workflow completed',
       });
       if (settings.openFileAfterExport) {
         try {
@@ -557,6 +609,39 @@ export function WorkflowBuilderPage() {
                     </select>
                   </div>
                 ) : null}
+
+                {step.operation === 'images' ? (
+                  <div className="workflow-step-field">
+                    <label htmlFor={`${step.id}-image-format`}>Image output</label>
+                    <select
+                      id={`${step.id}-image-format`}
+                      className="output-input"
+                      value={step.imageFormat}
+                      onChange={(event) =>
+                        updateStep(step.id, {
+                          imageFormat: event.target.value as WorkflowDraft['steps'][number]['imageFormat'],
+                        })
+                      }
+                    >
+                      <option value="jpeg">JPEG</option>
+                      <option value="png">PNG</option>
+                    </select>
+                    <label htmlFor={`${step.id}-image-preset`}>Resolution</label>
+                    <select
+                      id={`${step.id}-image-preset`}
+                      className="output-input"
+                      value={step.imagePreset}
+                      onChange={(event) =>
+                        updateStep(step.id, {
+                          imagePreset: event.target.value as WorkflowDraft['steps'][number]['imagePreset'],
+                        })
+                      }
+                    >
+                      <option value="screen">Screen</option>
+                      <option value="print">Print</option>
+                    </select>
+                  </div>
+                ) : null}
               </article>
             ))}
           </div>
@@ -656,7 +741,13 @@ export function WorkflowBuilderPage() {
         {hasCompleted && lastRunResult ? (
           <ResultStateBlock
             title="Workflow completed"
-            details={lastRunResult.is_split_output ? `${lastRunResult.output_count} files created` : 'Your PDF is ready'}
+            details={
+              draft.steps[draft.steps.length - 1]?.operation === 'images'
+                ? `${lastRunResult.output_count} images exported`
+                : lastRunResult.is_split_output
+                  ? `${lastRunResult.output_count} files created`
+                  : 'Your PDF is ready'
+            }
             onOpen={() => void handleOpenFile()}
             onReveal={() => void handleShowInFolder()}
           />

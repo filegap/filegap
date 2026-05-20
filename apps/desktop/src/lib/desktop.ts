@@ -178,6 +178,17 @@ export async function executeWorkflow(
   });
 }
 
+export async function prepareWorkflowPdfBytes(
+  inputPaths: string[],
+  draft: WorkflowDraft
+): Promise<Uint8Array> {
+  const bytes = await invoke<number[]>('prepare_workflow_pdf_bytes', {
+    inputPaths,
+    draft,
+  });
+  return new Uint8Array(bytes);
+}
+
 export async function inspectPdfFiles(paths: string[]): Promise<PdfFileInfo[]> {
   return invoke<PdfFileInfo[]>('inspect_pdf_files', { paths });
 }
@@ -189,6 +200,13 @@ export async function inspectPdfMetadata(path: string): Promise<PdfMetadata> {
 export async function readPdfBytes(path: string): Promise<Uint8Array> {
   const bytes = await invoke<number[]>('read_pdf_bytes', { path });
   return new Uint8Array(bytes);
+}
+
+export async function writeBinaryFile(outputPath: string, bytes: Uint8Array): Promise<void> {
+  await invoke('write_binary_file', {
+    outputPath,
+    bytes: Array.from(bytes),
+  });
 }
 
 export async function openFile(path: string): Promise<void> {

@@ -13,9 +13,11 @@ pub fn run() {
             commands::optimize_pdf,
             commands::compress_pdf,
             commands::execute_workflow,
+            commands::prepare_workflow_pdf_bytes,
             commands::inspect_pdf_files,
             commands::inspect_pdf_metadata,
             commands::read_pdf_bytes,
+            commands::write_binary_file,
             commands::show_in_folder,
             commands::open_file,
             commands::path_exists

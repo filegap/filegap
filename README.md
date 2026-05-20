@@ -24,7 +24,7 @@ MVP operations:
 - Extract selected pages
 - Split a PDF
 - Reorder pages
-- Convert PDF pages to images in the web app
+- Convert PDF pages to images in the web and desktop apps
 - Optimize PDF structure without intentional quality reduction
 - Compress PDFs locally with quality presets
 - Inspect PDF metadata and structure (`info`)
@@ -175,7 +175,7 @@ chmod +x .githooks/pre-commit
 
 ## Quick Start (Desktop MVP)
 
-Desktop app lives in `apps/desktop` and uses Tauri + React with direct calls to `crates/core`.
+Desktop app lives in `apps/desktop` and uses Tauri + React with direct calls to `crates/core` for PDF structure operations and local browser rendering for page image export.
 
 Requirements:
 
@@ -200,6 +200,7 @@ Current desktop MVP includes:
 - Reorder PDF tool
 - Optimize PDF tool
 - Compress PDF tool with `low`, `balanced`, and `strong` presets
+- PDF to Images tool for local JPEG/PNG page export
 - Local file picker + save dialog
 - Rust-side PDF commands powered by `filegap_core`
 

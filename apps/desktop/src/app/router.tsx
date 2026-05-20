@@ -5,6 +5,7 @@ import { HomePage } from '../pages/home/HomePage';
 import { MergePdfPage } from '../pages/merge-pdf/MergePdfPage';
 import { NotFoundPage } from '../pages/not-found/NotFoundPage';
 import { OptimizePdfPage } from '../pages/optimize-pdf/OptimizePdfPage';
+import { PdfToImagesPage } from '../pages/pdf-to-images/PdfToImagesPage';
 import { ReorderPdfPage } from '../pages/reorder-pdf/ReorderPdfPage';
 import { SplitPdfPage } from '../pages/split-pdf/SplitPdfPage';
 import { WorkflowBuilderPage } from '../pages/workflow-builder/WorkflowBuilderPage';
@@ -37,6 +38,10 @@ export const router = createHashRouter([
   {
     path: '/compress-pdf',
     element: <CompressPdfPage />,
+  },
+  {
+    path: '/pdf-to-images',
+    element: <PdfToImagesPage />,
   },
   {
     path: '/workflow-builder',

@@ -1,6 +1,8 @@
 export type WorkflowInputMode = 'single' | 'multiple';
-export type WorkflowOperation = 'merge' | 'extract' | 'reorder' | 'optimize' | 'compress' | 'split';
+export type WorkflowOperation = 'merge' | 'extract' | 'reorder' | 'optimize' | 'compress' | 'split' | 'images';
 export type CompressionPreset = 'low' | 'balanced' | 'strong';
+export type WorkflowImageFormat = 'jpeg' | 'png';
+export type WorkflowImagePreset = 'screen' | 'print';
 
 export type WorkflowStep = {
   id: string;
@@ -9,6 +11,8 @@ export type WorkflowStep = {
   pageOrder: string;
   splitRanges: string;
   compressionPreset: CompressionPreset;
+  imageFormat: WorkflowImageFormat;
+  imagePreset: WorkflowImagePreset;
 };
 
 export type WorkflowDraft = {
@@ -34,6 +38,8 @@ export function createWorkflowStep(operation: WorkflowOperation): WorkflowStep {
     pageOrder: '3,2,1',
     splitRanges: '1-2,3-4',
     compressionPreset: 'balanced',
+    imageFormat: 'jpeg',
+    imagePreset: 'screen',
   };
 }
 
@@ -68,6 +74,9 @@ export function validateWorkflowDraft(draft: WorkflowDraft, inputCount = 0): str
     if (step.operation === 'split' && step !== last) {
       errors.push('Split must be the last step because it produces multiple outputs.');
     }
+    if (step.operation === 'images' && step !== last) {
+      errors.push('PDF to Images must be the last step because it produces image files.');
+    }
   }
 
   return errors;
@@ -89,21 +98,25 @@ function stepToCli(step: WorkflowStep): string {
   if (step.operation === 'compress') {
     return `filegap compress --preset ${step.compressionPreset}`;
   }
+  if (step.operation === 'images') {
+    return `# PDF to Images export is currently available in the web and desktop apps only (${step.imageFormat}, ${step.imagePreset})`;
+  }
   return `filegap split --pages "${step.splitRanges.trim() || '1-2,3-4'}" --format zip`;
 }
 
 function normalizeWorkflowCliOutputName(draft: WorkflowDraft, outputName?: string): string {
   const trimmed = outputName?.trim() ?? '';
-  const isSplitOutput = draft.steps[draft.steps.length - 1]?.operation === 'split';
+  const finalOperation = draft.steps[draft.steps.length - 1]?.operation;
+  const isZipOutput = finalOperation === 'split' || finalOperation === 'images';
 
   if (trimmed.length > 0) {
-    if (isSplitOutput) {
+    if (isZipOutput) {
       return trimmed.replace(/\.pdf$/i, '') || 'workflow-output';
     }
     return trimmed.toLowerCase().endsWith('.pdf') ? trimmed : `${trimmed}.pdf`;
   }
 
-  return isSplitOutput ? 'workflow-output' : 'workflow-output.pdf';
+  return isZipOutput ? 'workflow-output' : 'workflow-output.pdf';
 }
 
 export function buildWorkflowCliPreview(draft: WorkflowDraft, inputNames?: string[], outputName?: string): string {
@@ -112,6 +125,9 @@ export function buildWorkflowCliPreview(draft: WorkflowDraft, inputNames?: strin
   }
 
   const inputMode = getWorkflowInputMode(draft);
+  const finalStep = draft.steps[draft.steps.length - 1];
+  const isImageOutput = finalStep?.operation === 'images';
+  const cliSteps = isImageOutput ? draft.steps.slice(0, -1) : draft.steps;
   const normalizedInputs = (inputNames ?? []).filter((item) => item.trim().length > 0);
   const multipleInputs =
     normalizedInputs.length > 0 ? normalizedInputs.map((item) => `"${item}"`).join(' ') : 'input-1.pdf input-2.pdf';
@@ -119,7 +135,7 @@ export function buildWorkflowCliPreview(draft: WorkflowDraft, inputNames?: strin
 
   let command = inputMode === 'multiple' ? `filegap merge ${multipleInputs}` : `cat ${singleInput}`;
 
-  draft.steps.forEach((step, index) => {
+  cliSteps.forEach((step, index) => {
     const stepCommand = stepToCli(step);
     if (index === 0 && step.operation === 'merge' && inputMode === 'multiple') {
       command = stepCommand;
@@ -129,9 +145,14 @@ export function buildWorkflowCliPreview(draft: WorkflowDraft, inputNames?: strin
     command = `${command} |\n  ${stepCommand}`;
   });
 
-  const isSplitOutput = draft.steps[draft.steps.length - 1]?.operation === 'split';
+  if (isImageOutput) {
+    return `${command}\n> prepared-for-images.pdf\n# Then use Filegap Desktop PDF to Images (${finalStep.imageFormat}, ${finalStep.imagePreset}) to export the ZIP.`;
+  }
+
+  const finalOperation = finalStep?.operation;
+  const isZipOutput = finalOperation === 'split' || finalOperation === 'images';
   const normalizedOutput = normalizeWorkflowCliOutputName(draft, outputName);
-  return `${command}\n> ${isSplitOutput ? `${normalizedOutput}.zip` : normalizedOutput}`;
+  return `${command}\n> ${isZipOutput ? `${normalizedOutput}.zip` : normalizedOutput}`;
 }
 
 export function isWorkflowBuilderImportState(value: unknown): value is WorkflowBuilderImportState {

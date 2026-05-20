@@ -3,7 +3,7 @@ import { AppShell } from '../../components/layout/AppShell';
 import { PageContainer } from '../../components/layout/PageContainer';
 import { ToolCard } from '../../components/ui/ToolCard';
 import { TrustNotice } from '../../components/ui/TrustNotice';
-import { ArrowDown, ArrowUpDown, Files, GitBranch, Minimize2, Scissors, Split, Zap } from 'lucide-react';
+import { ArrowDown, ArrowUpDown, Files, GitBranch, Images, Minimize2, Scissors, Split, Zap } from 'lucide-react';
 
 const FEATURED_TOOL = {
   name: 'Workflow Builder',
@@ -64,6 +64,17 @@ const REDUCE_TOOLS = [
     actionLabel: 'Compress PDF',
     href: '/compress-pdf',
     icon: <Zap />,
+    enabled: true,
+  },
+];
+
+const CONVERT_TOOLS = [
+  {
+    name: 'PDF to Images',
+    description: 'Export every PDF page as JPEG or PNG files.',
+    actionLabel: 'Convert pages',
+    href: '/pdf-to-images',
+    icon: <Images />,
     enabled: true,
   },
 ];
@@ -163,6 +174,26 @@ export function HomePage() {
             </div>
             <div className="home-tool-grid" aria-label="Reduce PDF size tools">
               {REDUCE_TOOLS.map((tool) => (
+                <ToolCard
+                  key={tool.name}
+                  to={tool.enabled ? tool.href : undefined}
+                  title={tool.name}
+                  description={tool.description}
+                  actionLabel={tool.actionLabel}
+                  icon={tool.icon}
+                  disabled={!tool.enabled}
+                />
+              ))}
+            </div>
+          </section>
+
+          <section className="home-section" aria-labelledby="home-convert-heading">
+            <div className="home-section-header">
+              <h2 id="home-convert-heading">Convert PDFs</h2>
+              <p>Turn PDF pages into local image files for sharing, previews, and archives.</p>
+            </div>
+            <div className="home-tool-grid" aria-label="Convert PDF tools">
+              {CONVERT_TOOLS.map((tool) => (
                 <ToolCard
                   key={tool.name}
                   to={tool.enabled ? tool.href : undefined}

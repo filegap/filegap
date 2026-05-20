@@ -49,12 +49,14 @@ Rule:
 
 - Linear visual pipeline builder (Workflow V1) inspired by CLI chaining.
 - Input mode selector (`single` vs `multiple`) and ordered step list.
-- Step operations: `merge`, `extract`, `reorder`, `optimize`, `compress`, `split`.
+- Step operations: `merge`, `extract`, `reorder`, `optimize`, `compress`, `split`, `PDF to Images`.
 - Inline validation for V1 constraints:
   - `merge` only as first step
   - `split` only as last step
+  - `PDF to Images` only as last step because it exports image ZIP files
   - `multiple` input mode requires first step `merge`
 - Real-time CLI preview generation for the configured workflow shape.
+- For `PDF to Images`, the preview shows the planned local workflow shape even though CLI support is not implemented yet.
 - Preview only: execution still happens through per-tool pages in this iteration.
 
 ### `/download`

@@ -1,6 +1,8 @@
 export type WorkflowInputMode = 'single' | 'multiple';
-export type WorkflowOperation = 'merge' | 'extract' | 'reorder' | 'optimize' | 'compress' | 'split';
+export type WorkflowOperation = 'merge' | 'extract' | 'reorder' | 'optimize' | 'compress' | 'split' | 'images';
 export type CompressionPreset = 'low' | 'balanced' | 'strong';
+export type WorkflowImageFormat = 'jpeg' | 'png';
+export type WorkflowImagePreset = 'screen' | 'print';
 
 export type WorkflowStep = {
   id: string;
@@ -9,6 +11,8 @@ export type WorkflowStep = {
   pageOrder: string;
   splitRanges: string;
   compressionPreset: CompressionPreset;
+  imageFormat: WorkflowImageFormat;
+  imagePreset: WorkflowImagePreset;
 };
 
 export type WorkflowDraft = {
@@ -22,7 +26,8 @@ export type WorkflowBuilderTemplate =
   | 'reorder'
   | 'optimize'
   | 'compress'
-  | 'split';
+  | 'split'
+  | 'images';
 
 export type WorkflowBuilderNavigationState = {
   template?: WorkflowBuilderTemplate;
@@ -68,6 +73,8 @@ export function getWorkflowStepDefaults(operation: WorkflowOperation, pageCount?
     pageOrder: buildDefaultPageOrder(pageCount),
     splitRanges: buildDefaultSplitRanges(pageCount),
     compressionPreset: 'balanced',
+    imageFormat: 'jpeg',
+    imagePreset: 'screen',
   };
 }
 
@@ -101,6 +108,9 @@ export function validateWorkflowDraft(draft: WorkflowDraft): string[] {
     if (step.operation === 'split' && step !== last) {
       errors.push('Split must be the last step because it produces multiple outputs.');
     }
+    if (step.operation === 'images' && step !== last) {
+      errors.push('PDF to Images must be the last step because it produces image files.');
+    }
   }
 
   return errors;
@@ -122,6 +132,9 @@ function stepToCli(step: WorkflowStep): string {
   if (step.operation === 'compress') {
     return `filegap compress --preset ${step.compressionPreset}`;
   }
+  if (step.operation === 'images') {
+    return `# PDF to Images export is currently available in the web and desktop apps only (${step.imageFormat}, ${step.imagePreset})`;
+  }
   return `filegap split --pages "${step.splitRanges.trim() || '1-2,3-4'}" --format zip`;
 }
 
@@ -130,9 +143,12 @@ export function buildWorkflowCliPreview(draft: WorkflowDraft): string {
     return '# Add one or more steps to generate a pipeline preview.';
   }
 
+  const finalStep = draft.steps[draft.steps.length - 1];
+  const isImageOutput = finalStep?.operation === 'images';
+  const cliSteps = isImageOutput ? draft.steps.slice(0, -1) : draft.steps;
   let command = draft.inputMode === 'multiple' ? 'filegap merge input-1.pdf input-2.pdf' : 'cat input.pdf';
 
-  draft.steps.forEach((step, index) => {
+  cliSteps.forEach((step, index) => {
     const stepCommand = stepToCli(step);
     if (index === 0 && step.operation === 'merge' && draft.inputMode === 'multiple') {
       command = stepCommand;
@@ -142,6 +158,11 @@ export function buildWorkflowCliPreview(draft: WorkflowDraft): string {
     command = `${command} |\n  ${stepCommand}`;
   });
 
-  const isSplitOutput = draft.steps[draft.steps.length - 1]?.operation === 'split';
-  return `${command}\n> ${isSplitOutput ? 'output.zip' : 'output.pdf'}`;
+  if (isImageOutput) {
+    return `${command}\n> prepared-for-images.pdf\n# Then use Filegap Web/Desktop PDF to Images (${finalStep.imageFormat}, ${finalStep.imagePreset}) to export the ZIP.`;
+  }
+
+  const finalOperation = finalStep?.operation;
+  const isZipOutput = finalOperation === 'split' || finalOperation === 'images';
+  return `${command}\n> ${isZipOutput ? 'output.zip' : 'output.pdf'}`;
 }

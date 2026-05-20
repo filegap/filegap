@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { NavLink } from 'react-router-dom';
-import { ArrowUpDown, ChevronDown, Files, GitBranch, House, Minimize2, Scissors, Split, Zap } from 'lucide-react';
+import { ArrowUpDown, ChevronDown, Files, GitBranch, House, Images, Minimize2, Scissors, Split, Zap } from 'lucide-react';
 
 type ToolLink = {
   to: string;
@@ -15,6 +15,7 @@ const TOOL_LINKS: ToolLink[] = [
   { to: '/reorder-pdf', label: 'Reorder PDF', icon: <ArrowUpDown aria-hidden="true" /> },
   { to: '/optimize-pdf', label: 'Optimize PDF', icon: <Minimize2 aria-hidden="true" /> },
   { to: '/compress-pdf', label: 'Compress PDF', icon: <Zap aria-hidden="true" /> },
+  { to: '/pdf-to-images', label: 'PDF to Images', icon: <Images aria-hidden="true" /> },
 ];
 
 export function AppHeader() {
