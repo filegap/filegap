@@ -59,6 +59,7 @@ filegap split [INPUT|-] --pages RANGES [--output-pattern PATTERN | --format zip]
 filegap reorder [INPUT|-] --pages ORDER [-o FILE]
 filegap optimize [INPUT|-] [-o FILE]
 filegap compress [INPUT|-] [--preset low|balanced|strong] [-o FILE]
+filegap extract-images [INPUT|-] [-o FILE]
 filegap info [INPUT|-] [--json]
 filegap support
 ```
@@ -136,6 +137,18 @@ filegap compress input.pdf --preset strong > out.pdf
 cat input.pdf | filegap compress --preset balanced > out.pdf
 filegap compress - --preset low -o out.pdf
 ```
+
+### Extract Images
+
+Extract embedded image assets from a PDF into a ZIP archive:
+
+```bash
+filegap extract-images input.pdf > images.zip
+cat input.pdf | filegap extract-images > images.zip
+filegap extract-images - -o images.zip
+```
+
+This is not page rendering. It extracts supported image streams embedded in the PDF, starting with JPEG image XObjects, and keeps processing local.
 
 ### Split
 

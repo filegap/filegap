@@ -6,11 +6,12 @@ use std::process::ExitCode;
 use clap::{Args, Parser, Subcommand, ValueEnum};
 use filegap_core::{
     ops::{
-        compress_pdf, extract_pages, inspect_pdf, merge_pdfs, optimize_pdf, reorder_pages,
-        split_pdf,
+        compress_pdf, extract_images, extract_pages, inspect_pdf, merge_pdfs, optimize_pdf,
+        reorder_pages, split_pdf,
     },
-    CompressRequest, CompressionPreset, CoreError, ExtractRequest, InfoRequest, MergeRequest,
-    OptimizeRequest, ReorderRequest, SplitMode, SplitRequest,
+    CompressRequest, CompressionPreset, CoreError, ExtractImagesRequest, ExtractRequest,
+    ExtractedImage, InfoRequest, MergeRequest, OptimizeRequest, ReorderRequest, SplitMode,
+    SplitRequest,
 };
 use lopdf::Document;
 use serde_json::json;
@@ -61,6 +62,12 @@ enum Commands {
         after_help = "Examples:\n  filegap compress input.pdf > out.pdf\n  filegap compress input.pdf --preset strong > out.pdf\n  cat input.pdf | filegap compress --preset balanced > out.pdf\n  filegap compress - --preset low -o out.pdf"
     )]
     Compress(CompressArgs),
+    #[command(
+        about = "Extract embedded images from a PDF into a ZIP",
+        long_about = "Extract supported embedded images from a PDF into a ZIP.\n\nThis extracts original supported image streams, starting with JPEG image XObjects, without rendering pages. It is different from converting each PDF page into an image.",
+        after_help = "Examples:\n  filegap extract-images input.pdf > images.zip\n  cat input.pdf | filegap extract-images > images.zip\n  filegap extract-images - -o images.zip"
+    )]
+    ExtractImages(ExtractImagesArgs),
     #[command(
         about = "Show PDF metadata and structure information",
         after_help = "Examples:\n  filegap info input.pdf\n  cat input.pdf | filegap info --json"
@@ -190,6 +197,19 @@ struct CompressArgs {
     output: Option<String>,
 }
 
+#[derive(Debug, Args)]
+struct ExtractImagesArgs {
+    #[arg(value_name = "INPUT", help = "Input PDF file. Use '-' for stdin")]
+    input: Option<String>,
+    #[arg(
+        short,
+        long,
+        value_name = "FILE",
+        help = "Write ZIP output to file (default: stdout)"
+    )]
+    output: Option<String>,
+}
+
 #[derive(Debug, Clone, Copy, ValueEnum)]
 enum CliCompressionPreset {
     Low,
@@ -288,6 +308,7 @@ fn main() -> ExitCode {
         Commands::Reorder(args) => handle_reorder(args),
         Commands::Optimize(args) => handle_optimize(args),
         Commands::Compress(args) => handle_compress(args),
+        Commands::ExtractImages(args) => handle_extract_images(args),
         Commands::Info(args) => handle_info(args),
         Commands::Support => handle_support(),
     };
@@ -449,6 +470,19 @@ fn handle_compress(args: CompressArgs) -> Result<(), CliError> {
     write_bytes_output(&output, args.output.as_deref())
 }
 
+fn handle_extract_images(args: ExtractImagesArgs) -> Result<(), CliError> {
+    let input_bytes = read_single_input(args.input.as_deref())?;
+    let images = extract_images(&ExtractImagesRequest {
+        document: input_bytes,
+    })
+    .map_err(|err| match err {
+        CoreError::Unsupported(_) => CliError::generic("no supported embedded images found"),
+        other => CliError::from_core(other),
+    })?;
+    let zip_bytes = build_image_zip(&images)?;
+    write_bytes_output(&zip_bytes, args.output.as_deref())
+}
+
 fn handle_info(args: InfoArgs) -> Result<(), CliError> {
     let input_bytes = read_single_input(args.input.as_deref())?;
     let size_bytes = input_bytes.len() as u64;
@@ -594,6 +628,26 @@ fn build_zip(parts: Vec<Vec<u8>>) -> Result<Vec<u8>, CliError> {
             .map_err(|err| CliError::generic(format!("failed to write zip entry: {err}")))?;
         writer
             .write_all(part)
+            .map_err(|err| CliError::generic(format!("failed to write zip entry data: {err}")))?;
+    }
+
+    writer
+        .finish()
+        .map_err(|err| CliError::generic(format!("failed to finalize zip: {err}")))?;
+    Ok(cursor.into_inner())
+}
+
+fn build_image_zip(images: &[ExtractedImage]) -> Result<Vec<u8>, CliError> {
+    let mut cursor = io::Cursor::new(Vec::new());
+    let mut writer = ZipWriter::new(&mut cursor);
+    let options = SimpleFileOptions::default().compression_method(zip::CompressionMethod::Stored);
+
+    for image in images {
+        writer
+            .start_file(&image.filename, options)
+            .map_err(|err| CliError::generic(format!("failed to write zip entry: {err}")))?;
+        writer
+            .write_all(&image.bytes)
             .map_err(|err| CliError::generic(format!("failed to write zip entry data: {err}")))?;
     }
 
