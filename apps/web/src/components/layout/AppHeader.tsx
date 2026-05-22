@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-type ToolIcon = 'merge' | 'split' | 'extract' | 'reorder' | 'optimize' | 'compress' | 'images';
+type ToolIcon = 'merge' | 'split' | 'extract' | 'reorder' | 'optimize' | 'compress' | 'images' | 'extract-images';
 
 const TOOL_NAV_LINKS: Array<{ href: string; label: string; icon: ToolIcon }> = [
   { href: '/merge-pdf', label: 'Merge PDF', icon: 'merge' },
@@ -10,6 +10,7 @@ const TOOL_NAV_LINKS: Array<{ href: string; label: string; icon: ToolIcon }> = [
   { href: '/optimize-pdf', label: 'Optimize PDF', icon: 'optimize' },
   { href: '/compress-pdf', label: 'Compress PDF', icon: 'compress' },
   { href: '/pdf-to-images', label: 'PDF to Images', icon: 'images' },
+  { href: '/extract-images', label: 'Extract Images', icon: 'extract-images' },
 ];
 
 function ToolMenuIcon({ icon }: { icon: ToolIcon }) {
@@ -73,6 +74,18 @@ function ToolMenuIcon({ icon }: { icon: ToolIcon }) {
         <rect x='3' y='3' width='18' height='18' rx='2' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' />
         <circle cx='9' cy='9' r='2' stroke='currentColor' strokeWidth='2' />
         <path d='m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' />
+      </svg>
+    );
+  }
+
+  if (icon === 'extract-images') {
+    return (
+      <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' aria-hidden='true' className='h-4 w-4'>
+        <path d='M15 2h-4a2 2 0 0 0-2 2v5' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' />
+        <path d='M16.706 2.706A2.4 2.4 0 0 0 15 2v5a1 1 0 0 0 1 1h5a2.4 2.4 0 0 0-.706-1.706z' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' />
+        <rect x='3' y='11' width='14' height='10' rx='2' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' />
+        <circle cx='7' cy='15' r='1.4' stroke='currentColor' strokeWidth='2' />
+        <path d='m17 19-3-3a2 2 0 0 0-2.828 0L7 20' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' />
       </svg>
     );
   }

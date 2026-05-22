@@ -22,7 +22,7 @@
 - Merge queue supports incremental add, remove, and drag-and-drop reorder
 - Split parser supports range input including single pages (for example `1-3,4,5-10`) with preview-ready architecture
 - No backend/API dependency for file processing
-- Public routes implemented: `/`, `/workflow-builder`, `/merge-pdf`, `/split-pdf`, `/extract-pages`, `/reorder-pdf`, `/optimize-pdf`, `/compress-pdf`, `/pdf-to-images`, `/download`
+- Public routes implemented: `/`, `/workflow-builder`, `/merge-pdf`, `/split-pdf`, `/extract-pages`, `/reorder-pdf`, `/optimize-pdf`, `/compress-pdf`, `/pdf-to-images`, `/extract-images`, `/download`
 - Shared tool layout is app-like and compact:
   - sticky top header with tool links
   - title/subtitle directly in page flow (no hero card)
@@ -58,8 +58,8 @@ Rule:
   - `multiple` input mode requires first step `merge`
 - Real-time CLI preview generation for the configured workflow shape.
 - For `PDF to Images`, the preview shows the planned local workflow shape even though CLI support is not implemented yet.
-- For `Extract Images`, the preview uses the executable `filegap extract-images` CLI command. Browser execution is not enabled until the web engine has a matching local implementation.
-- Workflow execution runs locally for the browser-supported operations; unsupported terminal steps remain preview-only with a clear disabled state.
+- For `Extract Images`, the preview uses the executable `filegap extract-images` CLI command, and browser execution extracts supported embedded image streams locally.
+- Workflow execution runs locally for supported web operations, including terminal ZIP outputs.
 
 ### `/download`
 
@@ -114,6 +114,16 @@ Rule:
 - Packages one image per page into a local ZIP file without adding upload or backend processing
 - Result state with `Download ZIP` and `New conversion`
 - Dropzone disabled while conversion is processing
+
+### `/extract-images`
+
+- Single source PDF flow for embedded image asset extraction
+- Uses `pdf-lib` to inspect PDF image XObjects in the browser
+- Extracts supported `DCTDecode` JPEG streams as `.jpg` and `JPXDecode` JPEG 2000 streams as `.jp2`
+- Does not render PDF pages, decode complex raw image streams, inspect inline images, or recurse through Form XObjects
+- Packages extracted assets into a local ZIP file without adding upload or backend processing
+- Empty or unsupported PDFs show a clear no-supported-images state
+- Result state with `Download ZIP` and `New extraction`
 
 Run locally:
 

@@ -2,6 +2,7 @@ import { createBrowserRouter } from 'react-router-dom';
 import { CliPage } from '../pages/cli/CliPage';
 import { CompressPdfPage } from '../pages/compress-pdf/CompressPdfPage';
 import { DownloadPage } from '../pages/download/DownloadPage';
+import { ExtractImagesPage } from '../pages/extract-images/ExtractImagesPage';
 import { ExtractPagesPage } from '../pages/extract-pages/ExtractPagesPage';
 import { HomePage } from '../pages/home/HomePage';
 import { MergePdfPage } from '../pages/merge-pdf/MergePdfPage';
@@ -50,6 +51,10 @@ export const router = createBrowserRouter([
   {
     path: '/pdf-to-images',
     element: <PdfToImagesPage />,
+  },
+  {
+    path: '/extract-images',
+    element: <ExtractImagesPage />,
   },
   {
     path: '/privacy',

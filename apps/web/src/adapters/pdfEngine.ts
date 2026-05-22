@@ -1,4 +1,4 @@
-import { PDFDocument } from 'pdf-lib';
+import { PDFArray, PDFDocument, PDFName, PDFRawStream } from 'pdf-lib';
 
 export type SplitRangeSegment = {
   start: number;
@@ -6,6 +6,14 @@ export type SplitRangeSegment = {
 };
 
 export type CompressPreset = 'low' | 'balanced' | 'strong';
+
+export type ExtractedEmbeddedImageFormat = 'jpeg' | 'jpeg2000';
+
+export type ExtractedEmbeddedImage = {
+  filename: string;
+  bytes: Uint8Array;
+  format: ExtractedEmbeddedImageFormat;
+};
 
 export async function mergePdfBuffers(buffers: ArrayBuffer[]): Promise<Uint8Array> {
   if (buffers.length < 2) {
@@ -195,4 +203,73 @@ export async function compressPdfBuffer(source: ArrayBuffer, preset: CompressPre
     addDefaultPage: false,
   });
   return output;
+}
+
+function nameValue(name: PDFName): string {
+  return name.decodeText();
+}
+
+function getSingleFilterName(stream: PDFRawStream): string | null {
+  const filter = stream.dict.get(PDFName.of('Filter'));
+  if (filter instanceof PDFName) {
+    return nameValue(filter);
+  }
+
+  if (filter instanceof PDFArray && filter.size() === 1) {
+    const first = filter.lookupMaybe(0, PDFName);
+    return first ? nameValue(first) : null;
+  }
+
+  return null;
+}
+
+function getEmbeddedImageFormat(stream: PDFRawStream): ExtractedEmbeddedImageFormat | null {
+  const subtype = stream.dict.get(PDFName.of('Subtype'));
+  if (!(subtype instanceof PDFName) || nameValue(subtype) !== 'Image') {
+    return null;
+  }
+
+  const filterName = getSingleFilterName(stream);
+  if (filterName === 'DCTDecode') {
+    return 'jpeg';
+  }
+  if (filterName === 'JPXDecode') {
+    return 'jpeg2000';
+  }
+
+  return null;
+}
+
+function embeddedImageExtension(format: ExtractedEmbeddedImageFormat): string {
+  return format === 'jpeg2000' ? 'jp2' : 'jpg';
+}
+
+export async function extractEmbeddedImages(source: ArrayBuffer | Uint8Array): Promise<ExtractedEmbeddedImage[]> {
+  const sourceDoc = await PDFDocument.load(source, { updateMetadata: false });
+  const images: ExtractedEmbeddedImage[] = [];
+
+  for (const [, object] of sourceDoc.context.enumerateIndirectObjects()) {
+    if (!(object instanceof PDFRawStream)) {
+      continue;
+    }
+
+    const format = getEmbeddedImageFormat(object);
+    if (!format) {
+      continue;
+    }
+
+    const bytes = object.asUint8Array();
+    const filename = `image-${String(images.length + 1).padStart(3, '0')}.${embeddedImageExtension(format)}`;
+    images.push({
+      filename,
+      bytes: new Uint8Array(bytes),
+      format,
+    });
+  }
+
+  if (images.length === 0) {
+    throw new Error('No supported embedded images found.');
+  }
+
+  return images;
 }

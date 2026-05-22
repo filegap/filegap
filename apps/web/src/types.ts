@@ -1,4 +1,4 @@
-import type { CompressPreset, SplitRangeSegment } from './adapters/pdfEngine';
+import type { CompressPreset, ExtractedEmbeddedImage, SplitRangeSegment } from './adapters/pdfEngine';
 
 export type MergeRequest = {
   type: 'merge';
@@ -46,13 +46,21 @@ export type CompressRequest = {
   };
 };
 
+export type ExtractImagesRequest = {
+  type: 'extract-images';
+  payload: {
+    file: ArrayBuffer;
+  };
+};
+
 export type WorkerRequest =
   | MergeRequest
   | SplitRequest
   | ExtractRequest
   | ReorderRequest
   | OptimizeRequest
-  | CompressRequest;
+  | CompressRequest
+  | ExtractImagesRequest;
 
 export type MergeSuccessResponse = {
   ok: true;
@@ -102,13 +110,22 @@ export type CompressSuccessResponse = {
   };
 };
 
+export type ExtractImagesSuccessResponse = {
+  ok: true;
+  type: 'extract-images';
+  payload: {
+    images: ExtractedEmbeddedImage[];
+  };
+};
+
 export type WorkerSuccessResponse =
   | MergeSuccessResponse
   | SplitSuccessResponse
   | ExtractSuccessResponse
   | ReorderSuccessResponse
   | OptimizeSuccessResponse
-  | CompressSuccessResponse;
+  | CompressSuccessResponse
+  | ExtractImagesSuccessResponse;
 
 export type WorkerErrorResponse = {
   ok: false;

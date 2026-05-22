@@ -85,6 +85,13 @@ const TOOLS = [
     ctaLabel: 'Convert pages',
     icon: <Images />,
   },
+  {
+    name: 'Extract Images',
+    description: 'Extract supported embedded PDF image assets into a local ZIP.',
+    href: '/extract-images',
+    ctaLabel: 'Extract images',
+    icon: <Images />,
+  },
 ];
 
 const WHY_ITEMS = [

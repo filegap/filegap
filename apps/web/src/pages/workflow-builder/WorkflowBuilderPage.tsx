@@ -14,6 +14,7 @@ import { SimpleProcessFlow } from '../../components/ui/SimpleProcessFlow';
 import { UploadedFilesTable } from '../../components/ui/UploadedFilesTable';
 import {
   compressPdfBuffer,
+  extractEmbeddedImages,
   extractPdfByRanges,
   mergePdfBuffers,
   optimizePdfBuffer,
@@ -242,9 +243,7 @@ export function WorkflowBuilderPage() {
   const runStepsLabel = `${draft.steps.length} ${draft.steps.length === 1 ? 'step' : 'steps'} ready`;
   const chainSteps = ['Input', ...draft.steps.map((step) => stepLabel(step.operation)), 'Output'];
   const finalOperation = draft.steps[draft.steps.length - 1]?.operation ?? 'optimize';
-  const webExecutionError =
-    finalOperation === 'extract-images' ? 'Extract Images workflows run in Filegap Desktop or CLI.' : null;
-  const canRun = !isRunning && hasAnyInputs && hasEnoughInputs && errors.length === 0 && !webExecutionError;
+  const canRun = !isRunning && hasAnyInputs && hasEnoughInputs && errors.length === 0;
   const singleSourcePageCount =
     sourceFiles.length === 1 ? sourceFileMetadata[sourceFileKey(sourceFiles[0])]?.pageCount ?? null : null;
   const inputError =
@@ -544,7 +543,16 @@ export function WorkflowBuilderPage() {
         }
 
         if (step.operation === 'extract-images') {
-          throw new Error('Extract Images workflows run in Filegap Desktop or CLI.');
+          const images = await extractEmbeddedImages(toArrayBuffer(source));
+          currentDocs = [
+            createStoredZip(
+              images.map((image) => ({
+                name: image.filename,
+                bytes: image.bytes,
+              }))
+            ),
+          ];
+          continue;
         }
 
         const pages = await getPageCountFromBytes(source);
@@ -862,7 +870,7 @@ export function WorkflowBuilderPage() {
                 <p className='text-sm font-semibold text-ui-text'>{runStepsLabel}</p>
                 <div className='mt-2 flex flex-wrap items-center gap-2'>
                   <p className={actionMessageClassName}>
-                    {webExecutionError ?? (canRun ? 'Ready to run locally.' : status.tone === 'error' ? status.message : 'Complete required inputs to continue.')}
+                    {canRun ? 'Ready to run locally.' : status.tone === 'error' ? status.message : 'Complete required inputs to continue.'}
                   </p>
                 </div>
               </div>

@@ -20,6 +20,13 @@ vi.mock('../../adapters/pdfEngine', async () => {
   return {
     ...actual,
     optimizePdfBuffer: vi.fn().mockResolvedValue(new Uint8Array([1, 2, 3])),
+    extractEmbeddedImages: vi.fn().mockResolvedValue([
+      {
+        filename: 'image-001.jpg',
+        bytes: new Uint8Array([4, 5, 6]),
+        format: 'jpeg',
+      },
+    ]),
   };
 });
 
@@ -164,5 +171,33 @@ describe('WorkflowBuilderPage', () => {
 
     await user.selectOptions(screen.getByRole('combobox'), 'reorder');
     expect(screen.getByDisplayValue('1,2,3,4')).toBeInTheDocument();
+  });
+
+  it('runs terminal Extract Images workflows in the browser', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={['/workflow-builder']}>
+        <Routes>
+          <Route path='/workflow-builder' element={<WorkflowBuilderPage />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const file = new File([new Uint8Array([1, 2, 3])], 'source.pdf', { type: 'application/pdf' });
+    fireEvent.change(input, { target: { files: [file] } });
+
+    await user.selectOptions(screen.getByRole('combobox'), 'extract-images');
+    expect(screen.getByText(/filegap extract-images/)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Run workflow' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('Workflow completed')).toBeInTheDocument();
+    });
+
+    expect(screen.getByText('Your image ZIP is ready. The local process finished on this device.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Download ZIP' })).toBeInTheDocument();
   });
 });

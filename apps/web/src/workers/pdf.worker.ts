@@ -1,5 +1,6 @@
 import {
   compressPdfBuffer,
+  extractEmbeddedImages,
   extractPdfByRanges,
   mergePdfBuffers,
   optimizePdfBuffer,
@@ -72,6 +73,17 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
         ok: true,
         type: 'compress',
         payload: { output },
+      };
+      (self as unknown as Worker).postMessage(response);
+      return;
+    }
+
+    if (event.data.type === 'extract-images') {
+      const images = await extractEmbeddedImages(event.data.payload.file);
+      const response: WorkerResponse = {
+        ok: true,
+        type: 'extract-images',
+        payload: { images },
       };
       (self as unknown as Worker).postMessage(response);
       return;

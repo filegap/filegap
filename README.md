@@ -25,7 +25,7 @@ MVP operations:
 - Split a PDF
 - Reorder pages
 - Convert PDF pages to images in the web and desktop apps
-- Extract embedded PDF images in the CLI and desktop app
+- Extract embedded PDF images in the web, CLI, and desktop app
 - Optimize PDF structure without intentional quality reduction
 - Compress PDFs locally with quality presets
 - Inspect PDF metadata and structure (`info`)
@@ -154,7 +154,7 @@ npm install
 npm run dev
 ```
 
-Current web scaffold includes local merge flow via Web Worker.
+Current web scaffold includes browser-local PDF tools, including embedded image extraction for supported JPEG and JPEG 2000 image XObjects.
 
 Design foundations for both web and desktop now share a common token source in `shared/design/tokens.css`.
 
@@ -243,4 +243,4 @@ open "/Applications/Filegap Desktop.app"
 ## Status
 
 `v0.1` feature-complete on CLI (`merge`, `extract`, `split`, `reorder`, `info`) with automated tests.
-Desktop app has local production flows for `merge`, `split`, `extract`, `reorder`, `optimize`, `compress`, `PDF to Images`, `Extract Images`, and Workflow Builder terminal exports.
+Web and desktop apps have local production flows for `merge`, `split`, `extract`, `reorder`, `optimize`, `compress`, `PDF to Images`, `Extract Images`, and Workflow Builder terminal exports.
