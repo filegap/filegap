@@ -19,6 +19,11 @@ export type ExtractResult = {
   output_path: string;
 };
 
+export type ExtractImagesResult = {
+  output_path: string;
+  output_count: number;
+};
+
 export type ReorderResult = {
   output_path: string;
 };
@@ -134,6 +139,13 @@ export async function extractPages(inputPath: string, outputPath: string, pageRa
     inputPath,
     outputPath,
     pageRanges,
+  });
+}
+
+export async function extractImages(inputPath: string, outputPath: string): Promise<ExtractImagesResult> {
+  return invoke<ExtractImagesResult>('extract_images', {
+    inputPath,
+    outputPath,
   });
 }
 

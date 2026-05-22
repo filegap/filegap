@@ -25,6 +25,7 @@ MVP operations:
 - Split a PDF
 - Reorder pages
 - Convert PDF pages to images in the web and desktop apps
+- Extract embedded PDF images in the CLI and desktop app
 - Optimize PDF structure without intentional quality reduction
 - Compress PDFs locally with quality presets
 - Inspect PDF metadata and structure (`info`)
@@ -128,6 +129,7 @@ cargo run -p filegap-cli --bin filegap -- split input.pdf --pages 1-3 > part.pdf
 cargo run -p filegap-cli --bin filegap -- split input.pdf --pages 1-2,5 --format zip > parts.zip
 cargo run -p filegap-cli --bin filegap -- optimize input.pdf > optimized.pdf
 cargo run -p filegap-cli --bin filegap -- compress input.pdf --preset balanced > compressed.pdf
+cargo run -p filegap-cli --bin filegap -- extract-images input.pdf > images.zip
 cargo run -p filegap-cli --bin filegap -- info input.pdf
 cargo run -p filegap-cli --bin filegap -- info input.pdf --json
 ```

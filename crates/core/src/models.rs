@@ -40,6 +40,24 @@ pub struct CompressRequest {
     pub preset: CompressionPreset,
 }
 
+#[derive(Debug, Clone)]
+pub struct ExtractImagesRequest {
+    pub document: Vec<u8>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ExtractedImageFormat {
+    Jpeg,
+    Jpeg2000,
+}
+
+#[derive(Debug, Clone)]
+pub struct ExtractedImage {
+    pub filename: String,
+    pub bytes: Vec<u8>,
+    pub format: ExtractedImageFormat,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum CompressionPreset {
     Low,
@@ -161,6 +179,17 @@ impl CompressRequest {
     }
 }
 
+impl ExtractImagesRequest {
+    pub fn validate(&self) -> Result<(), CoreError> {
+        if self.document.is_empty() {
+            return Err(CoreError::InvalidInput(
+                "input PDF cannot be empty".to_string(),
+            ));
+        }
+        Ok(())
+    }
+}
+
 impl InfoRequest {
     pub fn validate(&self) -> Result<(), CoreError> {
         if self.document.is_empty() {
@@ -175,8 +204,8 @@ impl InfoRequest {
 #[cfg(test)]
 mod tests {
     use crate::{
-        CompressRequest, CompressionPreset, CoreError, ExtractRequest, InfoRequest, MergeRequest,
-        OptimizeRequest, ReorderRequest, SplitMode, SplitRequest,
+        CompressRequest, CompressionPreset, CoreError, ExtractImagesRequest, ExtractRequest,
+        InfoRequest, MergeRequest, OptimizeRequest, ReorderRequest, SplitMode, SplitRequest,
     };
 
     #[test]
@@ -270,6 +299,15 @@ mod tests {
         let request = CompressRequest {
             document: Vec::new(),
             preset: CompressionPreset::Balanced,
+        };
+        let err = request.validate().expect_err("validation should fail");
+        assert!(matches!(err, CoreError::InvalidInput(_)));
+    }
+
+    #[test]
+    fn extract_images_request_validate_rejects_empty_pdf() {
+        let request = ExtractImagesRequest {
+            document: Vec::new(),
         };
         let err = request.validate().expect_err("validation should fail");
         assert!(matches!(err, CoreError::InvalidInput(_)));

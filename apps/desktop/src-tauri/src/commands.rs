@@ -1,19 +1,22 @@
 use std::fs;
+use std::io::{Cursor, Write};
 use std::path::Path;
 use std::process::Command;
 
 use filegap_core::{
     ops::{
-        compress_pdf as core_compress_pdf, extract_pages as core_extract_pages,
-        inspect_pdf as core_inspect_pdf, merge_pdfs as core_merge_pdfs,
+        compress_pdf as core_compress_pdf, extract_images as core_extract_images,
+        extract_pages as core_extract_pages, inspect_pdf as core_inspect_pdf, merge_pdfs as core_merge_pdfs,
         optimize_pdf as core_optimize_pdf,
         reorder_pages as core_reorder_pages, split_pdf as core_split_pdf,
     },
-    CompressionPreset, CompressRequest, CoreError, ExtractRequest, MergeRequest,
-    InfoRequest, OptimizeRequest, ReorderRequest, SplitMode, SplitRequest,
+    CompressionPreset, CompressRequest, CoreError, ExtractImagesRequest, ExtractRequest,
+    ExtractedImage, MergeRequest, InfoRequest, OptimizeRequest, ReorderRequest, SplitMode,
+    SplitRequest,
 };
 use lopdf::Document;
 use serde::{Deserialize, Serialize};
+use zip::write::{SimpleFileOptions, ZipWriter};
 
 #[derive(Debug, Serialize)]
 pub struct MergeResult {
@@ -31,6 +34,12 @@ pub struct SplitResult {
 #[derive(Debug, Serialize)]
 pub struct ExtractResult {
     pub output_path: String,
+}
+
+#[derive(Debug, Serialize)]
+pub struct ExtractImagesResult {
+    pub output_path: String,
+    pub output_count: usize,
 }
 
 #[derive(Debug, Serialize)]
@@ -127,6 +136,26 @@ fn page_count_from_bytes(bytes: &[u8]) -> Result<u32, String> {
     Document::load_mem(bytes)
         .map(|doc| doc.get_pages().len() as u32)
         .map_err(|_| "Failed to inspect workflow PDF step.".to_string())
+}
+
+fn build_image_zip(images: &[ExtractedImage]) -> Result<Vec<u8>, String> {
+    let mut cursor = Cursor::new(Vec::new());
+    let mut writer = ZipWriter::new(&mut cursor);
+    let options = SimpleFileOptions::default().compression_method(zip::CompressionMethod::Stored);
+
+    for image in images {
+        writer
+            .start_file(&image.filename, options)
+            .map_err(|_| "Failed to write image ZIP.".to_string())?;
+        writer
+            .write_all(&image.bytes)
+            .map_err(|_| "Failed to write image ZIP.".to_string())?;
+    }
+
+    writer
+        .finish()
+        .map_err(|_| "Failed to write image ZIP.".to_string())?;
+    Ok(cursor.into_inner())
 }
 
 fn parse_page_order_input(value: &str, page_count: u32) -> Result<Vec<u32>, String> {
@@ -302,6 +331,37 @@ pub async fn extract_pages(
     })
     .await
     .map_err(|_| "Failed to complete extract operation.".to_string())?
+}
+
+#[tauri::command]
+pub async fn extract_images(input_path: String, output_path: String) -> Result<ExtractImagesResult, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        if input_path.trim().is_empty() {
+            return Err("Select a valid input PDF file.".to_string());
+        }
+        if output_path.trim().is_empty() {
+            return Err("Select a valid output destination.".to_string());
+        }
+
+        let input_bytes = fs::read(&input_path).map_err(|_| "Failed to read input PDF file.".to_string())?;
+        let images = core_extract_images(&ExtractImagesRequest {
+            document: input_bytes,
+        })
+        .map_err(|err| match err {
+            CoreError::Unsupported(_) => "No supported embedded images were found.".to_string(),
+            other => map_core_error(other),
+        })?;
+        let zip_bytes = build_image_zip(&images)?;
+
+        fs::write(&output_path, zip_bytes).map_err(|_| "Failed to write extracted image ZIP.".to_string())?;
+
+        Ok(ExtractImagesResult {
+            output_path,
+            output_count: images.len(),
+        })
+    })
+    .await
+    .map_err(|_| "Failed to complete image extraction operation.".to_string())?
 }
 
 #[tauri::command]

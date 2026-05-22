@@ -1,5 +1,6 @@
 import { createHashRouter } from 'react-router-dom';
 import { CompressPdfPage } from '../pages/compress-pdf/CompressPdfPage';
+import { ExtractImagesPage } from '../pages/extract-images/ExtractImagesPage';
 import { ExtractPagesPage } from '../pages/extract-pages/ExtractPagesPage';
 import { HomePage } from '../pages/home/HomePage';
 import { MergePdfPage } from '../pages/merge-pdf/MergePdfPage';
@@ -42,6 +43,10 @@ export const router = createHashRouter([
   {
     path: '/pdf-to-images',
     element: <PdfToImagesPage />,
+  },
+  {
+    path: '/extract-images',
+    element: <ExtractImagesPage />,
   },
   {
     path: '/workflow-builder',
