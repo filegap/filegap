@@ -16,6 +16,7 @@ const TOOL_LINKS: ToolLink[] = [
   { to: '/optimize-pdf', label: 'Optimize PDF', icon: <Minimize2 aria-hidden="true" /> },
   { to: '/compress-pdf', label: 'Compress PDF', icon: <Zap aria-hidden="true" /> },
   { to: '/pdf-to-images', label: 'PDF to Images', icon: <Images aria-hidden="true" /> },
+  { to: '/extract-images', label: 'Extract Images', icon: <Images aria-hidden="true" /> },
 ];
 
 export function AppHeader() {

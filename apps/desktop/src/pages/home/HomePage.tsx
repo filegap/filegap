@@ -77,6 +77,14 @@ const CONVERT_TOOLS = [
     icon: <Images />,
     enabled: true,
   },
+  {
+    name: 'Extract Images',
+    description: 'Export embedded PDF image assets into a ZIP file.',
+    actionLabel: 'Extract images',
+    href: '/extract-images',
+    icon: <Images />,
+    enabled: true,
+  },
 ];
 
 export function HomePage() {
@@ -190,7 +198,7 @@ export function HomePage() {
           <section className="home-section" aria-labelledby="home-convert-heading">
             <div className="home-section-header">
               <h2 id="home-convert-heading">Convert PDFs</h2>
-              <p>Turn PDF pages into local image files for sharing, previews, and archives.</p>
+              <p>Turn PDF content into local image files for sharing, previews, and archives.</p>
             </div>
             <div className="home-tool-grid" aria-label="Convert PDF tools">
               {CONVERT_TOOLS.map((tool) => (
