@@ -49,6 +49,7 @@ const STEP_OPTIONS: Array<{ value: WorkflowOperation; label: string }> = [
   { value: 'compress', label: 'Compress' },
   { value: 'split', label: 'Split' },
   { value: 'images', label: 'PDF to Images' },
+  { value: 'extract-images', label: 'Extract Images' },
 ];
 
 type WorkflowInputFile = {
@@ -348,7 +349,7 @@ export function WorkflowBuilderPage() {
         return;
       }
       resolvedOutputName = fileNameFromPath(resolvedFirstOutputPath).replace(/-part-1\.pdf$/i, '');
-    } else if (lastStep?.operation === 'images') {
+    } else if (lastStep?.operation === 'images' || lastStep?.operation === 'extract-images') {
       const normalizedName = cleanName
         .replace(/\.pdf$/i, '')
         .replace(/\.zip$/i, '');
@@ -388,6 +389,7 @@ export function WorkflowBuilderPage() {
 
     try {
       const isImageWorkflow = lastStep?.operation === 'images';
+      const isExtractImagesWorkflow = lastStep?.operation === 'extract-images';
       const result = isImageWorkflow
         ? await (async (): Promise<WorkflowRunResult> => {
             const pdfBytes = await prepareWorkflowPdfBytes(
@@ -427,7 +429,9 @@ export function WorkflowBuilderPage() {
         tone: 'success',
         message: isImageWorkflow
           ? `Done: ${result.output_count} images exported`
-          : result.is_split_output
+          : isExtractImagesWorkflow
+            ? `Done: ${result.output_count} images extracted`
+            : result.is_split_output
             ? `Done: ${result.output_count} files created`
             : 'Done: workflow completed',
       });
@@ -744,7 +748,9 @@ export function WorkflowBuilderPage() {
             details={
               draft.steps[draft.steps.length - 1]?.operation === 'images'
                 ? `${lastRunResult.output_count} images exported`
-                : lastRunResult.is_split_output
+                : draft.steps[draft.steps.length - 1]?.operation === 'extract-images'
+                  ? `${lastRunResult.output_count} images extracted`
+                  : lastRunResult.is_split_output
                   ? `${lastRunResult.output_count} files created`
                   : 'Your PDF is ready'
             }

@@ -41,6 +41,7 @@ const STEP_OPTIONS: Array<{ value: WorkflowOperation; label: string }> = [
   { value: 'compress', label: 'Compress' },
   { value: 'split', label: 'Split' },
   { value: 'images', label: 'PDF to Images' },
+  { value: 'extract-images', label: 'Extract Images' },
 ];
 
 const WORKFLOW_PAGE_CONTENT = {
@@ -174,12 +175,15 @@ function outputSlug(operation: WorkflowOperation): string {
   if (operation === 'images') {
     return 'pdf-to-images';
   }
+  if (operation === 'extract-images') {
+    return 'extract-images';
+  }
   return 'split-pdf';
 }
 
 function buildOutputName(operation: WorkflowOperation, index: number, total: number): string {
   const stem = `filegap-${outputSlug(operation)}-output`;
-  if (operation === 'images') {
+  if (operation === 'images' || operation === 'extract-images') {
     return `${stem}.zip`;
   }
   if (total === 1) {
@@ -235,10 +239,12 @@ export function WorkflowBuilderPage() {
   const requiredInputCount = draft.inputMode === 'multiple' ? 2 : 1;
   const hasAnyInputs = sourceFiles.length > 0;
   const hasEnoughInputs = sourceFiles.length >= requiredInputCount;
-  const canRun = !isRunning && hasAnyInputs && hasEnoughInputs && errors.length === 0;
   const runStepsLabel = `${draft.steps.length} ${draft.steps.length === 1 ? 'step' : 'steps'} ready`;
   const chainSteps = ['Input', ...draft.steps.map((step) => stepLabel(step.operation)), 'Output'];
   const finalOperation = draft.steps[draft.steps.length - 1]?.operation ?? 'optimize';
+  const webExecutionError =
+    finalOperation === 'extract-images' ? 'Extract Images workflows run in Filegap Desktop or CLI.' : null;
+  const canRun = !isRunning && hasAnyInputs && hasEnoughInputs && errors.length === 0 && !webExecutionError;
   const singleSourcePageCount =
     sourceFiles.length === 1 ? sourceFileMetadata[sourceFileKey(sourceFiles[0])]?.pageCount ?? null : null;
   const inputError =
@@ -260,6 +266,9 @@ export function WorkflowBuilderPage() {
       }
       if (step.operation === 'images' && index !== draft.steps.length - 1) {
         messages.push('PDF to Images must be the last step because it produces image files.');
+      }
+      if (step.operation === 'extract-images' && index !== draft.steps.length - 1) {
+        messages.push('Extract Images must be the last step because it produces image files.');
       }
       byStep.set(step.id, messages);
     });
@@ -534,13 +543,17 @@ export function WorkflowBuilderPage() {
           continue;
         }
 
+        if (step.operation === 'extract-images') {
+          throw new Error('Extract Images workflows run in Filegap Desktop or CLI.');
+        }
+
         const pages = await getPageCountFromBytes(source);
         const ranges = parseSplitRanges(step.splitRanges, pages);
         const splitOutputs = await splitPdfByRanges(toArrayBuffer(source), ranges);
         currentDocs = splitOutputs.map((bytes) => new Uint8Array(bytes));
       }
 
-      const isZipOutput = finalOperation === 'images';
+      const isZipOutput = finalOperation === 'images' || finalOperation === 'extract-images';
       const finalOutputs = await Promise.all(
         currentDocs.map(async (bytes, index) => ({
           id: `output-${index}`,
@@ -849,7 +862,7 @@ export function WorkflowBuilderPage() {
                 <p className='text-sm font-semibold text-ui-text'>{runStepsLabel}</p>
                 <div className='mt-2 flex flex-wrap items-center gap-2'>
                   <p className={actionMessageClassName}>
-                    {canRun ? 'Ready to run locally.' : status.tone === 'error' ? status.message : 'Complete required inputs to continue.'}
+                    {webExecutionError ?? (canRun ? 'Ready to run locally.' : status.tone === 'error' ? status.message : 'Complete required inputs to continue.')}
                   </p>
                 </div>
               </div>

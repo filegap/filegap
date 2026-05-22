@@ -1,5 +1,13 @@
 export type WorkflowInputMode = 'single' | 'multiple';
-export type WorkflowOperation = 'merge' | 'extract' | 'reorder' | 'optimize' | 'compress' | 'split' | 'images';
+export type WorkflowOperation =
+  | 'merge'
+  | 'extract'
+  | 'reorder'
+  | 'optimize'
+  | 'compress'
+  | 'split'
+  | 'images'
+  | 'extract-images';
 export type CompressionPreset = 'low' | 'balanced' | 'strong';
 export type WorkflowImageFormat = 'jpeg' | 'png';
 export type WorkflowImagePreset = 'screen' | 'print';
@@ -27,7 +35,8 @@ export type WorkflowBuilderTemplate =
   | 'optimize'
   | 'compress'
   | 'split'
-  | 'images';
+  | 'images'
+  | 'extract-images';
 
 export type WorkflowBuilderNavigationState = {
   template?: WorkflowBuilderTemplate;
@@ -111,6 +120,9 @@ export function validateWorkflowDraft(draft: WorkflowDraft): string[] {
     if (step.operation === 'images' && step !== last) {
       errors.push('PDF to Images must be the last step because it produces image files.');
     }
+    if (step.operation === 'extract-images' && step !== last) {
+      errors.push('Extract Images must be the last step because it produces image files.');
+    }
   }
 
   return errors;
@@ -134,6 +146,9 @@ function stepToCli(step: WorkflowStep): string {
   }
   if (step.operation === 'images') {
     return `# PDF to Images export is currently available in the web and desktop apps only (${step.imageFormat}, ${step.imagePreset})`;
+  }
+  if (step.operation === 'extract-images') {
+    return 'filegap extract-images';
   }
   return `filegap split --pages "${step.splitRanges.trim() || '1-2,3-4'}" --format zip`;
 }
@@ -163,6 +178,6 @@ export function buildWorkflowCliPreview(draft: WorkflowDraft): string {
   }
 
   const finalOperation = finalStep?.operation;
-  const isZipOutput = finalOperation === 'split' || finalOperation === 'images';
+  const isZipOutput = finalOperation === 'split' || finalOperation === 'images' || finalOperation === 'extract-images';
   return `${command}\n> ${isZipOutput ? 'output.zip' : 'output.pdf'}`;
 }

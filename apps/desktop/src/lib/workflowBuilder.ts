@@ -1,5 +1,13 @@
 export type WorkflowInputMode = 'single' | 'multiple';
-export type WorkflowOperation = 'merge' | 'extract' | 'reorder' | 'optimize' | 'compress' | 'split' | 'images';
+export type WorkflowOperation =
+  | 'merge'
+  | 'extract'
+  | 'reorder'
+  | 'optimize'
+  | 'compress'
+  | 'split'
+  | 'images'
+  | 'extract-images';
 export type CompressionPreset = 'low' | 'balanced' | 'strong';
 export type WorkflowImageFormat = 'jpeg' | 'png';
 export type WorkflowImagePreset = 'screen' | 'print';
@@ -77,6 +85,9 @@ export function validateWorkflowDraft(draft: WorkflowDraft, inputCount = 0): str
     if (step.operation === 'images' && step !== last) {
       errors.push('PDF to Images must be the last step because it produces image files.');
     }
+    if (step.operation === 'extract-images' && step !== last) {
+      errors.push('Extract Images must be the last step because it produces image files.');
+    }
   }
 
   return errors;
@@ -101,17 +112,20 @@ function stepToCli(step: WorkflowStep): string {
   if (step.operation === 'images') {
     return `# PDF to Images export is currently available in the web and desktop apps only (${step.imageFormat}, ${step.imagePreset})`;
   }
+  if (step.operation === 'extract-images') {
+    return 'filegap extract-images';
+  }
   return `filegap split --pages "${step.splitRanges.trim() || '1-2,3-4'}" --format zip`;
 }
 
 function normalizeWorkflowCliOutputName(draft: WorkflowDraft, outputName?: string): string {
   const trimmed = outputName?.trim() ?? '';
   const finalOperation = draft.steps[draft.steps.length - 1]?.operation;
-  const isZipOutput = finalOperation === 'split' || finalOperation === 'images';
+  const isZipOutput = finalOperation === 'split' || finalOperation === 'images' || finalOperation === 'extract-images';
 
   if (trimmed.length > 0) {
     if (isZipOutput) {
-      return trimmed.replace(/\.pdf$/i, '') || 'workflow-output';
+      return trimmed.replace(/\.pdf$/i, '').replace(/\.zip$/i, '') || 'workflow-output';
     }
     return trimmed.toLowerCase().endsWith('.pdf') ? trimmed : `${trimmed}.pdf`;
   }
@@ -150,7 +164,7 @@ export function buildWorkflowCliPreview(draft: WorkflowDraft, inputNames?: strin
   }
 
   const finalOperation = finalStep?.operation;
-  const isZipOutput = finalOperation === 'split' || finalOperation === 'images';
+  const isZipOutput = finalOperation === 'split' || finalOperation === 'images' || finalOperation === 'extract-images';
   const normalizedOutput = normalizeWorkflowCliOutputName(draft, outputName);
   return `${command}\n> ${isZipOutput ? `${normalizedOutput}.zip` : normalizedOutput}`;
 }

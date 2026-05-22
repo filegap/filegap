@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowRight, Images, Trash2 } from 'lucide-react';
+import { ArrowRight, GitBranch, Images, Trash2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { ToolLayout } from '../../components/layout/ToolLayout';
 import { Button } from '../../components/ui/Button';
 import { OutputActionSection } from '../../components/ui/OutputActionSection';
@@ -23,6 +24,7 @@ import { renderFilenameTemplate, resolveOutputPathByOverwrite } from '../../lib/
 import { joinPath, parsePath, quoteCliArg, readErrorMessage } from '../../lib/pageHelpers';
 import { fileNameFromPath } from '../../lib/pathUtils';
 import { useDesktopSettings } from '../../lib/settings';
+import { createWorkflowStep, type WorkflowBuilderImportState } from '../../lib/workflowBuilder';
 
 type StatusTone = 'neutral' | 'info' | 'error' | 'success';
 
@@ -59,6 +61,7 @@ function formatBytesHuman(bytes: number): string {
 }
 
 export function ExtractImagesPage() {
+  const navigate = useNavigate();
   const [settings] = useDesktopSettings();
   const [files, setFiles] = useState<ExtractImageFile[]>([]);
   const [outputDirectory, setOutputDirectory] = useState('');
@@ -259,6 +262,21 @@ export function ExtractImagesPage() {
     setOutputName(createDefaultOutputName());
   }
 
+  function handleOpenWorkflowBuilder() {
+    if (!selectedFile) {
+      return;
+    }
+    const state: WorkflowBuilderImportState = {
+      sourceLabel: 'Extract Images',
+      inputPaths: [selectedFile.path],
+      draft: {
+        inputMode: 'single',
+        steps: [createWorkflowStep('extract-images')],
+      },
+    };
+    navigate('/workflow-builder', { state });
+  }
+
   return (
     <ToolLayout
       title="Extract Images"
@@ -372,6 +390,15 @@ export function ExtractImagesPage() {
                 </div>
               ))}
             </div>
+            <Button
+              variant="secondary"
+              className="tool-process-flow-builder-btn"
+              onClick={handleOpenWorkflowBuilder}
+              disabled={!selectedFile || isProcessing}
+            >
+              <GitBranch aria-hidden="true" />
+              <span>Open in Workflow Builder</span>
+            </Button>
           </SidebarSection>
 
           <div className="output-panel-divider" />

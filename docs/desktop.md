@@ -166,6 +166,7 @@ Workflow Builder preview specifics:
 - Operations can be reordered and parameterized in-place.
 - Validation rules prevent unsupported shapes (`merge` first only, `split` last only).
 - `PDF to Images` is available as a terminal workflow step because it exports image ZIP files.
+- `Extract Images` is available as a terminal workflow step because it exports embedded image assets as a ZIP.
 - CLI preview string reflects current workflow draft where a CLI equivalent exists.
 
 Current shared rollout status:

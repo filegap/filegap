@@ -571,6 +571,49 @@ pub async fn execute_workflow(
                         .map_err(map_core_error)?;
                     state = WorkflowState::Single(compressed);
                 }
+                "extract-images" => {
+                    if index != last_step_index {
+                        return Err("Extract Images must be the last workflow step.".to_string());
+                    }
+                    let document = match state {
+                        WorkflowState::Single(doc) => doc,
+                        WorkflowState::Multiple(_) => {
+                            return Err(
+                                "Use Merge as the first step to work with multiple input PDFs."
+                                    .to_string(),
+                            )
+                        }
+                    };
+                    let images = core_extract_images(&ExtractImagesRequest { document })
+                        .map_err(|err| match err {
+                            CoreError::Unsupported(_) => {
+                                "No supported embedded images were found.".to_string()
+                            }
+                            other => map_core_error(other),
+                        })?;
+                    let zip_bytes = build_image_zip(&images)?;
+                    let zip_name = output_name
+                        .trim()
+                        .trim_end_matches(".pdf")
+                        .trim_end_matches(".zip");
+                    let final_name = if zip_name.is_empty() {
+                        "workflow-output.zip".to_string()
+                    } else {
+                        format!("{zip_name}.zip")
+                    };
+                    let output_path = Path::new(&output_dir)
+                        .join(final_name)
+                        .to_string_lossy()
+                        .to_string();
+                    fs::write(&output_path, zip_bytes)
+                        .map_err(|_| "Failed to write workflow image ZIP.".to_string())?;
+
+                    return Ok(WorkflowRunResult {
+                        output_path,
+                        output_count: images.len(),
+                        is_split_output: true,
+                    });
+                }
                 "split" => {
                     if index != last_step_index {
                         return Err("Split must be the last workflow step.".to_string());
@@ -753,6 +796,10 @@ pub async fn prepare_workflow_pdf_bytes(
                         return Err("PDF to Images must be the last workflow step.".to_string());
                     }
                     break;
+                }
+                "extract-images" => {
+                    return Err("Extract Images cannot run before PDF to Images in Workflow V1."
+                        .to_string());
                 }
                 "split" => {
                     return Err("Split cannot run before PDF to Images in Workflow V1.".to_string());
