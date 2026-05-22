@@ -1057,7 +1057,7 @@ dependencies = [
 
 [[package]]
 name = "filegap-core"
-version = "0.1.9"
+version = "0.1.10"
 dependencies = [
  "image",
  "lopdf",
@@ -1066,7 +1066,7 @@ dependencies = [
 
 [[package]]
 name = "filegap-desktop"
-version = "0.1.9"
+version = "0.1.10"
 dependencies = [
  "filegap-core",
  "lopdf",

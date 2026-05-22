@@ -203,6 +203,7 @@ Current desktop MVP includes:
 - Optimize PDF tool
 - Compress PDF tool with `low`, `balanced`, and `strong` presets
 - PDF to Images tool for local JPEG/PNG page export
+- Extract Images tool for embedded PDF image assets
 - Local file picker + save dialog
 - Rust-side PDF commands powered by `filegap_core`
 
@@ -242,4 +243,4 @@ open "/Applications/Filegap Desktop.app"
 ## Status
 
 `v0.1` feature-complete on CLI (`merge`, `extract`, `split`, `reorder`, `info`) with automated tests.
-Desktop app has local production flows for `merge`, `split`, `extract`, and `reorder` running through Tauri -> Rust core.
+Desktop app has local production flows for `merge`, `split`, `extract`, `reorder`, `optimize`, `compress`, `PDF to Images`, `Extract Images`, and Workflow Builder terminal exports.
