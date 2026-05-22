@@ -25,7 +25,7 @@ MVP operations:
 - Split a PDF
 - Reorder pages
 - Convert PDF pages to images in the web and desktop apps
-- Extract embedded PDF images in the CLI
+- Extract embedded PDF images in the CLI and desktop app
 - Optimize PDF structure without intentional quality reduction
 - Compress PDFs locally with quality presets
 - Inspect PDF metadata and structure (`info`)
