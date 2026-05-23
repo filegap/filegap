@@ -12,6 +12,7 @@ import { FileSelectionSummary } from '../../components/ui/FileSelectionSummary';
 import { PreDownloadModal } from '../../components/ui/PreDownloadModal';
 import { SimpleProcessFlow } from '../../components/ui/SimpleProcessFlow';
 import { trackToolEvent } from '../../lib/analytics/trackEvent';
+import { baseRelatedTools, canonicalUrl } from '../../lib/seo/seoLandingPages';
 import {
   renderPdfPagesToImages,
   type PdfImageFormat,
@@ -492,7 +493,16 @@ export function PdfToImagesPage() {
         </p>
       </ToolActionCard>
 
-      <ToolLandingSections {...IMAGE_PAGE_CONTENT} />
+      <ToolLandingSections
+        {...IMAGE_PAGE_CONTENT}
+        relatedTools={[...baseRelatedTools.images]}
+        structuredData={{
+          pageTitle: 'PDF to Images Online — Private, Local & Free | Filegap',
+          pageDescription: 'Convert PDF pages into JPEG or PNG images from your browser without uploading the document.',
+          pageUrl: canonicalUrl('/pdf-to-images'),
+          breadcrumbLabel: 'PDF to Images',
+        }}
+      />
 
       <PreDownloadModal
         open={showDownloadGate}

@@ -22,7 +22,19 @@
 - Merge queue supports incremental add, remove, and drag-and-drop reorder
 - Split parser supports range input including single pages (for example `1-3,4,5-10`) with preview-ready architecture
 - No backend/API dependency for file processing
-- Public routes implemented: `/`, `/workflow-builder`, `/merge-pdf`, `/split-pdf`, `/extract-pages`, `/reorder-pdf`, `/optimize-pdf`, `/compress-pdf`, `/pdf-to-images`, `/extract-images`, `/download`
+- Public routes implemented: `/`, `/workflow-builder`, `/merge-pdf`, `/split-pdf`, `/extract-specific-pages-from-pdf`, `/reorder-pdf-pages`, `/optimize-pdf`, `/compress-pdf`, `/pdf-to-images`, `/extract-images`, `/download`
+- Legacy compatibility routes remain available for `/extract-pages` and `/reorder-pdf`, but sitemap and navigation use the canonical SEO slugs.
+- Intent-specific SEO routes reuse the same local tool components instead of duplicating PDF processing logic:
+  - split: `/split-pdf-into-individual-pages`, `/split-pdf-by-page-ranges`, `/split-pdf-without-uploading`, `/split-large-pdf`
+  - merge: `/merge-pdf-without-uploading`, `/combine-pdf-files`
+  - extract: `/extract-specific-pages-from-pdf`, `/extract-pages-from-pdf`, `/save-single-pages-from-pdf`
+  - reorder: `/organize-pdf-pages`
+  - compress: `/compress-pdf-to-100kb`, `/compress-pdf-to-200kb`, `/compress-pdf-for-email`, `/compress-pdf-without-uploading`
+  - privacy hub: `/offline-pdf-tools`
+- Redundant SEO support routes remain reachable and internally linked with `noindex,follow`,
+  but canonicalize to primary pages to reduce search-result cannibalization.
+- Landing pages emit page-specific `FAQPage`, `SoftwareApplication`, and `BreadcrumbList`
+  JSON-LD where FAQ content is present.
 - Shared tool layout is app-like and compact:
   - sticky top header with tool links
   - title/subtitle directly in page flow (no hero card)
@@ -86,7 +98,7 @@ Rule:
 - Result state with `New split` to reset and start again
 - Dropzone disabled while split is processing
 
-### `/extract-pages`
+### `/extract-specific-pages-from-pdf`
 
 - Single source PDF flow with `Uploaded files` section
 - Range parser supports mixed selections (for example `1-3,5,7-9`)
@@ -96,7 +108,7 @@ Rule:
 - Result state with `New extract` to reset and start again
 - Dropzone disabled while extract is processing
 
-### `/reorder-pdf`
+### `/reorder-pdf-pages`
 
 - Single source PDF flow with `Uploaded files` section
 - Page-order parser supports singles and ranges (for example `3,1,2,4-6`)

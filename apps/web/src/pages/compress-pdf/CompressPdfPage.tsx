@@ -15,6 +15,8 @@ import { ToolLayout } from '../../components/layout/ToolLayout';
 import { ToolLandingSections } from '../../components/seo/ToolLandingSections';
 import { compressPdfBuffer, type CompressPreset } from '../../adapters/pdfEngine';
 import { trackEvent, trackToolEvent } from '../../lib/analytics/trackEvent';
+import { baseRelatedTools, canonicalUrl } from '../../lib/seo/seoLandingPages';
+import type { CompressPageSeoConfig } from '../../lib/seo/toolPageConfig';
 import { createWorkflowStep, type WorkflowBuilderNavigationState } from '../../lib/workflowBuilder';
 import type { WorkerResponse } from '../../types';
 
@@ -208,11 +210,16 @@ function presetLabel(preset: CompressPreset): string {
   return 'Balanced';
 }
 
-export function CompressPdfPage() {
+type CompressPdfPageProps = {
+  seoConfig?: CompressPageSeoConfig;
+};
+
+export function CompressPdfPage({ seoConfig }: CompressPdfPageProps = {}) {
   const navigate = useNavigate();
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [pageCount, setPageCount] = useState<number | null>(null);
-  const [preset, setPreset] = useState<CompressPreset>('balanced');
+  const initialPreset = seoConfig?.initialPreset ?? 'balanced';
+  const [preset, setPreset] = useState<CompressPreset>(initialPreset);
   const [output, setOutput] = useState<CompressOutput | null>(null);
   const [status, setStatus] = useState<StatusState>({ tone: 'neutral', message: 'Select one PDF file to start.' });
   const [isProcessing, setIsProcessing] = useState(false);
@@ -373,7 +380,7 @@ export function CompressPdfPage() {
     setShowDownloadGate(false);
     setIsDropZoneCollapsed(false);
     setLimitExceededFileSize(null);
-    setPreset('balanced');
+    setPreset(initialPreset);
     setStatus({ tone: 'neutral', message: 'Select one PDF file to start.' });
   }
 
@@ -416,11 +423,13 @@ export function CompressPdfPage() {
 
   return (
     <ToolLayout
-      title='Compress PDF online — private, local, and fast'
-      description='Compress PDF files directly in your browser with privacy-first local processing.'
-      trustLine='Free • No signup • Works in your browser'
-      metaTitle='Compress PDF Online — Private, Local & Free | Filegap'
-      metaDescription='Compress PDF files online for free with private local processing. Use local presets in your browser with no uploads and no signup.'
+      title={seoConfig?.title ?? 'Compress PDF online — private, local, and fast'}
+      description={seoConfig?.description ?? 'Compress PDF files directly in your browser with privacy-first local processing.'}
+      trustLine={seoConfig?.trustLine ?? 'Free • No signup • Works in your browser'}
+      metaTitle={seoConfig?.metaTitle ?? 'Compress PDF Online — Private, Local & Free | Filegap'}
+      metaDescription={seoConfig?.metaDescription ?? 'Compress PDF files online for free with private local processing. Use local presets in your browser with no uploads and no signup.'}
+      canonicalPath={seoConfig?.canonicalPath}
+      robots={seoConfig?.robots}
       heroVariant='brand'
     >
       <ToolActionCard id='compress-pdf-tool'>
@@ -655,12 +664,19 @@ export function CompressPdfPage() {
       </ToolActionCard>
 
       <ToolLandingSections
-        {...COMPRESS_PAGE_CONTENT}
+        {...(seoConfig?.landingContent ?? COMPRESS_PAGE_CONTENT)}
+        relatedTools={seoConfig?.relatedTools ?? [...baseRelatedTools.compress]}
+        structuredData={{
+          pageTitle: seoConfig?.metaTitle ?? 'Compress PDF Online — Private, Local & Free | Filegap',
+          pageDescription: seoConfig?.metaDescription ?? 'Compress PDF files online for free with private local processing. Use local presets in your browser with no uploads and no signup.',
+          pageUrl: canonicalUrl(seoConfig?.routePath ?? '/compress-pdf'),
+          breadcrumbLabel: seoConfig?.breadcrumbLabel ?? 'Compress PDF',
+        }}
         seoSupplement={
           <>
             <p>
               You can also <a className='text-ui-text underline' href='/optimize-pdf'>optimize PDF files</a>{' '}
-              and <a className='text-ui-text underline' href='/reorder-pdf'>reorder pages</a> directly on web.
+              and <a className='text-ui-text underline' href='/reorder-pdf-pages'>reorder pages</a> directly on web.
             </p>
             <div className='pt-1'>
               <h3 className='text-base font-semibold text-ui-text'>Need stronger compression workflows?</h3>

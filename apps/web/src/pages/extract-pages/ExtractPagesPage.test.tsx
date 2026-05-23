@@ -68,7 +68,7 @@ describe('ExtractPagesPage', () => {
     expect(screen.getByText('Can I extract PDF pages without uploading the file?')).toBeInTheDocument();
     expect(screen.getByText('Can I keep only certain pages from a PDF?')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'split PDF files' })).toHaveAttribute('href', '/split-pdf');
-    expect(screen.getByRole('link', { name: 'reorder PDF pages' })).toHaveAttribute('href', '/reorder-pdf');
+    expect(screen.getByRole('link', { name: 'reorder PDF pages' })).toHaveAttribute('href', '/reorder-pdf-pages');
     const extractCtas = screen.getAllByRole('link', { name: 'Extract pages now' });
     expect(extractCtas[extractCtas.length - 1]).toHaveAttribute('href', '#extract-pdf-tool');
   });

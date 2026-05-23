@@ -12,6 +12,7 @@ import { SimpleProcessFlow } from '../../components/ui/SimpleProcessFlow';
 import { extractEmbeddedImages, type ExtractedEmbeddedImage } from '../../adapters/pdfEngine';
 import type { WorkerResponse } from '../../types';
 import { createStoredZip } from '../../lib/zip';
+import { canonicalUrl } from '../../lib/seo/seoLandingPages';
 
 type StatusTone = 'neutral' | 'info' | 'error';
 
@@ -430,7 +431,15 @@ export function ExtractImagesPage() {
         </p>
       </ToolActionCard>
 
-      <ToolLandingSections {...EXTRACT_IMAGES_CONTENT} />
+      <ToolLandingSections
+        {...EXTRACT_IMAGES_CONTENT}
+        structuredData={{
+          pageTitle: 'Extract Embedded PDF Images | Filegap',
+          pageDescription: 'Extract supported embedded JPEG and JPEG 2000 image assets from PDFs in your browser.',
+          pageUrl: canonicalUrl('/extract-images'),
+          breadcrumbLabel: 'Extract Images',
+        }}
+      />
 
       <PreDownloadModal
         open={showDownloadGate}

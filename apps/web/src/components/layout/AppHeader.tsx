@@ -5,8 +5,8 @@ type ToolIcon = 'merge' | 'split' | 'extract' | 'reorder' | 'optimize' | 'compre
 const TOOL_NAV_LINKS: Array<{ href: string; label: string; icon: ToolIcon }> = [
   { href: '/merge-pdf', label: 'Merge PDF', icon: 'merge' },
   { href: '/split-pdf', label: 'Split PDF', icon: 'split' },
-  { href: '/extract-pages', label: 'Extract Pages', icon: 'extract' },
-  { href: '/reorder-pdf', label: 'Reorder PDF', icon: 'reorder' },
+  { href: '/extract-specific-pages-from-pdf', label: 'Extract Pages', icon: 'extract' },
+  { href: '/reorder-pdf-pages', label: 'Reorder PDF', icon: 'reorder' },
   { href: '/optimize-pdf', label: 'Optimize PDF', icon: 'optimize' },
   { href: '/compress-pdf', label: 'Compress PDF', icon: 'compress' },
   { href: '/pdf-to-images', label: 'PDF to Images', icon: 'images' },
@@ -163,11 +163,10 @@ export function AppHeader() {
                   setIsDesktopToolsOpen(false);
                 }
               }}
-              className={`inline-flex items-center gap-2 whitespace-nowrap rounded-lg border px-4 py-2 text-sm font-medium transition ${
-                isToolPath || isDesktopToolsOpen
+              className={`inline-flex items-center gap-2 whitespace-nowrap rounded-lg border px-4 py-2 text-sm font-medium transition ${isToolPath || isDesktopToolsOpen
                   ? 'border-brand-primary/25 bg-brand-primary/10 text-brand-primary'
                   : 'border-transparent text-ui-muted hover:border-ui-border hover:bg-ui-bg hover:text-ui-text'
-              }`}
+                }`}
             >
               Tools
               <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' aria-hidden='true' className='h-4 w-4'>
@@ -192,11 +191,10 @@ export function AppHeader() {
                       href={link.href}
                       role='menuitem'
                       onClick={() => setIsDesktopToolsOpen(false)}
-                      className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${
-                        isActive
+                      className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${isActive
                           ? 'bg-brand-primary/10 text-brand-primary'
                           : 'text-ui-muted hover:bg-ui-bg hover:text-ui-text'
-                      }`}
+                        }`}
                     >
                       <ToolMenuIcon icon={link.icon} />
                       {link.label}
@@ -209,21 +207,19 @@ export function AppHeader() {
 
           <a
             href='/workflow-builder'
-            className={`whitespace-nowrap rounded-lg border px-4 py-2 text-sm font-medium transition ${
-              activePath === '/workflow-builder'
+            className={`whitespace-nowrap rounded-lg border px-4 py-2 text-sm font-medium transition ${activePath === '/workflow-builder'
                 ? 'border-brand-primary/25 bg-brand-primary/10 text-brand-primary'
                 : 'border-transparent text-ui-muted hover:border-ui-border hover:bg-ui-bg hover:text-ui-text'
-            }`}
+              }`}
           >
             Workflow Builder
           </a>
           <a
             href='/privacy'
-            className={`whitespace-nowrap rounded-lg border px-4 py-2 text-sm font-medium transition ${
-              activePath === '/privacy'
+            className={`whitespace-nowrap rounded-lg border px-4 py-2 text-sm font-medium transition ${activePath === '/privacy'
                 ? 'border-brand-primary/25 bg-brand-primary/10 text-brand-primary'
                 : 'border-transparent text-ui-muted hover:border-ui-border hover:bg-ui-bg hover:text-ui-text'
-            }`}
+              }`}
           >
             Privacy
           </a>
@@ -236,9 +232,8 @@ export function AppHeader() {
             aria-controls='mobile-tools-menu'
             aria-expanded={isMobileMenuOpen}
             onClick={() => setIsMobileMenuOpen((prev) => !prev)}
-            className={`inline-flex h-10 w-10 items-center justify-center rounded-lg border border-ui-border bg-ui-surface text-ui-text transition hover:bg-ui-bg ${
-              isMobileMenuOpen ? 'bg-ui-bg' : ''
-            }`}
+            className={`inline-flex h-10 w-10 items-center justify-center rounded-lg border border-ui-border bg-ui-surface text-ui-text transition hover:bg-ui-bg ${isMobileMenuOpen ? 'bg-ui-bg' : ''
+              }`}
           >
             <svg
               xmlns='http://www.w3.org/2000/svg'
@@ -283,22 +278,20 @@ export function AppHeader() {
               <a
                 href='/workflow-builder'
                 onClick={closeMobileMenu}
-                className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${
-                  activePath === '/workflow-builder'
+                className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${activePath === '/workflow-builder'
                     ? 'bg-brand-primary/10 text-brand-primary'
                     : 'text-ui-muted hover:bg-ui-bg hover:text-ui-text'
-                }`}
+                  }`}
               >
                 Workflow Builder
               </a>
               <a
                 href='/privacy'
                 onClick={closeMobileMenu}
-                className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${
-                  activePath === '/privacy'
+                className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${activePath === '/privacy'
                     ? 'bg-brand-primary/10 text-brand-primary'
                     : 'text-ui-muted hover:bg-ui-bg hover:text-ui-text'
-                }`}
+                  }`}
               >
                 Privacy
               </a>
@@ -312,11 +305,10 @@ export function AppHeader() {
                     key={link.href}
                     href={link.href}
                     onClick={closeMobileMenu}
-                    className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${
-                      isActive
+                    className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${isActive
                         ? 'bg-brand-primary/10 text-brand-primary'
                         : 'text-ui-muted hover:bg-ui-bg hover:text-ui-text'
-                    }`}
+                      }`}
                   >
                     <ToolMenuIcon icon={link.icon} />
                     {link.label}

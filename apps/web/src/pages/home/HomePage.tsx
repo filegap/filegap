@@ -53,14 +53,14 @@ const TOOLS = [
   {
     name: 'Extract Pages',
     description: 'Extract only the pages you need from a PDF.',
-    href: '/extract-pages',
+    href: '/extract-specific-pages-from-pdf',
     ctaLabel: 'Extract pages',
     icon: <Scissors />,
   },
   {
     name: 'Reorder PDF',
     description: 'Rearrange PDF pages and export a new file in seconds.',
-    href: '/reorder-pdf',
+    href: '/reorder-pdf-pages',
     ctaLabel: 'Reorder pages',
     icon: <ArrowUpDown />,
   },
@@ -336,8 +336,8 @@ export function HomePage() {
               Filegap gives you a focused set of PDF tools for everyday work. You can{' '}
               <a className='text-ui-text underline' href='/merge-pdf'>merge PDF files</a>,{' '}
               <a className='text-ui-text underline' href='/split-pdf'>split PDF documents</a>,{' '}
-              <a className='text-ui-text underline' href='/extract-pages'>extract pages</a>, or{' '}
-              <a className='text-ui-text underline' href='/reorder-pdf'>reorder pages</a>, and{' '}
+              <a className='text-ui-text underline' href='/extract-specific-pages-from-pdf'>extract pages</a>, or{' '}
+              <a className='text-ui-text underline' href='/reorder-pdf-pages'>reorder pages</a>, and{' '}
               <a className='text-ui-text underline' href='/optimize-pdf'>optimize PDF files</a> and{' '}
               <a className='text-ui-text underline' href='/compress-pdf'>compress PDFs</a> in a few clicks.
             </p>

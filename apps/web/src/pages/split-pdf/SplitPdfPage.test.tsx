@@ -63,7 +63,7 @@ describe('SplitPdfPage', () => {
     expect(screen.getByRole('heading', { level: 2, name: 'Ready to split your PDF?' })).toBeInTheDocument();
     expect(screen.getByText('Can I split a PDF without uploading it?')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'merge PDF files' })).toHaveAttribute('href', '/merge-pdf');
-    expect(screen.getByRole('link', { name: 'extract specific pages' })).toHaveAttribute('href', '/extract-pages');
+    expect(screen.getByRole('link', { name: 'extract specific pages' })).toHaveAttribute('href', '/extract-specific-pages-from-pdf');
     const splitCtas = screen.getAllByRole('link', { name: 'Split your PDF now' });
     expect(splitCtas[splitCtas.length - 1]).toHaveAttribute('href', '#split-pdf-tool');
   });

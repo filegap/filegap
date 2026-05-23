@@ -12,6 +12,8 @@ type ToolLayoutProps = PropsWithChildren<{
   trustLine?: string;
   metaTitle?: string;
   metaDescription?: string;
+  canonicalPath?: string;
+  robots?: string;
   heroVariant?: 'neutral' | 'brand';
 }>;
 
@@ -21,12 +23,16 @@ export function ToolLayout({
   trustLine,
   metaTitle,
   metaDescription,
+  canonicalPath,
+  robots,
   children,
   heroVariant: _heroVariant = 'neutral',
 }: ToolLayoutProps) {
   usePageMetadata({
     title: metaTitle ?? title,
     description: metaDescription ?? description,
+    canonicalPath,
+    robots,
   });
 
   return (

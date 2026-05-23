@@ -16,6 +16,8 @@ import { ToolLayout } from '../../components/layout/ToolLayout';
 import { FileSelectionSummary } from '../../components/ui/FileSelectionSummary';
 import { parseSplitRanges, splitPdfByRanges, type SplitRangeSegment } from '../../adapters/pdfEngine';
 import { trackEvent, trackToolEvent } from '../../lib/analytics/trackEvent';
+import { baseRelatedTools, canonicalUrl } from '../../lib/seo/seoLandingPages';
+import type { SplitPageSeoConfig } from '../../lib/seo/toolPageConfig';
 import { renderPdfThumbnails, type PageThumbnail } from '../../lib/pdfPreview';
 import { createWorkflowStep, type WorkflowBuilderNavigationState } from '../../lib/workflowBuilder';
 import type { WorkerResponse } from '../../types';
@@ -175,7 +177,11 @@ const SPLIT_PAGE_CONTENT = {
   finalCtaHref: '#split-pdf-tool',
 };
 
-export function SplitPdfPage() {
+type SplitPdfPageProps = {
+  seoConfig?: SplitPageSeoConfig;
+};
+
+export function SplitPdfPage({ seoConfig }: SplitPdfPageProps = {}) {
   const navigate = useNavigate();
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [pageCount, setPageCount] = useState<number | null>(null);
@@ -316,10 +322,21 @@ export function SplitPdfPage() {
       return;
     }
 
-    setStatus({
-      tone: 'info',
-      message: `PDF ready (${totalPages} pages). Enter split ranges like 1-3,4-7.`,
-    });
+    if (seoConfig?.initialMode === 'individual-pages') {
+      const individualRanges = Array.from({ length: totalPages }, (_, index) => String(index + 1)).join(',');
+      setRangeInput(individualRanges);
+      setLastValidRangeInput(individualRanges);
+      setSplitStartPages(new Set(Array.from({ length: Math.max(0, totalPages - 1) }, (_, index) => index + 2)));
+      setStatus({
+        tone: 'info',
+        message: `PDF ready (${totalPages} pages). Individual page ranges are preselected.`,
+      });
+    } else {
+      setStatus({
+        tone: 'info',
+        message: `PDF ready (${totalPages} pages). Enter split ranges like 1-3,4-7.`,
+      });
+    }
     setIsDropZoneCollapsed(true);
   }
 
@@ -587,11 +604,13 @@ export function SplitPdfPage() {
 
   return (
     <ToolLayout
-      title='Split PDF files online — fast, private, and local'
-      description='Split PDF files into multiple documents directly in your browser. No account required.'
-      trustLine='Free • No signup • Works in your browser'
-      metaTitle='Split PDF Files Online — Private, Local & Free | Filegap'
-      metaDescription='Split PDF files online for free with private local processing. Create separate PDF files directly in your browser with no uploads and no signup.'
+      title={seoConfig?.title ?? 'Split PDF files online — fast, private, and local'}
+      description={seoConfig?.description ?? 'Split PDF files into multiple documents directly in your browser. No account required.'}
+      trustLine={seoConfig?.trustLine ?? 'Free • No signup • Works in your browser'}
+      metaTitle={seoConfig?.metaTitle ?? 'Split PDF Files Online — Private, Local & Free | Filegap'}
+      metaDescription={seoConfig?.metaDescription ?? 'Split PDF files online for free with private local processing. Create separate PDF files directly in your browser with no uploads and no signup.'}
+      canonicalPath={seoConfig?.canonicalPath}
+      robots={seoConfig?.robots}
       heroVariant='brand'
     >
       <ToolActionCard id='split-pdf-tool'>
@@ -796,12 +815,19 @@ export function SplitPdfPage() {
       </ToolActionCard>
 
       <ToolLandingSections
-        {...SPLIT_PAGE_CONTENT}
+        {...(seoConfig?.landingContent ?? SPLIT_PAGE_CONTENT)}
+        relatedTools={seoConfig?.relatedTools ?? [...baseRelatedTools.split]}
+        structuredData={{
+          pageTitle: seoConfig?.metaTitle ?? 'Split PDF Files Online — Private, Local & Free | Filegap',
+          pageDescription: seoConfig?.metaDescription ?? 'Split PDF files online for free with private local processing. Create separate PDF files directly in your browser with no uploads and no signup.',
+          pageUrl: canonicalUrl(seoConfig?.routePath ?? '/split-pdf'),
+          breadcrumbLabel: seoConfig?.breadcrumbLabel ?? 'Split PDF',
+        }}
         seoSupplement={
           <>
             <p>
               You can also <a className='text-ui-text underline' href='/merge-pdf'>merge PDF files</a>{' '}
-              or <a className='text-ui-text underline' href='/extract-pages'>extract specific pages</a>{' '}
+              or <a className='text-ui-text underline' href='/extract-specific-pages-from-pdf'>extract specific pages</a>{' '}
               using other Filegap tools.
             </p>
             <div className='pt-1'>

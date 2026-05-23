@@ -105,8 +105,8 @@ apps/web/
 
 - `/merge-pdf`
 - `/split-pdf`
-- `/extract-pages`
-- `/reorder-pdf`
+- `/extract-specific-pages-from-pdf`
+- `/reorder-pdf-pages`
 
 Each route must include:
 

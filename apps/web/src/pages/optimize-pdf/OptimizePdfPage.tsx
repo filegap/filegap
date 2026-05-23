@@ -15,6 +15,7 @@ import { ToolLayout } from '../../components/layout/ToolLayout';
 import { ToolLandingSections } from '../../components/seo/ToolLandingSections';
 import { optimizePdfBuffer } from '../../adapters/pdfEngine';
 import { trackEvent, trackToolEvent } from '../../lib/analytics/trackEvent';
+import { baseRelatedTools, canonicalUrl } from '../../lib/seo/seoLandingPages';
 import { createWorkflowStep, type WorkflowBuilderNavigationState } from '../../lib/workflowBuilder';
 import type { WorkerResponse } from '../../types';
 
@@ -628,11 +629,18 @@ export function OptimizePdfPage() {
 
       <ToolLandingSections
         {...OPTIMIZE_PAGE_CONTENT}
+        relatedTools={[...baseRelatedTools.optimize]}
+        structuredData={{
+          pageTitle: 'Optimize PDF Online — Private, Local & Free | Filegap',
+          pageDescription: 'Optimize PDF files in your browser with private structural cleanup. No server-side PDF processing.',
+          pageUrl: canonicalUrl('/optimize-pdf'),
+          breadcrumbLabel: 'Optimize PDF',
+        }}
         seoSupplement={
           <>
             <p>
-              You can also use <a className='text-ui-text underline' href='/reorder-pdf'>reorder pages</a>{' '}
-              and <a className='text-ui-text underline' href='/extract-pages'>extract pages</a> on web.
+              You can also use <a className='text-ui-text underline' href='/reorder-pdf-pages'>reorder pages</a>{' '}
+              and <a className='text-ui-text underline' href='/extract-specific-pages-from-pdf'>extract pages</a> on web.
             </p>
             <div className='pt-1'>
               <h3 className='text-base font-semibold text-ui-text'>Need larger file support?</h3>

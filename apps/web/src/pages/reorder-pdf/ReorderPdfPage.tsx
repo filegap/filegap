@@ -16,6 +16,8 @@ import { ToolLayout } from '../../components/layout/ToolLayout';
 import { FileSelectionSummary } from '../../components/ui/FileSelectionSummary';
 import { parsePageOrder, reorderPdfPages } from '../../adapters/pdfEngine';
 import { trackEvent, trackToolEvent } from '../../lib/analytics/trackEvent';
+import { baseRelatedTools, canonicalUrl } from '../../lib/seo/seoLandingPages';
+import type { ToolPageSeoConfig } from '../../lib/seo/toolPageConfig';
 import { renderPdfThumbnails, type PageThumbnail } from '../../lib/pdfPreview';
 import { createWorkflowStep, type WorkflowBuilderNavigationState } from '../../lib/workflowBuilder';
 import type { WorkerResponse } from '../../types';
@@ -153,7 +155,11 @@ const REORDER_PAGE_CONTENT = {
   finalCtaHref: '#reorder-pdf-tool',
 };
 
-export function ReorderPdfPage() {
+type ReorderPdfPageProps = {
+  seoConfig?: ToolPageSeoConfig;
+};
+
+export function ReorderPdfPage({ seoConfig }: ReorderPdfPageProps = {}) {
   const navigate = useNavigate();
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [pageCount, setPageCount] = useState<number | null>(null);
@@ -581,11 +587,13 @@ export function ReorderPdfPage() {
 
   return (
     <ToolLayout
-      title='Reorder PDF pages online — fast, private, and local'
-      description='Reorder PDF pages directly in your browser. No account required.'
-      trustLine='Free • No signup • Works in your browser'
-      metaTitle='Reorder PDF Pages Online — Private, Local & Free | Filegap'
-      metaDescription='Reorder PDF pages online for free with private local processing. Change page order directly in your browser with no uploads and no signup.'
+      title={seoConfig?.title ?? 'Reorder PDF pages online — fast, private, and local'}
+      description={seoConfig?.description ?? 'Reorder PDF pages directly in your browser. No account required.'}
+      trustLine={seoConfig?.trustLine ?? 'Free • No signup • Works in your browser'}
+      metaTitle={seoConfig?.metaTitle ?? 'Reorder PDF Pages Online — Private, Local & Free | Filegap'}
+      metaDescription={seoConfig?.metaDescription ?? 'Reorder PDF pages online for free with private local processing. Change page order directly in your browser with no uploads and no signup.'}
+      canonicalPath={seoConfig?.canonicalPath}
+      robots={seoConfig?.robots}
       heroVariant='brand'
     >
       <ToolActionCard id='reorder-pdf-tool'>
@@ -778,11 +786,18 @@ export function ReorderPdfPage() {
       </ToolActionCard>
 
       <ToolLandingSections
-        {...REORDER_PAGE_CONTENT}
+        {...(seoConfig?.landingContent ?? REORDER_PAGE_CONTENT)}
+        relatedTools={seoConfig?.relatedTools ?? [...baseRelatedTools.reorder]}
+        structuredData={{
+          pageTitle: seoConfig?.metaTitle ?? 'Reorder PDF Pages Online — Private, Local & Free | Filegap',
+          pageDescription: seoConfig?.metaDescription ?? 'Reorder PDF pages online for free with private local processing. Change page order directly in your browser with no uploads and no signup.',
+          pageUrl: canonicalUrl(seoConfig?.routePath ?? '/reorder-pdf-pages'),
+          breadcrumbLabel: seoConfig?.breadcrumbLabel ?? 'Reorder PDF pages',
+        }}
         seoSupplement={
           <>
             <p>
-              You can also <a className='text-ui-text underline' href='/extract-pages'>extract pages</a>{' '}
+              You can also <a className='text-ui-text underline' href='/extract-specific-pages-from-pdf'>extract pages</a>{' '}
               or <a className='text-ui-text underline' href='/split-pdf'>split PDF files</a>{' '}
               using other Filegap tools.
             </p>

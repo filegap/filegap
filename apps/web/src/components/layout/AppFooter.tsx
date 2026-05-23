@@ -52,10 +52,10 @@ export function AppFooter() {
               <a href='/split-pdf' className='hover:text-ui-text'>
                 Split PDF
               </a>
-              <a href='/extract-pages' className='hover:text-ui-text'>
+              <a href='/extract-specific-pages-from-pdf' className='hover:text-ui-text'>
                 Extract Pages
               </a>
-              <a href='/reorder-pdf' className='hover:text-ui-text'>
+              <a href='/reorder-pdf-pages' className='hover:text-ui-text'>
                 Reorder PDF
               </a>
               <a href='/optimize-pdf' className='hover:text-ui-text'>

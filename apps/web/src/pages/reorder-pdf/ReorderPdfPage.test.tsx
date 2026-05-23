@@ -62,7 +62,7 @@ describe('ReorderPdfPage', () => {
     expect(screen.getByRole('heading', { level: 2, name: 'Ready to reorder your PDF?' })).toBeInTheDocument();
     expect(screen.getByText('Can I reorder PDF pages without uploading my file?')).toBeInTheDocument();
     expect(screen.getByText('Can I change the page order in a PDF?')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'extract pages' })).toHaveAttribute('href', '/extract-pages');
+    expect(screen.getByRole('link', { name: 'extract pages' })).toHaveAttribute('href', '/extract-specific-pages-from-pdf');
     expect(screen.getByRole('link', { name: 'split PDF files' })).toHaveAttribute('href', '/split-pdf');
     const reorderCtas = screen.getAllByRole('link', { name: 'Reorder PDF pages now' });
     expect(reorderCtas[reorderCtas.length - 1]).toHaveAttribute('href', '#reorder-pdf-tool');

@@ -4,8 +4,14 @@
 
 1. `/merge-pdf`
 2. `/split-pdf`
-3. `/extract-pages`
-4. `/reorder-pdf`
+3. `/extract-specific-pages-from-pdf`
+4. `/reorder-pdf-pages`
+5. `/optimize-pdf`
+6. `/compress-pdf`
+7. `/pdf-to-images`
+
+Legacy compatibility routes `/extract-pages` and `/reorder-pdf` may render the same
+tools, but canonical links, navigation, and sitemap entries should use the route set above.
 
 Each page must be standalone and complete for direct SEO entry.
 

@@ -15,6 +15,8 @@ import { ToolActionCard } from '../../components/layout/ToolActionCard';
 import { ToolLayout } from '../../components/layout/ToolLayout';
 import { mergePdfBuffers } from '../../adapters/pdfEngine';
 import { trackEvent, trackToolEvent } from '../../lib/analytics/trackEvent';
+import { baseRelatedTools, canonicalUrl } from '../../lib/seo/seoLandingPages';
+import type { ToolPageSeoConfig } from '../../lib/seo/toolPageConfig';
 import { createWorkflowStep, type WorkflowBuilderNavigationState } from '../../lib/workflowBuilder';
 import type { WorkerResponse } from '../../types';
 
@@ -172,7 +174,11 @@ const MERGE_PAGE_CONTENT = {
   finalCtaHref: '#merge-pdf-tool',
 };
 
-export function MergePdfPage() {
+type MergePdfPageProps = {
+  seoConfig?: ToolPageSeoConfig;
+};
+
+export function MergePdfPage({ seoConfig }: MergePdfPageProps = {}) {
   const navigate = useNavigate();
   const [files, setFiles] = useState<MergeQueueFile[]>([]);
   const [status, setStatus] = useState<StatusState>(getIdleOrReadyStatus(0));
@@ -429,11 +435,13 @@ export function MergePdfPage() {
 
   return (
     <ToolLayout
-      title='Merge PDF files online — fast, private, and local'
-      description='Combine multiple PDF files into one document directly in your browser. No account required.'
-      trustLine='Free • No signup • Works in your browser'
-      metaTitle='Merge PDF Files Online — Private, Local & Free | Filegap'
-      metaDescription='Merge PDF files online for free with private local processing. Combine PDFs directly in your browser with no uploads and no signup.'
+      title={seoConfig?.title ?? 'Merge PDF files online — fast, private, and local'}
+      description={seoConfig?.description ?? 'Combine multiple PDF files into one document directly in your browser. No account required.'}
+      trustLine={seoConfig?.trustLine ?? 'Free • No signup • Works in your browser'}
+      metaTitle={seoConfig?.metaTitle ?? 'Merge PDF Files Online — Private, Local & Free | Filegap'}
+      metaDescription={seoConfig?.metaDescription ?? 'Merge PDF files online for free with private local processing. Combine PDFs directly in your browser with no uploads and no signup.'}
+      canonicalPath={seoConfig?.canonicalPath}
+      robots={seoConfig?.robots}
       heroVariant='brand'
     >
       <ToolActionCard id='merge-pdf-tool' className='space-y-6'>
@@ -595,7 +603,14 @@ export function MergePdfPage() {
       </ToolActionCard>
 
       <ToolLandingSections
-        {...MERGE_PAGE_CONTENT}
+        {...(seoConfig?.landingContent ?? MERGE_PAGE_CONTENT)}
+        relatedTools={seoConfig?.relatedTools ?? [...baseRelatedTools.merge]}
+        structuredData={{
+          pageTitle: seoConfig?.metaTitle ?? 'Merge PDF Files Online — Private, Local & Free | Filegap',
+          pageDescription: seoConfig?.metaDescription ?? 'Merge PDF files online for free with private local processing. Combine PDFs directly in your browser with no uploads and no signup.',
+          pageUrl: canonicalUrl(seoConfig?.routePath ?? '/merge-pdf'),
+          breadcrumbLabel: seoConfig?.breadcrumbLabel ?? 'Merge PDF',
+        }}
         seoSupplement={
           <div className='pt-1'>
             <h3 className='text-base font-semibold text-ui-text'>Need automation or offline use?</h3>

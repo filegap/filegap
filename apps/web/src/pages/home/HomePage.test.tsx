@@ -11,7 +11,7 @@ describe('HomePage', () => {
     const heroPrimaryCta = heroPrimaryCtas[0];
     expect(heroPrimaryCta).toHaveAttribute(
       'href',
-      expect.stringMatching(/^\/(workflow-builder|merge-pdf|split-pdf|extract-pages|reorder-pdf|optimize-pdf|compress-pdf|pdf-to-images|extract-images)$/)
+      expect.stringMatching(/^\/(workflow-builder|merge-pdf|split-pdf|extract-specific-pages-from-pdf|reorder-pdf-pages|optimize-pdf|compress-pdf|pdf-to-images|extract-images)$/)
     );
 
     expect(
@@ -49,8 +49,8 @@ describe('HomePage', () => {
     expect(within(grid).getByRole('link', { name: /Workflow Builder/i })).toHaveAttribute('href', '/workflow-builder');
     expect(within(grid).getByRole('link', { name: /Merge PDF/i })).toHaveAttribute('href', '/merge-pdf');
     expect(within(grid).getByRole('link', { name: /Split PDF/i })).toHaveAttribute('href', '/split-pdf');
-    expect(within(grid).getByRole('link', { name: /Extract Pages/i })).toHaveAttribute('href', '/extract-pages');
-    expect(within(grid).getByRole('link', { name: /Reorder PDF/i })).toHaveAttribute('href', '/reorder-pdf');
+    expect(within(grid).getByRole('link', { name: /Extract Pages/i })).toHaveAttribute('href', '/extract-specific-pages-from-pdf');
+    expect(within(grid).getByRole('link', { name: /Reorder PDF/i })).toHaveAttribute('href', '/reorder-pdf-pages');
     expect(within(grid).getByRole('link', { name: /Optimize PDF/i })).toHaveAttribute('href', '/optimize-pdf');
     expect(within(grid).getByRole('link', { name: /Compress PDF/i })).toHaveAttribute('href', '/compress-pdf');
     expect(within(grid).getByRole('link', { name: /PDF to Images/i })).toHaveAttribute('href', '/pdf-to-images');
@@ -128,8 +128,8 @@ describe('HomePage', () => {
     ).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'merge PDF files' })).toHaveAttribute('href', '/merge-pdf');
     expect(screen.getByRole('link', { name: 'split PDF documents' })).toHaveAttribute('href', '/split-pdf');
-    expect(screen.getByRole('link', { name: 'extract pages' })).toHaveAttribute('href', '/extract-pages');
-    expect(screen.getByRole('link', { name: 'reorder pages' })).toHaveAttribute('href', '/reorder-pdf');
+    expect(screen.getByRole('link', { name: 'extract pages' })).toHaveAttribute('href', '/extract-specific-pages-from-pdf');
+    expect(screen.getByRole('link', { name: 'reorder pages' })).toHaveAttribute('href', '/reorder-pdf-pages');
     expect(screen.getByRole('link', { name: 'optimize PDF files' })).toHaveAttribute('href', '/optimize-pdf');
     expect(screen.getByRole('link', { name: 'compress PDFs' })).toHaveAttribute('href', '/compress-pdf');
 

@@ -16,6 +16,8 @@ import { ToolLayout } from '../../components/layout/ToolLayout';
 import { FileSelectionSummary } from '../../components/ui/FileSelectionSummary';
 import { extractPdfByRanges, parseSplitRanges, type SplitRangeSegment } from '../../adapters/pdfEngine';
 import { trackEvent, trackToolEvent } from '../../lib/analytics/trackEvent';
+import { baseRelatedTools, canonicalUrl } from '../../lib/seo/seoLandingPages';
+import type { ToolPageSeoConfig } from '../../lib/seo/toolPageConfig';
 import { renderPdfThumbnails, type PageThumbnail } from '../../lib/pdfPreview';
 import { createWorkflowStep, type WorkflowBuilderNavigationState } from '../../lib/workflowBuilder';
 import type { WorkerResponse } from '../../types';
@@ -181,7 +183,11 @@ const EXTRACT_PAGE_CONTENT = {
   finalCtaHref: '#extract-pdf-tool',
 };
 
-export function ExtractPagesPage() {
+type ExtractPagesPageProps = {
+  seoConfig?: ToolPageSeoConfig;
+};
+
+export function ExtractPagesPage({ seoConfig }: ExtractPagesPageProps = {}) {
   const navigate = useNavigate();
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [pageCount, setPageCount] = useState<number | null>(null);
@@ -642,11 +648,13 @@ export function ExtractPagesPage() {
 
   return (
     <ToolLayout
-      title='Extract PDF pages online — fast, private, and local'
-      description='Extract pages from PDF files directly in your browser. No account required.'
-      trustLine='Free • No signup • Works in your browser'
-      metaTitle='Extract PDF Pages Online — Private, Local & Free | Filegap'
-      metaDescription='Extract PDF pages online for free with private local processing. Keep only the pages you need directly in your browser with no uploads and no signup.'
+      title={seoConfig?.title ?? 'Extract PDF pages online — fast, private, and local'}
+      description={seoConfig?.description ?? 'Extract pages from PDF files directly in your browser. No account required.'}
+      trustLine={seoConfig?.trustLine ?? 'Free • No signup • Works in your browser'}
+      metaTitle={seoConfig?.metaTitle ?? 'Extract PDF Pages Online — Private, Local & Free | Filegap'}
+      metaDescription={seoConfig?.metaDescription ?? 'Extract PDF pages online for free with private local processing. Keep only the pages you need directly in your browser with no uploads and no signup.'}
+      canonicalPath={seoConfig?.canonicalPath}
+      robots={seoConfig?.robots}
       heroVariant='brand'
     >
       <ToolActionCard id='extract-pdf-tool'>
@@ -863,12 +871,19 @@ export function ExtractPagesPage() {
       </ToolActionCard>
 
       <ToolLandingSections
-        {...EXTRACT_PAGE_CONTENT}
+        {...(seoConfig?.landingContent ?? EXTRACT_PAGE_CONTENT)}
+        relatedTools={seoConfig?.relatedTools ?? [...baseRelatedTools.extract]}
+        structuredData={{
+          pageTitle: seoConfig?.metaTitle ?? 'Extract PDF Pages Online — Private, Local & Free | Filegap',
+          pageDescription: seoConfig?.metaDescription ?? 'Extract PDF pages online for free with private local processing. Keep only the pages you need directly in your browser with no uploads and no signup.',
+          pageUrl: canonicalUrl(seoConfig?.routePath ?? '/extract-pages-from-pdf'),
+          breadcrumbLabel: seoConfig?.breadcrumbLabel ?? 'Extract PDF pages',
+        }}
         seoSupplement={
           <>
             <p>
               You can also <a className='text-ui-text underline' href='/split-pdf'>split PDF files</a>{' '}
-              or <a className='text-ui-text underline' href='/reorder-pdf'>reorder PDF pages</a>{' '}
+              or <a className='text-ui-text underline' href='/reorder-pdf-pages'>reorder PDF pages</a>{' '}
               using other Filegap tools.
             </p>
             <div className='pt-1'>
