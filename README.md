@@ -96,6 +96,19 @@ Run CLI:
 cargo run -p filegap-cli --bin filegap -- --help
 ```
 
+## Development Shortcuts
+
+Common commands can be run from the repository root with `dev.sh`:
+
+```bash
+./dev.sh server
+./dev.sh app
+./dev.sh cli:run --help
+./dev.sh test
+```
+
+Run `./dev.sh --help` for the full command list.
+
 ## Install CLI (Homebrew)
 
 Tap first and then install:
