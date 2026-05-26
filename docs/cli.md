@@ -19,6 +19,13 @@ Or install directly from tap:
 brew install filegap/filegap/filegap
 ```
 
+Update the CLI:
+
+```bash
+brew update
+brew upgrade filegap
+```
+
 Check installation:
 
 ```bash

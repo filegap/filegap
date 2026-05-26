@@ -57,6 +57,7 @@ Install commands (desktop):
 ```bash
 brew tap filegap/filegap
 brew install --cask filegap-desktop
+brew update
 brew upgrade --cask filegap-desktop
 ```
 

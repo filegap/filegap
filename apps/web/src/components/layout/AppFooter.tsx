@@ -64,6 +64,12 @@ export function AppFooter() {
               <a href='/compress-pdf' className='hover:text-ui-text'>
                 Compress PDF
               </a>
+              <a href='/pdf-to-images' className='hover:text-ui-text'>
+                PDF to Images
+              </a>
+              <a href='/extract-images' className='hover:text-ui-text'>
+                Extract Images
+              </a>
             </nav>
           </div>
         </div>

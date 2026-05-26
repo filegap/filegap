@@ -76,6 +76,7 @@ Rule:
 ### `/download`
 
 - Provides desktop community-channel installation instructions via Homebrew cask.
+- Gives the Homebrew update command prominent placement for already installed desktop apps.
 - Shows developer-preview positioning and channel caveats for unsigned/non-notarized artifacts.
 - Links to CLI and GitHub Releases without changing privacy invariants.
 

@@ -124,6 +124,13 @@ Or install directly from tap without a separate tap step:
 brew install filegap/filegap/filegap
 ```
 
+Update the CLI:
+
+```bash
+brew update
+brew upgrade filegap
+```
+
 Quick sanity checks:
 
 ```bash
@@ -234,9 +241,10 @@ brew tap filegap/filegap
 brew install --cask filegap-desktop
 ```
 
-Upgrade:
+Update Filegap Desktop:
 
 ```bash
+brew update
 brew upgrade --cask filegap-desktop
 ```
 

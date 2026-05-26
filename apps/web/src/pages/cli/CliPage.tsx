@@ -2,10 +2,6 @@ import { Card } from '../../components/ui/Card';
 import { CopyCodeBlock } from '../../components/ui/CopyCodeBlock';
 import { ToolLayout } from '../../components/layout/ToolLayout';
 
-type CodeSnippetProps = {
-  code: string;
-};
-
 type ExampleCommandProps = {
   description: string;
   command: string;
@@ -31,25 +27,56 @@ export function CliPage() {
     >
       <Card>
         <div className='space-y-5 text-sm leading-relaxed text-ui-muted'>
+          <p className='inline-flex items-center rounded-full border border-ui-border bg-ui-bg px-3 py-1 text-xs font-semibold text-ui-text'>
+            CLI Homebrew channel
+          </p>
           <p>
-            Filegap CLI lets you run merge, split, extract, and reorder operations directly from
-            your terminal.
+            Install Filegap CLI with Homebrew to run private PDF operations directly from your
+            terminal. It is built for local automation, scripting, and repeatable document
+            workflows.
           </p>
-          <p className='font-medium text-ui-text'>
-            Local processing only. No uploads. No servers. Your files stay on your device.
-          </p>
-          <div className='space-y-2'>
-            <h2 className='font-heading text-base font-semibold text-ui-text'>
-              Install with Homebrew
-            </h2>
-            <CopyCodeBlock
-              code={`brew tap filegap/filegap
+
+          <div className='grid gap-4 md:grid-cols-2'>
+            <div className='space-y-2 rounded-xl border border-ui-border bg-ui-bg p-4'>
+              <h2 className='font-heading text-base font-semibold text-ui-text'>
+                Install with Homebrew
+              </h2>
+              <p className='text-xs'>Run these commands in your terminal:</p>
+              <CopyCodeBlock
+                code={`brew tap filegap/filegap
 brew install filegap`}
-            />
-            <p className='text-xs'>
-              Direct install also works: <code>brew install filegap/filegap/filegap</code>
-            </p>
+              />
+              <p className='text-xs'>
+                Direct install also works: <code>brew install filegap/filegap/filegap</code>
+              </p>
+            </div>
+
+            <div className='space-y-2 rounded-xl border border-brand-primary/30 bg-brand-primary/10 p-4'>
+              <h2 className='font-heading text-base font-semibold text-ui-text'>
+                Update Filegap CLI
+              </h2>
+              <p className='text-xs'>
+                Already installed? Refresh Homebrew and upgrade to the latest CLI release.
+              </p>
+              <CopyCodeBlock
+                code={`brew update
+brew upgrade filegap`}
+              />
+              <p className='text-xs'>Use this command after a new CLI release is published.</p>
+            </div>
           </div>
+
+          <div className='space-y-2 rounded-xl border border-ui-border bg-ui-bg-subtle p-4'>
+            <h2 className='font-heading text-base font-semibold text-ui-text'>
+              CLI notes
+            </h2>
+            <ul className='list-disc space-y-1 pl-5 text-xs'>
+              <li>PDF processing runs locally on your machine.</li>
+              <li>Commands are pipe-first and safe for scripts.</li>
+              <li>Errors print to stderr with stable exit codes.</li>
+            </ul>
+          </div>
+
           <div className='space-y-2'>
             <h2 className='font-heading text-base font-semibold text-ui-text'>Quick checks</h2>
             <CopyCodeBlock
@@ -57,6 +84,9 @@ brew install filegap`}
 filegap --help`}
             />
           </div>
+          <p className='font-medium text-ui-text'>
+            Local processing only. No uploads. No servers. Your files stay on your device.
+          </p>
           <section className='space-y-5'>
             <div className='space-y-1'>
               <p className='text-xs font-medium text-ui-text'>

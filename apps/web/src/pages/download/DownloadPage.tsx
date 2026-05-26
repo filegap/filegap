@@ -20,17 +20,31 @@ export function DownloadPage() {
             This is the community distribution channel.
           </p>
 
-          <div className='space-y-2 rounded-xl border border-ui-border bg-ui-bg p-4'>
-            <h2 className='font-heading text-base font-semibold text-ui-text'>
-              Install with Homebrew
-            </h2>
-            <p className='text-xs'>Run these commands in your terminal:</p>
-            <pre className='overflow-x-auto rounded-lg border border-ui-border bg-ui-bg-subtle p-3 text-xs text-ui-text'>
-              <code>{`brew tap filegap/filegap\nbrew install --cask filegap-desktop`}</code>
-            </pre>
-            <p className='text-xs'>
-              Already installed? Update with <code>brew upgrade --cask filegap-desktop</code>.
-            </p>
+          <div className='grid gap-4 md:grid-cols-2'>
+            <div className='space-y-2 rounded-xl border border-ui-border bg-ui-bg p-4'>
+              <h2 className='font-heading text-base font-semibold text-ui-text'>
+                Install with Homebrew
+              </h2>
+              <p className='text-xs'>Run these commands in your terminal:</p>
+              <pre className='overflow-x-auto rounded-lg border border-ui-border bg-ui-bg-subtle p-3 text-xs text-ui-text'>
+                <code>{`brew tap filegap/filegap\nbrew install --cask filegap-desktop`}</code>
+              </pre>
+            </div>
+
+            <div className='space-y-2 rounded-xl border border-brand-primary/30 bg-brand-primary/10 p-4'>
+              <h2 className='font-heading text-base font-semibold text-ui-text'>
+                Update Filegap Desktop
+              </h2>
+              <p className='text-xs'>
+                Already installed? Refresh Homebrew and upgrade the app from the official tap.
+              </p>
+              <pre className='overflow-x-auto rounded-lg border border-brand-primary/20 bg-ui-surface p-3 text-xs text-ui-text'>
+                <code>{`brew update\nbrew upgrade --cask filegap-desktop`}</code>
+              </pre>
+              <p className='text-xs'>
+                Use this command when a new community build is published.
+              </p>
+            </div>
           </div>
 
           <div className='space-y-2 rounded-xl border border-ui-border bg-ui-bg-subtle p-4'>

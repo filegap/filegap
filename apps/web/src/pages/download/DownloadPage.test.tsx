@@ -14,8 +14,9 @@ describe('DownloadPage', () => {
     expect(
       screen.getByText(/brew tap filegap\/filegap\s+brew install --cask filegap-desktop/)
     ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: 'Update Filegap Desktop' })).toBeInTheDocument();
     expect(
-      screen.getByText(/brew upgrade --cask filegap-desktop/)
+      screen.getByText(/brew update\s+brew upgrade --cask filegap-desktop/)
     ).toBeInTheDocument();
     expect(
       screen.getByRole('link', { name: 'GitHub Releases' })
