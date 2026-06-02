@@ -63,6 +63,10 @@ The product implementation is still PDF-first even though the positioning has mo
 
 The main missing product work is not another PDF operation. It is making the broader toolkit direction visible without implying that unfinished non-PDF tools already exist.
 
+## Roadmap Notes
+
+The strategy is not to maximize the number of tools. Filegap should prioritize tools that strengthen privacy, local-first processing, trust, and sensitive file handling before expanding into more generic productivity utilities.
+
 ## Active Product Priorities
 
 ### 1. Homepage Evolution
@@ -198,6 +202,71 @@ Risks:
 - Extracted text is sensitive and must not be logged, tracked, or sent off-device.
 
 Priority: Medium
+
+## Future Opportunities
+
+These are not active roadmap items yet. They are future candidates that could fit the local-first sensitive-file direction if scoped carefully.
+
+### File Sanitizer
+
+Purpose:
+
+- Remove metadata and hidden information from PDFs, images, and office documents.
+
+Rationale:
+
+- Natural extension of the privacy-first positioning.
+
+Priority: Future candidate
+
+### Image Compressor
+
+Purpose:
+
+- Compress images locally.
+
+Rationale:
+
+- High-utility file operation that fits local-first processing.
+
+Priority: Future candidate
+
+### PDF Password Tools
+
+Purpose:
+
+- Protect PDFs.
+- Unlock PDFs.
+
+Rationale:
+
+- Useful PDF workflow, but lower strategic value than privacy-oriented features.
+
+Priority: Future candidate
+
+### Document Compare Tool
+
+Purpose:
+
+- Visually compare documents and PDFs.
+
+Rationale:
+
+- Interesting professional workflow, but not currently aligned with the highest-priority privacy direction.
+
+Priority: Future candidate
+
+### Signature / Scan Cleanup Tool
+
+Purpose:
+
+- Clean scanned documents and signatures.
+
+Rationale:
+
+- Potential future image/document utility.
+
+Priority: Future candidate
 
 ## Parking Lot
 
