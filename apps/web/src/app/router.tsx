@@ -5,6 +5,7 @@ import { DownloadPage } from '../pages/download/DownloadPage';
 import { ExtractImagesPage } from '../pages/extract-images/ExtractImagesPage';
 import { ExtractPagesPage } from '../pages/extract-pages/ExtractPagesPage';
 import { HomePage } from '../pages/home/HomePage';
+import { LocalFirstPdfToolsPage } from '../pages/local-first-pdf-tools/LocalFirstPdfToolsPage';
 import { MergePdfPage } from '../pages/merge-pdf/MergePdfPage';
 import { NotFoundPage } from '../pages/not-found/NotFoundPage';
 import { OfflinePdfToolsPage } from '../pages/offline-pdf-tools/OfflinePdfToolsPage';
@@ -14,6 +15,7 @@ import { PrivacyPage } from '../pages/privacy/PrivacyPage';
 import { ReorderPdfPage } from '../pages/reorder-pdf/ReorderPdfPage';
 import { SplitPdfPage } from '../pages/split-pdf/SplitPdfPage';
 import { TermsPage } from '../pages/terms/TermsPage';
+import { WhyUploadingPdfsIsAPrivacyRiskPage } from '../pages/why-uploading-pdfs-is-a-privacy-risk/WhyUploadingPdfsIsAPrivacyRiskPage';
 import { WorkflowBuilderPage } from '../pages/workflow-builder/WorkflowBuilderPage';
 import {
   compressSeoLandingConfigs,
@@ -130,6 +132,14 @@ export const router = createBrowserRouter([
   {
     path: '/offline-pdf-tools',
     element: <OfflinePdfToolsPage />,
+  },
+  {
+    path: '/local-first-pdf-tools',
+    element: <LocalFirstPdfToolsPage />,
+  },
+  {
+    path: '/why-uploading-pdfs-is-a-privacy-risk',
+    element: <WhyUploadingPdfsIsAPrivacyRiskPage />,
   },
   {
     path: '/',

@@ -48,6 +48,8 @@ tool components and keep the tool above the fold:
 12. `/compress-pdf-for-email`
 13. `/compress-pdf-without-uploading`
 14. `/offline-pdf-tools`
+15. `/local-first-pdf-tools`
+16. `/why-uploading-pdfs-is-a-privacy-risk`
 
 Indexing strategy:
 
@@ -62,6 +64,8 @@ Indexing strategy:
   - `/compress-pdf-for-email`
   - `/compress-pdf-without-uploading`
   - `/offline-pdf-tools`
+  - `/local-first-pdf-tools`
+  - `/why-uploading-pdfs-is-a-privacy-risk`
 - Redundant support pages stay accessible and internally linked, but use `noindex,follow`
   and canonicalize to their primary equivalent:
   - `/split-pdf-into-individual-pages` -> `/split-pdf-by-page-ranges`

@@ -29,6 +29,12 @@ export function AppFooter() {
               <a href='/privacy' className='hover:text-ui-text'>
                 Privacy
               </a>
+              <a href='/local-first-pdf-tools' className='hover:text-ui-text'>
+                Local-first PDF tools
+              </a>
+              <a href='/why-uploading-pdfs-is-a-privacy-risk' className='hover:text-ui-text'>
+                PDF upload privacy risk
+              </a>
               <a href='/terms' className='hover:text-ui-text'>
                 Terms
               </a>

@@ -115,6 +115,8 @@ describe('SEO landing pages', () => {
         '/reduce-pdf-file-size',
         '/make-pdf-smaller',
         '/offline-pdf-tools',
+        '/local-first-pdf-tools',
+        '/why-uploading-pdfs-is-a-privacy-risk',
       ])
     );
     expect(new Set(allSeoLandingPaths).size).toBe(allSeoLandingPaths.length);

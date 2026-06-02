@@ -37,6 +37,11 @@ const splitRelated = [
     label: 'Compress PDF',
     description: 'Reduce PDF overhead in your browser with local presets.',
   },
+  {
+    href: '/local-first-pdf-tools',
+    label: 'Local-first PDF Tools',
+    description: 'Learn how browser-based PDF tools keep processing on your device.',
+  },
 ];
 
 const mergeRelated = [
@@ -59,6 +64,11 @@ const mergeRelated = [
     href: '/merge-pdf-without-uploading',
     label: 'Merge PDF without Uploading',
     description: 'Use the privacy-focused merge page for no-upload PDF combining.',
+  },
+  {
+    href: '/why-uploading-pdfs-is-a-privacy-risk',
+    label: 'PDF Upload Privacy Risks',
+    description: 'Understand when local PDF processing is a better fit than upload-based tools.',
   },
 ];
 
@@ -93,6 +103,11 @@ const extractRelated = [
     label: 'Reorder PDF Pages',
     description: 'Move pages into the right sequence in your browser.',
   },
+  {
+    href: '/local-first-pdf-tools',
+    label: 'Local-first PDF Tools',
+    description: 'Compare local browser-based PDF tools with upload-based workflows.',
+  },
 ];
 
 const reorderRelated = [
@@ -110,6 +125,11 @@ const reorderRelated = [
     href: '/change-pdf-page-order',
     label: 'Change PDF Page Order',
     description: 'Fix a PDF page sequence locally in your browser.',
+  },
+  {
+    href: '/local-first-pdf-tools',
+    label: 'Local-first PDF Tools',
+    description: 'Learn why Filegap keeps PDF page operations on your device.',
   },
 ];
 
@@ -149,6 +169,11 @@ const compressRelated = [
     label: 'Compress without Uploading',
     description: 'Keep compression private when documents cannot leave your device.',
   },
+  {
+    href: '/why-uploading-pdfs-is-a-privacy-risk',
+    label: 'PDF Upload Privacy Risks',
+    description: 'Review why a no-upload compressor can reduce document exposure.',
+  },
 ];
 
 const imagesRelated = [
@@ -171,6 +196,11 @@ const imagesRelated = [
     href: '/extract-images',
     label: 'Extract Images',
     description: 'Extract supported embedded image assets from PDFs.',
+  },
+  {
+    href: '/local-first-pdf-tools',
+    label: 'Local-first PDF Tools',
+    description: 'Learn how browser PDF conversion can work without upload processing.',
   },
 ];
 
@@ -1682,6 +1712,8 @@ export const allSeoLandingPaths = [
   ...reorderSeoLandingConfigs.map((config) => config.routePath),
   ...compressSeoLandingConfigs.map((config) => config.routePath),
   '/offline-pdf-tools',
+  '/local-first-pdf-tools',
+  '/why-uploading-pdfs-is-a-privacy-risk',
 ];
 
 export const indexableSeoLandingPaths = allSeoLandingPaths.filter((path) => {

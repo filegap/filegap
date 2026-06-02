@@ -30,7 +30,7 @@
   - extract: `/extract-specific-pages-from-pdf`, `/extract-pages-from-pdf`, `/save-single-pages-from-pdf`
   - reorder: `/organize-pdf-pages`
   - compress: `/compress-pdf-to-100kb`, `/compress-pdf-to-200kb`, `/compress-pdf-for-email`, `/compress-pdf-without-uploading`
-  - privacy hub: `/offline-pdf-tools`
+  - privacy hubs: `/offline-pdf-tools`, `/local-first-pdf-tools`, `/why-uploading-pdfs-is-a-privacy-risk`
 - Redundant SEO support routes remain reachable and internally linked with `noindex,follow`,
   but canonicalize to primary pages to reduce search-result cannibalization.
 - Landing pages emit page-specific `FAQPage`, `SoftwareApplication`, and `BreadcrumbList`

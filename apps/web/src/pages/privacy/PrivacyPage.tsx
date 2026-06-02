@@ -62,8 +62,9 @@ export function PrivacyPage() {
               We do not collect any information that can identify your documents, such as file names, paths, or content.
             </p>
             <p>
-              We may collect minimal, non-identifying metrics (e.g. number of pages processed) to understand feature usage.
-              These cannot be linked to you or your files.
+              We may collect minimal, non-identifying metrics such as high-level tool usage counts to
+              understand feature usefulness. These events do not include file details or document
+              operation payloads.
             </p>
             <p>What we do not collect through analytics:</p>
             <ul className='list-disc space-y-1 pl-5'>
@@ -105,6 +106,11 @@ export function PrivacyPage() {
               <li>No network requests are required during PDF processing.</li>
               <li>You can verify network activity in your browser DevTools.</li>
             </ul>
+            <p>
+              For more context, read about{' '}
+              <a href='/local-first-pdf-tools'>local-first PDF tools</a> and why{' '}
+              <a href='/why-uploading-pdfs-is-a-privacy-risk'>uploading PDFs can create unnecessary privacy exposure</a>.
+            </p>
           </section>
 
           <section className='space-y-2'>

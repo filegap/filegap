@@ -349,6 +349,12 @@ export function HomePage() {
               Whether you are combining files, splitting long documents, or fixing page order,
               Filegap keeps the workflow quick and easy to scan.
             </p>
+            <p>
+              Want the deeper privacy model? Read about{' '}
+              <a className='text-ui-text underline' href='/local-first-pdf-tools'>local-first PDF tools</a>{' '}
+              and why{' '}
+              <a className='text-ui-text underline' href='/why-uploading-pdfs-is-a-privacy-risk'>uploading PDFs can add privacy risk</a>.
+            </p>
           </div>
         </SectionBlock>
 
