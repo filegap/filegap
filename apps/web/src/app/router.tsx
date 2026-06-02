@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router-dom';
+import { Navigate, createBrowserRouter } from 'react-router-dom';
 import { CliPage } from '../pages/cli/CliPage';
 import { CompressPdfPage } from '../pages/compress-pdf/CompressPdfPage';
 import { DownloadPage } from '../pages/download/DownloadPage';
@@ -118,6 +118,10 @@ export const router = createBrowserRouter([
   {
     path: '/terms',
     element: <TermsPage />,
+  },
+  {
+    path: '/term',
+    element: <Navigate to="/terms" replace />,
   },
   {
     path: '/workflow-builder',

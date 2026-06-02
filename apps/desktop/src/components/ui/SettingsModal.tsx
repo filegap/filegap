@@ -12,8 +12,8 @@ type SettingsModalProps = {
   onClose: () => void;
 };
 
-const WEBSITE_URL = 'https://filegap.app';
-const PRIVACY_URL = 'https://filegap.app/privacy';
+const WEBSITE_URL = 'https://www.filegap.app';
+const PRIVACY_URL = 'https://www.filegap.app/privacy';
 const RELEASE_NOTES_URL = 'https://github.com/filegap/filegap/releases';
 
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
@@ -136,23 +136,23 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     {settings.defaultOutputDirectory ? <p className="settings-value-path">{settings.defaultOutputDirectory}</p> : null}
                   </div>
                   <div className="settings-row-control">
-                  <Button
-                    variant="secondary"
-                    className="settings-select-btn"
-                    onClick={() => void handleChooseFolder()}
-                    loading={isChoosingFolder}
-                    loadingLabel="Opening..."
-                  >
-                    <span className="settings-select-btn-main">
-                      <Folders aria-hidden="true" />
-                      <span className="settings-select-btn-text" title={settings.defaultOutputDirectory ?? folderLabel}>
-                        {folderLabel}
+                    <Button
+                      variant="secondary"
+                      className="settings-select-btn"
+                      onClick={() => void handleChooseFolder()}
+                      loading={isChoosingFolder}
+                      loadingLabel="Opening..."
+                    >
+                      <span className="settings-select-btn-main">
+                        <Folders aria-hidden="true" />
+                        <span className="settings-select-btn-text" title={settings.defaultOutputDirectory ?? folderLabel}>
+                          {folderLabel}
+                        </span>
                       </span>
-                    </span>
-                    <ChevronsUpDown className="settings-select-btn-caret" aria-hidden="true" />
-                  </Button>
+                      <ChevronsUpDown className="settings-select-btn-caret" aria-hidden="true" />
+                    </Button>
+                  </div>
                 </div>
-              </div>
                 <div className="settings-row settings-row-compact">
                   <div className="settings-row-copy">
                     <h3>Ask destination every time</h3>
@@ -175,17 +175,17 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     <h3>Fallback behavior</h3>
                     <p className="settings-help">Reset to use your system Downloads folder as default destination.</p>
                   </div>
-                <div className="settings-row-control">
-                  <Button
-                    variant="ghost"
-                    className="settings-use-downloads-btn"
-                    onClick={handleUseDownloads}
-                    disabled={!settings.defaultOutputDirectory}
-                  >
-                    Use Downloads
-                  </Button>
+                  <div className="settings-row-control">
+                    <Button
+                      variant="ghost"
+                      className="settings-use-downloads-btn"
+                      onClick={handleUseDownloads}
+                      disabled={!settings.defaultOutputDirectory}
+                    >
+                      Use Downloads
+                    </Button>
+                  </div>
                 </div>
-              </div>
               </div>
             </section>
 

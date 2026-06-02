@@ -67,7 +67,7 @@ export function PreDownloadModal({
               Create a privacy-first short link with Lynko
             </p>
             <a
-              href='https://lynko.it?utm_source=filegap.app'
+              href='https://lynko.it?utm_source=www.filegap.app'
               target='_blank'
               rel='noreferrer'
               onClick={() => trackEvent('support_lynko_click')}
@@ -81,7 +81,7 @@ export function PreDownloadModal({
         <p className='mt-5 text-xs text-ui-muted'>
           If this saved you time, consider{' '}
           <a
-            href='https://buymeacoffee.com/filegap?utm_source=filegap.app'
+            href='https://buymeacoffee.com/filegap?utm_source=www.filegap.app'
             target='_blank'
             rel='noreferrer'
             onClick={() => trackEvent('support_click')}
