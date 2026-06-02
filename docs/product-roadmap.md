@@ -21,42 +21,92 @@ Target direction:
 5. Fast and lightweight: tools should load quickly and complete focused tasks without heavy setup.
 6. Minimal and trustworthy UX: interfaces should be clear, calm, and direct.
 
-## Current Tool Categories
+## Current Status
 
-### PDF Tools
+This snapshot reflects the repository state as of 2026-06-02.
 
-- Merge PDFs
-- Split PDFs
-- Extract selected pages
-- Reorder pages
-- Optimize PDF structure
-- Compress PDFs with local presets
-- Convert PDF pages to images
-- Extract embedded PDF images
-- Inspect PDF metadata and structure through the CLI
+### Shipped PDF Tools
 
-### Workflow / Power User Tools
+- Merge PDFs across web, CLI, and desktop.
+- Split PDFs across web, CLI, and desktop.
+- Extract selected pages across web, CLI, and desktop.
+- Reorder pages across web, CLI, and desktop.
+- Optimize PDF structure across web, CLI, and desktop.
+- Compress PDFs locally with `low`, `balanced`, and `strong` presets across web, CLI, and desktop.
+- Convert PDF pages to JPEG/PNG images in web and desktop.
+- Extract supported embedded PDF images in web, CLI, and desktop.
+- Inspect PDF metadata and structure through the CLI `info` command.
 
-- Workflow Builder preview for linear tool chaining
-- CLI pipe-first workflows
-- Desktop app workflows with local file picker and save dialog
+### Shipped Workflow / Power User Surface
 
-### Future Privacy Tools
+- Workflow Builder preview exists on web and desktop for linear local chaining.
+- Workflow Builder supports `merge`, `extract`, `reorder`, `optimize`, `compress`, `split`, `PDF to Images`, and `Extract Images` steps.
+- CLI supports pipe-first workflows for implemented structure operations.
+- Desktop supports local file picker, save dialog, output settings, reveal/open actions, and community-channel support/About surfaces.
 
-- EXIF remover
-- Screenshot anonymizer
-- PDF redact
-- Metadata cleanup for non-PDF file types where local parsing is practical
+### Shipped Distribution / Trust Surface
 
-### Future Image Tools
+- CLI Homebrew install and upgrade documentation is in place.
+- Desktop community preview installation through Homebrew Cask is documented.
+- Desktop community release workflow builds unsigned macOS artifacts and can update the Homebrew cask.
+- Privacy, web architecture, desktop architecture, release, SEO, and design-system docs describe the local-only model and current implementation boundaries.
 
-- HEIC converter
-- Local OCR for images and scanned documents
-- Screenshot cleanup and export helpers
+### Positioning Work Completed
 
-## Planned Tools
+- `docs/positioning.md` defines Filegap as a local-first toolkit for sensitive files.
+- The web app includes an `/offline-pdf-tools` privacy/SEO hub.
+- The desktop home groups current PDF tools by workflow intent; the web home exposes the shipped PDF tool grid but still needs the broader toolkit framing.
 
-### EXIF Remover
+## Current Product Gap
+
+The product implementation is still PDF-first even though the positioning has moved toward broader local-first sensitive-file utilities.
+
+The main missing product work is not another PDF operation. It is making the broader toolkit direction visible without implying that unfinished non-PDF tools already exist.
+
+## Active Product Priorities
+
+### 1. Homepage Evolution
+
+Status: In progress / needs implementation
+
+Goal:
+
+- Move the public homepage from PDF-only positioning toward local-first sensitive-file toolkit positioning.
+- Keep current PDF tools as the primary shipped category.
+- Clearly separate available tools from planned privacy/image tools.
+- Surface Workflow Builder as a power-user path, not just another card in the grid.
+
+Why it matters:
+
+- The repository already has broader positioning docs.
+- Future non-PDF tools need a product frame before they are added.
+- The homepage should avoid overpromising while still showing where Filegap is going.
+
+### 2. Desktop Distribution Hardening
+
+Status: Partially shipped / still active
+
+Goal:
+
+- Move desktop distribution from community preview toward trusted official distribution.
+- Preserve the open-source model while supporting paid convenience channels.
+
+Done:
+
+- Community desktop release workflow.
+- Homebrew Cask install/update documentation.
+- Build flavor surface for `store`, `github`, `homebrew`, and `dev`.
+- Support CTA gating for community versus store builds.
+
+Still missing:
+
+- Apple Developer signing and notarization.
+- Store submission assets and checklist.
+- Explicit support policy for paid store users versus community users.
+- OSS + paid-store FAQ.
+- Desktop update policy per distribution channel.
+
+### 3. EXIF Remover
 
 Status: Planned
 
@@ -64,17 +114,37 @@ Why it matters:
 
 - Photos often contain location, device, timestamp, and camera metadata.
 - Removing metadata is a clear privacy utility that fits the local-first promise.
-- The tool can be useful beyond PDF workflows without changing the product identity.
+- The tool expands Filegap beyond PDFs without changing the product identity.
 
-Risks / complexity:
+MVP scope to define:
 
-- Metadata formats vary by image type.
-- The UI must avoid exposing sensitive metadata values in logs or analytics.
-- Output quality and color profile handling need careful validation.
+- Supported image formats.
+- Metadata fields to remove.
+- Color profile and output quality behavior.
+- Browser versus desktop support expectations.
 
 Priority: High
 
-### HEIC Converter
+### 4. PDF Redact
+
+Status: Planned, safety-sensitive
+
+Why it matters:
+
+- Redaction is a high-trust PDF workflow for contracts, IDs, financial documents, and legal files.
+- A local redaction tool aligns strongly with the product's privacy positioning.
+- It expands Filegap from file transformation into sensitive-file preparation.
+
+MVP scope to define:
+
+- Conservative supported PDF content types.
+- Clear guarantee that redaction removes underlying content, not only overlays visual boxes.
+- Explicit unsupported cases.
+- Validation and warning UX.
+
+Priority: High
+
+### 5. HEIC Converter
 
 Status: Planned
 
@@ -84,15 +154,16 @@ Why it matters:
 - Local conversion to JPEG or PNG is a practical utility for everyday file handling.
 - This can introduce image-tool surface area without requiring accounts or uploads.
 
-Risks / complexity:
+MVP scope to define:
 
-- Browser support and decoding libraries need evaluation.
-- Large images can be memory intensive.
-- Conversion must preserve expected visual quality while keeping the UI simple.
+- Browser decoding feasibility.
+- Desktop fallback expectations.
+- Output format and quality defaults.
+- Large-image memory limits.
 
 Priority: Medium
 
-### Screenshot Anonymizer
+### 6. Screenshot Anonymizer
 
 Status: Planned
 
@@ -102,17 +173,17 @@ Why it matters:
 - A local blur/redaction flow supports sharing sensitive screenshots safely.
 - This reinforces Filegap as a toolkit for sensitive files, not only PDF operations.
 
-Risks / complexity:
+MVP scope to define:
 
-- Automatic detection can miss sensitive content.
-- Manual selection tools need to be precise and easy to review.
-- The product must communicate that users remain responsible for final review.
+- Manual selection first.
+- Optional assisted detection only after local OCR/detection feasibility is proven.
+- Clear responsibility messaging before export.
 
 Priority: Medium
 
-### Local OCR
+### 7. Local OCR
 
-Status: Planned
+Status: Research
 
 Why it matters:
 
@@ -120,7 +191,7 @@ Why it matters:
 - Local OCR keeps sensitive documents out of cloud OCR services.
 - OCR can support future workflows such as search, copy text, and assisted redaction.
 
-Risks / complexity:
+Risks:
 
 - OCR engines can add bundle size and CPU cost.
 - Accuracy varies by language, scan quality, and layout.
@@ -128,62 +199,38 @@ Risks / complexity:
 
 Priority: Medium
 
-### PDF Redact
+## Parking Lot
 
-Status: Planned
+These ideas are not active product roadmap items right now. They can be reconsidered after the local-first sensitive-file direction is clearer.
 
-Why it matters:
-
-- Redaction is a high-trust PDF workflow for contracts, IDs, financial documents, and legal files.
-- A local redaction tool aligns strongly with the product's privacy positioning.
-- It expands Filegap from file transformation into sensitive-file preparation.
-
-Risks / complexity:
-
-- Redaction must remove underlying content, not only draw boxes over it.
-- Text, images, annotations, embedded objects, and metadata require careful handling.
-- Incorrect redaction can create serious user harm, so scope should be conservative.
-
-Priority: High
-
-## Homepage Evolution
-
-The homepage should evolve from a PDF feature grid toward local-first toolkit positioning.
-
-Direction:
-
-- Lead with the broader promise: local-first tools for sensitive files.
-- Keep PDF tools visible as the strongest current category.
-- Group tools by user intent instead of listing every feature with equal weight.
-- Make the privacy model clear without adding fear-based messaging.
-- Show the Workflow Builder as a power-user capability, not a hidden secondary route.
-
-Homepage priorities:
-
-- Better categorization across PDF, privacy, image, and workflow tools
-- Stronger trust communication around no uploads and no accounts
-- Use-case orientation for documents, photos, screenshots, and sensitive sharing
-- Clear current versus planned tool boundaries
+- Page rotation: useful PDF editing utility, but lower strategic value than privacy/image expansion.
+- Watermark: common PDF feature, but not strongly tied to the privacy-first product wedge.
+- Custom compression controls: useful power-user enhancement, but current presets already cover the main shipped compression story.
+- Generic non-PDF metadata cleanup: promising, but should follow EXIF remover rather than start as a broad multi-format project.
+- Full OCR-assisted automation: should wait until local OCR feasibility, privacy constraints, and UX review are proven.
 
 ## TODO
 
 ### Immediate
 
-- [ ] Update homepage language from PDF-only positioning to local-first file toolkit positioning.
-- [ ] Keep PDF tools as the primary available category.
-- [ ] Add clear category labels for current and future tools.
-- [ ] Surface Workflow Builder more clearly on the homepage.
+- [ ] Update homepage language from PDF-only positioning to local-first sensitive-file toolkit positioning.
+- [ ] Keep shipped PDF tools as the primary available category.
+- [ ] Add clear current/planned labels for PDF, privacy, image, and workflow categories.
+- [ ] Surface Workflow Builder more clearly as a power-user capability.
+- [ ] Keep desktop Homebrew messaging explicit about unsigned/non-notarized community preview status.
 
 ### Next
 
 - [ ] Define MVP scope for EXIF remover.
 - [ ] Define MVP scope for PDF redact with explicit safety constraints.
+- [ ] Prepare desktop signing/notarization plan once Apple Developer credentials are available.
+- [ ] Prepare store submission kit: screenshots, listing copy, privacy text, support policy, review checklist.
 - [ ] Evaluate local libraries for HEIC conversion and OCR.
-- [ ] Add design patterns for non-PDF file tool pages.
 
 ### Later
 
 - [ ] Expand image utilities once privacy and performance constraints are proven.
 - [ ] Explore local OCR-assisted workflows.
 - [ ] Revisit navigation around tool categories as the product grows.
+- [ ] Decide whether page rotation or watermarking should return to the active roadmap.
 - [ ] Keep documentation aligned as roadmap priorities change.
