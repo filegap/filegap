@@ -13,6 +13,7 @@ import { PreDownloadModal } from '../../components/ui/PreDownloadModal';
 import { SimpleProcessFlow } from '../../components/ui/SimpleProcessFlow';
 import { trackToolEvent } from '../../lib/analytics/trackEvent';
 import { baseRelatedTools, canonicalUrl } from '../../lib/seo/seoLandingPages';
+import type { ToolPageSeoConfig } from '../../lib/seo/toolPageConfig';
 import {
   renderPdfPagesToImages,
   type PdfImageFormat,
@@ -103,6 +104,10 @@ const IMAGE_PAGE_CONTENT = {
   finalCtaHref: '#pdf-to-images-tool',
 };
 
+type PdfToImagesPageProps = {
+  seoConfig?: ToolPageSeoConfig;
+};
+
 function saveBlob(filename: string, bytes: Uint8Array, type: string): void {
   const copy = new Uint8Array(bytes.length);
   copy.set(bytes);
@@ -156,7 +161,7 @@ function getPresetScale(preset: ImageQualityPreset): number {
   return preset === 'print' ? 2 : 1;
 }
 
-export function PdfToImagesPage() {
+export function PdfToImagesPage({ seoConfig }: PdfToImagesPageProps = {}) {
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [pageCount, setPageCount] = useState<number | null>(null);
   const [format, setFormat] = useState<PdfImageFormat>('jpeg');
@@ -288,11 +293,13 @@ export function PdfToImagesPage() {
 
   return (
     <ToolLayout
-      title='Convert PDF to images — private, local, and fast'
-      description='Export every PDF page as a JPEG or PNG image directly in your browser.'
-      trustLine='Free • No signup • Works in your browser'
-      metaTitle='Convert PDF to Images Online — Private & Local | Filegap'
-      metaDescription='Convert PDF pages to JPEG or PNG images locally in your browser. No uploads, no account, and no server-side PDF processing.'
+      title={seoConfig?.title ?? 'Convert PDF to images — private, local, and fast'}
+      description={seoConfig?.description ?? 'Export every PDF page as a JPEG or PNG image directly in your browser.'}
+      trustLine={seoConfig?.trustLine ?? 'Free • No signup • Works in your browser'}
+      metaTitle={seoConfig?.metaTitle ?? 'Convert PDF to Images Online — Private & Local | Filegap'}
+      metaDescription={seoConfig?.metaDescription ?? 'Convert PDF pages to JPEG or PNG images locally in your browser. No uploads, no account, and no server-side PDF processing.'}
+      canonicalPath={seoConfig?.canonicalPath}
+      robots={seoConfig?.robots}
       heroVariant='brand'
     >
       <ToolActionCard id='pdf-to-images-tool'>
@@ -494,13 +501,13 @@ export function PdfToImagesPage() {
       </ToolActionCard>
 
       <ToolLandingSections
-        {...IMAGE_PAGE_CONTENT}
-        relatedTools={[...baseRelatedTools.images]}
+        {...(seoConfig?.landingContent ?? IMAGE_PAGE_CONTENT)}
+        relatedTools={seoConfig?.relatedTools ?? [...baseRelatedTools.images]}
         structuredData={{
-          pageTitle: 'PDF to Images Online — Private, Local & Free | Filegap',
-          pageDescription: 'Convert PDF pages into JPEG or PNG images from your browser without uploading the document.',
-          pageUrl: canonicalUrl('/pdf-to-images'),
-          breadcrumbLabel: 'PDF to Images',
+          pageTitle: seoConfig?.metaTitle ?? 'PDF to Images Online — Private, Local & Free | Filegap',
+          pageDescription: seoConfig?.metaDescription ?? 'Convert PDF pages into JPEG or PNG images from your browser without uploading the document.',
+          pageUrl: canonicalUrl(seoConfig?.routePath ?? '/pdf-to-images'),
+          breadcrumbLabel: seoConfig?.breadcrumbLabel ?? 'PDF to Images',
         }}
       />
 

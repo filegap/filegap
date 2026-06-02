@@ -19,6 +19,7 @@ import {
   compressSeoLandingConfigs,
   extractPagesCanonicalConfig,
   extractSeoLandingConfigs,
+  imageSeoLandingConfigs,
   mergeSeoLandingConfigs,
   reorderPagesCanonicalConfig,
   reorderSeoLandingConfigs,
@@ -48,6 +49,11 @@ const reorderSeoRoutes = reorderSeoLandingConfigs.map((config) => ({
 const compressSeoRoutes = compressSeoLandingConfigs.map((config) => ({
   path: config.routePath,
   element: <CompressPdfPage seoConfig={config} />,
+}));
+
+const imageSeoRoutes = imageSeoLandingConfigs.map((config) => ({
+  path: config.routePath,
+  element: <PdfToImagesPage seoConfig={config} />,
 }));
 
 export const router = createBrowserRouter([
@@ -100,6 +106,7 @@ export const router = createBrowserRouter([
     path: '/pdf-to-images',
     element: <PdfToImagesPage />,
   },
+  ...imageSeoRoutes,
   {
     path: '/extract-images',
     element: <ExtractImagesPage />,

@@ -9,6 +9,7 @@ import {
   compressSeoLandingConfigs,
   extractPagesCanonicalConfig,
   extractSeoLandingConfigs,
+  imageSeoLandingConfigs,
   mergeSeoLandingConfigs,
   reorderSeoLandingConfigs,
   splitSeoLandingConfigs,
@@ -94,21 +95,53 @@ describe('SEO landing pages', () => {
         '/split-pdf-by-page-ranges',
         '/split-pdf-without-uploading',
         '/split-large-pdf',
+        '/pdf-to-jpg',
+        '/convert-pdf-to-jpg',
         '/merge-pdf-without-uploading',
         '/combine-pdf-files',
+        '/join-pdf-files',
         '/extract-pages-from-pdf',
         '/extract-specific-pages-from-pdf',
+        '/pdf-page-extractor',
+        '/save-pdf-pages-as-new-file',
         '/save-single-pages-from-pdf',
         '/reorder-pdf-pages',
         '/organize-pdf-pages',
+        '/change-pdf-page-order',
         '/compress-pdf-to-100kb',
         '/compress-pdf-to-200kb',
         '/compress-pdf-for-email',
         '/compress-pdf-without-uploading',
+        '/reduce-pdf-file-size',
+        '/make-pdf-smaller',
         '/offline-pdf-tools',
       ])
     );
     expect(new Set(allSeoLandingPaths).size).toBe(allSeoLandingPaths.length);
+  });
+
+  it('keeps requested phase two SEO pages indexable and self-canonical', () => {
+    const phaseTwoConfigs = [
+      ...imageSeoLandingConfigs,
+      ...mergeSeoLandingConfigs.filter((item) =>
+        ['/combine-pdf-files', '/join-pdf-files'].includes(item.routePath)
+      ),
+      extractPagesCanonicalConfig,
+      ...extractSeoLandingConfigs.filter((item) =>
+        ['/pdf-page-extractor', '/save-pdf-pages-as-new-file'].includes(item.routePath)
+      ),
+      ...reorderSeoLandingConfigs,
+      ...compressSeoLandingConfigs.filter((item) =>
+        ['/reduce-pdf-file-size', '/make-pdf-smaller'].includes(item.routePath)
+      ),
+    ];
+
+    phaseTwoConfigs.forEach((config) => {
+      expect(config.canonicalPath).toBe(`https://www.filegap.app${config.routePath}`);
+      expect(config.robots).toBeUndefined();
+      expect(config.metaTitle).toContain('Filegap');
+      expect(config.relatedTools.length).toBeGreaterThanOrEqual(3);
+    });
   });
 
   it('marks redundant SEO pages as noindex and canonicalizes them to primary pages', () => {
@@ -122,20 +155,8 @@ describe('SEO landing pages', () => {
         canonical: 'https://www.filegap.app/split-pdf-by-page-ranges',
       },
       {
-        config: mergeSeoLandingConfigs.find((item) => item.routePath === '/combine-pdf-files'),
-        canonical: 'https://www.filegap.app/merge-pdf-without-uploading',
-      },
-      {
-        config: extractPagesCanonicalConfig,
-        canonical: 'https://www.filegap.app/extract-specific-pages-from-pdf',
-      },
-      {
         config: extractSeoLandingConfigs.find((item) => item.routePath === '/save-single-pages-from-pdf'),
         canonical: 'https://www.filegap.app/extract-specific-pages-from-pdf',
-      },
-      {
-        config: reorderSeoLandingConfigs.find((item) => item.routePath === '/organize-pdf-pages'),
-        canonical: 'https://www.filegap.app/reorder-pdf-pages',
       },
     ];
 

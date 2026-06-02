@@ -41,19 +41,24 @@ const splitRelated = [
 
 const mergeRelated = [
   {
+    href: '/merge-pdf',
+    label: 'Merge PDF',
+    description: 'Combine PDF files locally with the main merge workflow.',
+  },
+  {
     href: '/combine-pdf-files',
     label: 'Combine PDF Files',
     description: 'Put several PDFs into one document with no server upload.',
   },
   {
-    href: '/split-pdf',
-    label: 'Split PDF',
-    description: 'Separate one PDF into smaller files using page ranges.',
+    href: '/join-pdf-files',
+    label: 'Join PDF Files',
+    description: 'Join PDFs in your browser without sending documents to a server.',
   },
   {
-    href: '/reorder-pdf-pages',
-    label: 'Reorder PDF Pages',
-    description: 'Arrange pages into the order you need before export.',
+    href: '/merge-pdf-without-uploading',
+    label: 'Merge PDF without Uploading',
+    description: 'Use the privacy-focused merge page for no-upload PDF combining.',
   },
 ];
 
@@ -64,9 +69,19 @@ const extractRelated = [
     description: 'Use the broad extract page that points to the focused extraction workflow.',
   },
   {
-    href: '/split-pdf',
-    label: 'Split PDF',
-    description: 'Create multiple PDFs from one source document.',
+    href: '/extract-specific-pages-from-pdf',
+    label: 'Extract Specific Pages',
+    description: 'Select exact pages or ranges and save one focused PDF.',
+  },
+  {
+    href: '/pdf-page-extractor',
+    label: 'PDF Page Extractor',
+    description: 'Open a page extraction workflow built for selected page ranges.',
+  },
+  {
+    href: '/save-pdf-pages-as-new-file',
+    label: 'Save PDF Pages',
+    description: 'Save selected PDF pages as a new private file.',
   },
   {
     href: '/save-single-pages-from-pdf',
@@ -82,37 +97,80 @@ const extractRelated = [
 
 const reorderRelated = [
   {
+    href: '/reorder-pdf-pages',
+    label: 'Reorder PDF Pages',
+    description: 'Move PDF pages into the sequence you need.',
+  },
+  {
     href: '/organize-pdf-pages',
     label: 'Organize PDF Pages',
     description: 'Clean up page order before sharing or archiving a PDF.',
   },
   {
-    href: '/extract-pages-from-pdf',
-    label: 'Extract PDF Pages',
-    description: 'Keep only the pages you need in a new PDF.',
-  },
-  {
-    href: '/split-pdf',
-    label: 'Split PDF',
-    description: 'Break a PDF into parts using local page ranges.',
+    href: '/change-pdf-page-order',
+    label: 'Change PDF Page Order',
+    description: 'Fix a PDF page sequence locally in your browser.',
   },
 ];
 
 const compressRelated = [
+  {
+    href: '/compress-pdf',
+    label: 'Compress PDF',
+    description: 'Reduce PDF size with the main local compression workflow.',
+  },
   {
     href: '/compress-pdf-for-email',
     label: 'Compress PDF for Email',
     description: 'Use local compression settings suited to email attachments.',
   },
   {
-    href: '/optimize-pdf',
-    label: 'Optimize PDF',
-    description: 'Rewrite PDF structure locally without intentional quality loss.',
+    href: '/compress-pdf-to-100kb',
+    label: 'Compress toward 100KB',
+    description: 'Try the strongest browser preset for strict upload limits.',
   },
   {
-    href: '/split-pdf',
-    label: 'Split PDF',
-    description: 'Split large PDFs into smaller, easier-to-share files.',
+    href: '/compress-pdf-to-200kb',
+    label: 'Compress toward 200KB',
+    description: 'Use local compression when a portal needs a smaller PDF.',
+  },
+  {
+    href: '/reduce-pdf-file-size',
+    label: 'Reduce PDF File Size',
+    description: 'Shrink PDF output locally without an upload-based compressor.',
+  },
+  {
+    href: '/make-pdf-smaller',
+    label: 'Make PDF Smaller',
+    description: 'Use browser-based compression to create a smaller PDF.',
+  },
+  {
+    href: '/compress-pdf-without-uploading',
+    label: 'Compress without Uploading',
+    description: 'Keep compression private when documents cannot leave your device.',
+  },
+];
+
+const imagesRelated = [
+  {
+    href: '/pdf-to-images',
+    label: 'PDF to Images',
+    description: 'Convert PDF pages to JPEG or PNG images locally.',
+  },
+  {
+    href: '/pdf-to-jpg',
+    label: 'PDF to JPG',
+    description: 'Render each PDF page as a JPG image in your browser.',
+  },
+  {
+    href: '/convert-pdf-to-jpg',
+    label: 'Convert PDF to JPG',
+    description: 'Use a no-upload JPG conversion workflow for PDF pages.',
+  },
+  {
+    href: '/extract-images',
+    label: 'Extract Images',
+    description: 'Extract supported embedded image assets from PDFs.',
   },
 ];
 
@@ -139,41 +197,24 @@ export const baseRelatedTools = {
       description: 'Export selected pages from a PDF locally.',
     },
   ],
-  images: [
-    {
-      href: '/extract-images',
-      label: 'Extract Images',
-      description: 'Extract supported embedded image assets from PDFs.',
-    },
-    {
-      href: '/split-pdf',
-      label: 'Split PDF',
-      description: 'Split a PDF before converting pages to images.',
-    },
-    {
-      href: '/compress-pdf',
-      label: 'Compress PDF',
-      description: 'Reduce PDF size with local compression presets.',
-    },
-  ],
+  images: imagesRelated,
 } as const;
 
 export const extractPagesCanonicalConfig: ToolPageSeoConfig = {
   routePath: '/extract-pages-from-pdf',
-  title: 'Pull selected pages from a PDF',
-  description: 'Extract specific pages from a PDF directly in your browser. No uploads, no account required.',
-  robots: NOINDEX_FOLLOW,
+  title: 'Extract pages from a PDF privately',
+  description: 'Extract pages from a PDF directly in your browser. No upload, no account, and no server-side processing.',
   trustLine: 'Free - No signup - Works in your browser',
-  metaTitle: 'Extract Pages from PDF Online - No Upload | Filegap',
+  metaTitle: 'Extract Pages from PDF Online - Private & No Upload | Filegap',
   metaDescription:
-    'Select the PDF pages you need and export a smaller file on your device. Private by design, with no server-side document handling.',
-  canonicalPath: canonicalUrl('/extract-specific-pages-from-pdf'),
+    'Extract pages from a PDF locally in your browser. Select the pages you need, save a new file, and keep documents on your device.',
+  canonicalPath: canonicalUrl('/extract-pages-from-pdf'),
   breadcrumbLabel: 'Extract pages from PDF',
   relatedTools: extractRelated,
   landingContent: {
     howItWorksTitle: 'How to extract pages from a PDF',
     howItWorksSteps: [
-      'Upload one PDF file from your device.',
+      'Choose one PDF file from your device.',
       'Select the page ranges you want to keep.',
       'Extract locally and download a new PDF with only those pages.',
     ],
@@ -209,7 +250,7 @@ export const extractPagesCanonicalConfig: ToolPageSeoConfig = {
     ],
     seoTitle: 'Extract only the PDF pages you need',
     seoParagraphs: [
-      'Use Filegap when you need a focused PDF that contains only selected pages from a larger file.',
+      'Use Filegap when you need a focused PDF that contains selected pages from a larger document.',
       'The browser reads and rewrites the PDF locally, which avoids upload waiting time and keeps private documents on your device.',
     ],
     finalCtaTitle: 'Ready to extract PDF pages?',
@@ -546,6 +587,135 @@ export const splitSeoLandingConfigs: SplitPageSeoConfig[] = [
   },
 ];
 
+export const imageSeoLandingConfigs: ToolPageSeoConfig[] = [
+  {
+    routePath: '/pdf-to-jpg',
+    title: 'Convert PDF pages to JPG locally',
+    description: 'Turn PDF pages into JPG images in your browser. Files stay on your device with no upload step.',
+    trustLine: 'Free - No signup - Works in your browser',
+    metaTitle: 'PDF to JPG Converter - Private Browser Tool | Filegap',
+    metaDescription:
+      'Convert PDF to JPG locally in your browser. Export pages as JPG images with no uploads, no account, and no server-side PDF processing.',
+    canonicalPath: canonicalUrl('/pdf-to-jpg'),
+    breadcrumbLabel: 'PDF to JPG',
+    relatedTools: imagesRelated,
+    landingContent: {
+      howItWorksTitle: 'How to convert PDF to JPG',
+      howItWorksSteps: [
+        'Choose one PDF from your device.',
+        'Keep JPEG selected as the output format.',
+        'Convert pages locally and download a ZIP of JPG images.',
+      ],
+      whyTitle: 'Why use Filegap for PDF to JPG',
+      whyItems: [
+        {
+          title: 'No upload required',
+          text: 'The PDF is rendered in your browser and is not sent to a conversion server.',
+        },
+        {
+          title: 'JPG output for every page',
+          text: 'Each PDF page becomes a separate JPG image inside one local ZIP download.',
+        },
+        {
+          title: 'Private by default',
+          text: 'The source PDF, rendered pages, and image outputs stay on your device.',
+        },
+      ],
+      faqTitle: 'Frequently asked questions',
+      faqItems: [
+        {
+          question: 'Can I convert PDF to JPG without uploading?',
+          answer: 'Yes. Filegap renders PDF pages to JPG locally in your browser.',
+        },
+        {
+          question: 'Will each PDF page become a JPG?',
+          answer: 'Yes. The tool exports one JPG image per PDF page and bundles them into a ZIP.',
+        },
+        {
+          question: 'Is JPG different from JPEG here?',
+          answer: 'No. JPG and JPEG refer to the same image format in this workflow.',
+        },
+        {
+          question: 'Do I need an account to export JPG images?',
+          answer: 'No. You can convert PDF pages to JPG with no signup.',
+        },
+      ],
+      seoTitle: 'Private PDF to JPG conversion in the browser',
+      seoParagraphs: [
+        'Use this page when you need JPG images from a PDF but do not want to upload the document to an online converter.',
+        'Filegap renders the PDF pages locally, packages the JPG files into a ZIP, and lets you download the result from your browser.',
+      ],
+      finalCtaTitle: 'Ready to convert PDF to JPG?',
+      finalCtaText: 'Export PDF pages as JPG images without uploading the file.',
+      finalCtaLabel: 'Convert PDF to JPG',
+      finalCtaHref: '#pdf-to-images-tool',
+    },
+  },
+  {
+    routePath: '/convert-pdf-to-jpg',
+    title: 'Convert a PDF to JPG images',
+    description: 'Create JPG images from PDF pages with browser-based processing and no server upload.',
+    trustLine: 'Free - No signup - Works in your browser',
+    metaTitle: 'Convert PDF to JPG Online - No Upload | Filegap',
+    metaDescription:
+      'Convert PDF pages to JPG images from your browser. Filegap keeps files on your device and packages exported JPGs into a local ZIP.',
+    canonicalPath: canonicalUrl('/convert-pdf-to-jpg'),
+    breadcrumbLabel: 'Convert PDF to JPG',
+    relatedTools: imagesRelated,
+    landingContent: {
+      howItWorksTitle: 'How JPG conversion works',
+      howItWorksSteps: [
+        'Add one PDF file from your device.',
+        'Choose JPEG and the resolution preset you need.',
+        'Download the JPG image ZIP created locally.',
+      ],
+      whyTitle: 'Why convert PDF pages locally',
+      whyItems: [
+        {
+          title: 'Browser-based rendering',
+          text: 'The page images are generated in browser memory after the tool loads.',
+        },
+        {
+          title: 'No document handoff',
+          text: 'Your PDF does not leave the device for conversion.',
+        },
+        {
+          title: 'Useful image files',
+          text: 'JPG output works well for previews, sharing, and page screenshots.',
+        },
+      ],
+      faqTitle: 'Frequently asked questions',
+      faqItems: [
+        {
+          question: 'Can Filegap extract JPG from PDF pages?',
+          answer: 'Yes. It renders each PDF page as a JPG image when JPEG output is selected.',
+        },
+        {
+          question: 'Are converted JPG files stored by Filegap?',
+          answer: 'No. JPG files are generated locally and downloaded from your browser.',
+        },
+        {
+          question: 'Can I use PNG instead?',
+          answer: 'Yes. The same tool also supports PNG output when you need lossless page images.',
+        },
+        {
+          question: 'What limits apply to PDF to JPG conversion?',
+          answer: 'Limits depend on browser memory and device performance because conversion is local.',
+        },
+      ],
+      seoTitle: 'Convert PDF pages to JPG without a server',
+      seoParagraphs: [
+        'This route focuses on the common search for converting PDF pages to JPG images online.',
+        'Filegap keeps the conversion local: the PDF is read by the browser, rendered into image files, and downloaded as a ZIP.',
+      ],
+      finalCtaTitle: 'Ready to create JPG images?',
+      finalCtaText: 'Choose a PDF and convert its pages locally.',
+      finalCtaLabel: 'Convert PDF to JPG',
+      finalCtaHref: '#pdf-to-images-tool',
+    },
+  },
+];
+
 export const mergeSeoLandingConfigs: ToolPageSeoConfig[] = [
   {
     routePath: '/merge-pdf-without-uploading',
@@ -614,12 +784,11 @@ export const mergeSeoLandingConfigs: ToolPageSeoConfig[] = [
     routePath: '/combine-pdf-files',
     title: 'Combine PDF files into one document',
     description: 'Combine multiple PDF files into one document with private local processing.',
-    robots: NOINDEX_FOLLOW,
     trustLine: 'Free - No signup - Works in your browser',
     metaTitle: 'Combine PDF Files Online - No Upload | Filegap',
     metaDescription:
       'Join several PDFs into one ordered document. Filegap keeps the merge workflow on your device instead of an upload queue.',
-    canonicalPath: canonicalUrl('/merge-pdf-without-uploading'),
+    canonicalPath: canonicalUrl('/combine-pdf-files'),
     breadcrumbLabel: 'Combine PDF files',
     relatedTools: mergeRelated,
     landingContent: {
@@ -670,6 +839,69 @@ export const mergeSeoLandingConfigs: ToolPageSeoConfig[] = [
       finalCtaHref: '#merge-pdf-tool',
     },
   },
+  {
+    routePath: '/join-pdf-files',
+    title: 'Join PDF files without uploading',
+    description: 'Join PDF files into one local output directly in your browser with no account required.',
+    trustLine: 'Free - No signup - Works in your browser',
+    metaTitle: 'Join PDF Files Online - Private & No Upload | Filegap',
+    metaDescription:
+      'Join PDF files into one document locally in your browser. Reorder files, merge them, and download the result without uploading PDFs.',
+    canonicalPath: canonicalUrl('/join-pdf-files'),
+    breadcrumbLabel: 'Join PDF files',
+    relatedTools: mergeRelated,
+    landingContent: {
+      howItWorksTitle: 'How to join PDF files',
+      howItWorksSteps: [
+        'Select the PDFs you want to join.',
+        'Drag them into the final order.',
+        'Join files locally and download the combined PDF.',
+      ],
+      whyTitle: 'Why join PDFs with Filegap',
+      whyItems: [
+        {
+          title: 'No upload service',
+          text: 'The join operation runs in your browser instead of a remote PDF backend.',
+        },
+        {
+          title: 'Order control',
+          text: 'Arrange files before creating the final joined document.',
+        },
+        {
+          title: 'Private output',
+          text: 'The final PDF is created on your device and downloaded locally.',
+        },
+      ],
+      faqTitle: 'Frequently asked questions',
+      faqItems: [
+        {
+          question: 'Can I join PDF files without uploading them?',
+          answer: 'Yes. Filegap joins PDFs locally in your browser.',
+        },
+        {
+          question: 'Can I join more than two PDF files?',
+          answer: 'Yes. Add multiple PDFs and arrange them before merging.',
+        },
+        {
+          question: 'Does joining PDFs require an account?',
+          answer: 'No. The browser tool is available with no signup.',
+        },
+        {
+          question: 'Will Filegap inspect my PDF contents?',
+          answer: 'No. PDF processing happens locally; there is no server-side document handling.',
+        },
+      ],
+      seoTitle: 'Join multiple PDFs into one private file',
+      seoParagraphs: [
+        'Use this page when you want one PDF from several separate documents and need the workflow to stay local.',
+        'Filegap reads the selected files in your browser, joins them in order, and creates one download without an upload queue.',
+      ],
+      finalCtaTitle: 'Ready to join PDFs?',
+      finalCtaText: 'Add your files and join them locally.',
+      finalCtaLabel: 'Join PDF files',
+      finalCtaHref: '#merge-pdf-tool',
+    },
+  },
 ];
 
 export const extractSeoLandingConfigs: ToolPageSeoConfig[] = [
@@ -684,23 +916,7 @@ export const extractSeoLandingConfigs: ToolPageSeoConfig[] = [
       'Choose exact pages or ranges from a PDF and export a focused file. Private browser-based extraction, built for sensitive documents.',
     canonicalPath: canonicalUrl('/extract-specific-pages-from-pdf'),
     breadcrumbLabel: 'Extract specific pages from PDF',
-    relatedTools: [
-      {
-        href: '/reorder-pdf-pages',
-        label: 'Reorder PDF Pages',
-        description: 'Change the sequence after extracting selected pages.',
-      },
-      {
-        href: '/split-pdf-by-page-ranges',
-        label: 'Split by Page Ranges',
-        description: 'Create multiple PDF parts instead of one extracted output.',
-      },
-      {
-        href: '/offline-pdf-tools',
-        label: 'Offline PDF Tools',
-        description: 'Keep sensitive PDF workflows local across web, desktop, and CLI.',
-      },
-    ],
+    relatedTools: extractRelated,
     landingContent: {
       howItWorksTitle: 'How to extract specific PDF pages',
       howItWorksSteps: [
@@ -813,6 +1029,132 @@ export const extractSeoLandingConfigs: ToolPageSeoConfig[] = [
       finalCtaHref: '#extract-pdf-tool',
     },
   },
+  {
+    routePath: '/pdf-page-extractor',
+    title: 'PDF page extractor for selected pages',
+    description: 'Extract selected PDF pages in your browser and save a focused file without uploading documents.',
+    trustLine: 'Free - No signup - Works in your browser',
+    metaTitle: 'PDF Page Extractor Online - Private & No Upload | Filegap',
+    metaDescription:
+      'Use Filegap as a PDF page extractor for selected pages and ranges. Browser-based processing keeps files on your device.',
+    canonicalPath: canonicalUrl('/pdf-page-extractor'),
+    breadcrumbLabel: 'PDF page extractor',
+    relatedTools: extractRelated,
+    landingContent: {
+      howItWorksTitle: 'How to use the PDF page extractor',
+      howItWorksSteps: [
+        'Pick one PDF from your device.',
+        'Select pages visually or enter ranges like 2,4-6.',
+        'Extract locally and download the new PDF.',
+      ],
+      whyTitle: 'Why use this page extractor',
+      whyItems: [
+        {
+          title: 'Selected pages only',
+          text: 'Create one cleaner PDF from the pages you choose.',
+        },
+        {
+          title: 'No upload required',
+          text: 'The extractor runs inside your browser after the page loads.',
+        },
+        {
+          title: 'Private page choices',
+          text: 'Your selected pages and PDF content are not sent to a server.',
+        },
+      ],
+      faqTitle: 'Frequently asked questions',
+      faqItems: [
+        {
+          question: 'What is a PDF page extractor?',
+          answer: 'It is a tool that keeps selected pages from a source PDF and saves them as a new PDF.',
+        },
+        {
+          question: 'Can I extract selected pages without uploading?',
+          answer: 'Yes. Filegap applies the selection locally in your browser.',
+        },
+        {
+          question: 'Can I mix single pages and page ranges?',
+          answer: 'Yes. Use entries like 1,3,7-9 to extract a mixed selection.',
+        },
+        {
+          question: 'Does the extractor change the original PDF?',
+          answer: 'No. It creates a new PDF output and leaves the source file unchanged.',
+        },
+      ],
+      seoTitle: 'Extract selected pages into a new PDF',
+      seoParagraphs: [
+        'This PDF page extractor is built for quickly pulling important pages out of a longer document.',
+        'The extraction happens in the browser, so there is no upload step and no backend copy of your document.',
+      ],
+      finalCtaTitle: 'Ready to extract selected pages?',
+      finalCtaText: 'Choose your PDF and save only the pages you need.',
+      finalCtaLabel: 'Use PDF page extractor',
+      finalCtaHref: '#extract-pdf-tool',
+    },
+  },
+  {
+    routePath: '/save-pdf-pages-as-new-file',
+    title: 'Save PDF pages as a new file',
+    description: 'Save selected PDF pages into a new local file while the source document stays on your device.',
+    trustLine: 'Free - No signup - Works in your browser',
+    metaTitle: 'Save PDF Pages as a New File - No Upload | Filegap',
+    metaDescription:
+      'Select PDF pages and save them as a new file locally in your browser. Filegap requires no upload and no account.',
+    canonicalPath: canonicalUrl('/save-pdf-pages-as-new-file'),
+    breadcrumbLabel: 'Save PDF pages as new file',
+    relatedTools: extractRelated,
+    landingContent: {
+      howItWorksTitle: 'How to save PDF pages as a new file',
+      howItWorksSteps: [
+        'Open one PDF from your device.',
+        'Choose the pages or page ranges to keep.',
+        'Export a new PDF file locally from that selection.',
+      ],
+      whyTitle: 'Why save pages separately',
+      whyItems: [
+        {
+          title: 'Smaller handoffs',
+          text: 'Share only the relevant pages instead of the full source document.',
+        },
+        {
+          title: 'Browser-based output',
+          text: 'The new PDF is generated by your browser, not by an upload service.',
+        },
+        {
+          title: 'No account workflow',
+          text: 'Select pages and download the result without signup.',
+        },
+      ],
+      faqTitle: 'Frequently asked questions',
+      faqItems: [
+        {
+          question: 'Can I save selected PDF pages as a new file?',
+          answer: 'Yes. Select the pages you want and Filegap creates a new PDF output.',
+        },
+        {
+          question: 'Are the selected pages uploaded?',
+          answer: 'No. Selection and export happen locally in the browser.',
+        },
+        {
+          question: 'Can I save non-consecutive pages?',
+          answer: 'Yes. Enter separate pages and ranges such as 2,5,8-10.',
+        },
+        {
+          question: 'Is the original PDF modified?',
+          answer: 'No. The original file remains unchanged on your device.',
+        },
+      ],
+      seoTitle: 'Create a new PDF from selected pages',
+      seoParagraphs: [
+        'Use this page when you need to save a few pages from a larger PDF as a separate file.',
+        'Filegap keeps the process local by reading the source PDF in your browser and exporting a new download from the selected pages.',
+      ],
+      finalCtaTitle: 'Ready to save selected pages?',
+      finalCtaText: 'Create a new PDF file from the pages you choose.',
+      finalCtaLabel: 'Save PDF pages',
+      finalCtaHref: '#extract-pdf-tool',
+    },
+  },
 ];
 
 export const reorderSeoLandingConfigs: ToolPageSeoConfig[] = [
@@ -820,18 +1162,17 @@ export const reorderSeoLandingConfigs: ToolPageSeoConfig[] = [
     routePath: '/organize-pdf-pages',
     title: 'Organize pages inside a PDF',
     description: 'Organize PDF page order locally in your browser before sharing or archiving.',
-    robots: NOINDEX_FOLLOW,
     trustLine: 'Free - No signup - Works in your browser',
     metaTitle: 'Organize PDF Pages Online - No Upload | Filegap',
     metaDescription:
       'Arrange PDF pages into a cleaner order before sharing, printing, or archiving. Filegap keeps the document on your device.',
-    canonicalPath: canonicalUrl('/reorder-pdf-pages'),
+    canonicalPath: canonicalUrl('/organize-pdf-pages'),
     breadcrumbLabel: 'Organize PDF pages',
     relatedTools: reorderRelated,
     landingContent: {
       howItWorksTitle: 'How to organize PDF pages',
       howItWorksSteps: [
-        'Upload one PDF from your device.',
+        'Choose one PDF from your device.',
         'Move pages into the order you need.',
         'Download the organized PDF created locally.',
       ],
@@ -873,6 +1214,69 @@ export const reorderSeoLandingConfigs: ToolPageSeoConfig[] = [
       finalCtaTitle: 'Ready to organize pages?',
       finalCtaText: 'Put your PDF pages in the right order locally.',
       finalCtaLabel: 'Organize PDF pages',
+      finalCtaHref: '#reorder-pdf-tool',
+    },
+  },
+  {
+    routePath: '/change-pdf-page-order',
+    title: 'Change PDF page order locally',
+    description: 'Change PDF page order in your browser and export a reordered file with no upload required.',
+    trustLine: 'Free - No signup - Works in your browser',
+    metaTitle: 'Change PDF Page Order Online - No Upload | Filegap',
+    metaDescription:
+      'Change the order of pages in a PDF locally in your browser. Reorder pages, preview the sequence, and download a private output.',
+    canonicalPath: canonicalUrl('/change-pdf-page-order'),
+    breadcrumbLabel: 'Change PDF page order',
+    relatedTools: reorderRelated,
+    landingContent: {
+      howItWorksTitle: 'How to change PDF page order',
+      howItWorksSteps: [
+        'Choose one PDF from your device.',
+        'Drag pages or enter the new page sequence.',
+        'Download the reordered PDF created locally.',
+      ],
+      whyTitle: 'Why change page order with Filegap',
+      whyItems: [
+        {
+          title: 'Sequence fixes',
+          text: 'Correct scanned pages, report sections, or document flow before sharing.',
+        },
+        {
+          title: 'Local processing',
+          text: 'The page order is applied in your browser instead of on a server.',
+        },
+        {
+          title: 'No upload queue',
+          text: 'Start reordering as soon as the PDF is loaded on your device.',
+        },
+      ],
+      faqTitle: 'Frequently asked questions',
+      faqItems: [
+        {
+          question: 'Can I change PDF page order without uploading?',
+          answer: 'Yes. Filegap changes page order locally in your browser.',
+        },
+        {
+          question: 'Can I rearrange all pages in one PDF?',
+          answer: 'Yes. The reorder workflow keeps every page and changes their sequence.',
+        },
+        {
+          question: 'Can I delete pages on this route?',
+          answer: 'Use the extract pages workflow if you want to keep only selected pages. Reorder is for changing sequence.',
+        },
+        {
+          question: 'Do I need to install software?',
+          answer: 'No. The web tool runs directly in your browser.',
+        },
+      ],
+      seoTitle: 'Rearrange PDF pages without uploading',
+      seoParagraphs: [
+        'Changing page order is useful when a PDF has the right content but the pages appear in the wrong sequence.',
+        'Filegap keeps that operation private by applying the new order in browser memory and exporting the result locally.',
+      ],
+      finalCtaTitle: 'Ready to change page order?',
+      finalCtaText: 'Rearrange pages and download a corrected PDF.',
+      finalCtaLabel: 'Change page order',
       finalCtaHref: '#reorder-pdf-tool',
     },
   },
@@ -1019,28 +1423,7 @@ export const compressSeoLandingConfigs: CompressPageSeoConfig[] = [
       'Prepare PDFs for email attachments with a balanced local preset. Check the final size before sending through Gmail or Outlook.',
     canonicalPath: canonicalUrl('/compress-pdf-for-email'),
     breadcrumbLabel: 'Compress PDF for email',
-    relatedTools: [
-      {
-        href: '/compress-pdf-to-100kb',
-        label: 'Compress toward 100KB',
-        description: 'Try the strongest browser preset for strict upload limits.',
-      },
-      {
-        href: '/compress-pdf-to-200kb',
-        label: 'Compress toward 200KB',
-        description: 'Use local compression when a portal requires a smaller PDF.',
-      },
-      {
-        href: '/compress-pdf-without-uploading',
-        label: 'Compress without Uploading',
-        description: 'Keep compression private when documents cannot leave your device.',
-      },
-      {
-        href: '/offline-pdf-tools',
-        label: 'Offline PDF Tools',
-        description: 'Switch to desktop or CLI for larger attachment workflows.',
-      },
-    ],
+    relatedTools: compressRelated,
     initialPreset: 'balanced',
     landingContent: {
       howItWorksTitle: 'How to compress a PDF for email',
@@ -1154,6 +1537,134 @@ export const compressSeoLandingConfigs: CompressPageSeoConfig[] = [
       finalCtaHref: '#compress-pdf-tool',
     },
   },
+  {
+    routePath: '/reduce-pdf-file-size',
+    title: 'Reduce PDF file size privately',
+    description: 'Reduce PDF file size with local browser compression. No upload, no account, and no server processing.',
+    trustLine: 'Free - No signup - Works in your browser',
+    metaTitle: 'Reduce PDF File Size Online - Private & No Upload | Filegap',
+    metaDescription:
+      'Reduce PDF file size locally in your browser. Filegap uses private no-upload processing and shows the real output size before download.',
+    canonicalPath: canonicalUrl('/reduce-pdf-file-size'),
+    breadcrumbLabel: 'Reduce PDF file size',
+    initialPreset: 'balanced',
+    relatedTools: compressRelated,
+    landingContent: {
+      howItWorksTitle: 'How to reduce PDF file size',
+      howItWorksSteps: [
+        'Choose one PDF from your device.',
+        'Start with the balanced local compression preset.',
+        'Download the smaller PDF after reviewing the result size.',
+      ],
+      whyTitle: 'Why reduce size with Filegap',
+      whyItems: [
+        {
+          title: 'No upload step',
+          text: 'Compression runs in your browser and does not send the PDF to a server.',
+        },
+        {
+          title: 'Real result sizes',
+          text: 'The output panel shows what the local preset achieved before download.',
+        },
+        {
+          title: 'Private documents',
+          text: 'File content, page details, and compression choices stay on your device.',
+        },
+      ],
+      faqTitle: 'Frequently asked questions',
+      faqItems: [
+        {
+          question: 'Can I reduce PDF file size without uploading?',
+          answer: 'Yes. Filegap reduces PDF size locally in your browser.',
+        },
+        {
+          question: 'Will every PDF become much smaller?',
+          answer: 'No. Results depend on the PDF structure and embedded content.',
+        },
+        {
+          question: 'Which preset should I try first?',
+          answer: 'Start with balanced, then use strong if you need a smaller output.',
+        },
+        {
+          question: 'Can I use this for email attachments?',
+          answer: 'Yes. Check the output size and use it if it fits your email limit.',
+        },
+      ],
+      seoTitle: 'Reduce PDF size with no server upload',
+      seoParagraphs: [
+        'Use this page when a PDF is too large for sharing, email, or upload portals and you want a local-first option.',
+        'Filegap applies browser-based compression presets and keeps the document on your device throughout the workflow.',
+      ],
+      finalCtaTitle: 'Ready to reduce PDF size?',
+      finalCtaText: 'Compress locally and check the output size.',
+      finalCtaLabel: 'Reduce PDF file size',
+      finalCtaHref: '#compress-pdf-tool',
+    },
+  },
+  {
+    routePath: '/make-pdf-smaller',
+    title: 'Make a PDF smaller in your browser',
+    description: 'Make a PDF smaller with private browser-based compression and no account required.',
+    trustLine: 'Free - No signup - Works in your browser',
+    metaTitle: 'Make PDF Smaller Online - Local Browser Tool | Filegap',
+    metaDescription:
+      'Make PDF files smaller with local browser compression. No uploads, no signup, and no server-side document handling.',
+    canonicalPath: canonicalUrl('/make-pdf-smaller'),
+    breadcrumbLabel: 'Make PDF smaller',
+    initialPreset: 'strong',
+    relatedTools: compressRelated,
+    landingContent: {
+      howItWorksTitle: 'How to make a PDF smaller',
+      howItWorksSteps: [
+        'Select the PDF you want to shrink.',
+        'Use the strong preset when smaller output matters most.',
+        'Download the compressed PDF generated on your device.',
+      ],
+      whyTitle: 'Why make PDFs smaller locally',
+      whyItems: [
+        {
+          title: 'Smaller sharing files',
+          text: 'Create a lighter PDF for portals, forms, or messages when the result fits your limit.',
+        },
+        {
+          title: 'No server copy',
+          text: 'The PDF is processed locally instead of uploaded to a compressor.',
+        },
+        {
+          title: 'Desktop fallback',
+          text: 'For heavier files, use Filegap Desktop or CLI while keeping processing local.',
+        },
+      ],
+      faqTitle: 'Frequently asked questions',
+      faqItems: [
+        {
+          question: 'Can Filegap make any PDF smaller?',
+          answer: 'Not always. Some PDFs are already optimized, but Filegap reports the actual size change.',
+        },
+        {
+          question: 'Does making a PDF smaller upload it?',
+          answer: 'No. The browser handles compression locally.',
+        },
+        {
+          question: 'Is this the same as shrink PDF?',
+          answer: 'Yes. This page uses the existing compress PDF workflow to shrink PDF size where possible.',
+        },
+        {
+          question: 'Do I need to create an account?',
+          answer: 'No. You can make PDFs smaller without signup.',
+        },
+      ],
+      seoTitle: 'Shrink a PDF with privacy-first processing',
+      seoParagraphs: [
+        'This page is designed for the plain-language task of making a PDF smaller before sharing it.',
+        'Filegap keeps the compression local, avoids upload-based processing, and gives you the actual output size before download.',
+      ],
+      finalCtaTitle: 'Ready to make your PDF smaller?',
+      finalCtaText: 'Try local compression and review the result.',
+      finalCtaLabel: 'Make PDF smaller',
+      finalCtaHref: '#compress-pdf-tool',
+    },
+  },
 ];
 
 export const allSeoLandingPaths = [
@@ -1165,6 +1676,7 @@ export const allSeoLandingPaths = [
   '/pdf-to-images',
   extractPagesCanonicalConfig.routePath,
   ...splitSeoLandingConfigs.map((config) => config.routePath),
+  ...imageSeoLandingConfigs.map((config) => config.routePath),
   ...mergeSeoLandingConfigs.map((config) => config.routePath),
   ...extractSeoLandingConfigs.map((config) => config.routePath),
   ...reorderSeoLandingConfigs.map((config) => config.routePath),
@@ -1177,6 +1689,7 @@ export const indexableSeoLandingPaths = allSeoLandingPaths.filter((path) => {
     extractPagesCanonicalConfig,
     reorderPagesCanonicalConfig,
     ...splitSeoLandingConfigs,
+    ...imageSeoLandingConfigs,
     ...mergeSeoLandingConfigs,
     ...extractSeoLandingConfigs,
     ...reorderSeoLandingConfigs,
