@@ -300,6 +300,7 @@ These ideas are not active product roadmap items right now. They can be reconsid
 
 - [ ] Expand image utilities once privacy and performance constraints are proven.
 - [ ] Explore local OCR-assisted workflows.
+- [ ] Implement the deferred, opt-in desktop anonymous hello after the first successful operation, following [`anonymous-hello.md`](anonymous-hello.md) before introducing any endpoint or telemetry.
 - [ ] Revisit navigation around tool categories as the product grows.
 - [ ] Decide whether page rotation or watermarking should return to the active roadmap.
 - [ ] Keep documentation aligned as roadmap priorities change.
