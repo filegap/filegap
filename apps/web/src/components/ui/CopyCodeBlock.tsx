@@ -3,9 +3,15 @@ import { Check, Copy } from 'lucide-react';
 
 type CopyCodeBlockProps = {
   code: string;
+  label?: string;
+  onCopySuccess?: () => void;
 };
 
-export function CopyCodeBlock({ code }: CopyCodeBlockProps) {
+export function CopyCodeBlock({
+  code,
+  label = 'CLI command',
+  onCopySuccess,
+}: CopyCodeBlockProps) {
   const [copied, setCopied] = useState(false);
 
   async function handleCopy(): Promise<void> {
@@ -16,6 +22,7 @@ export function CopyCodeBlock({ code }: CopyCodeBlockProps) {
     try {
       await navigator.clipboard.writeText(code);
       setCopied(true);
+      onCopySuccess?.();
       window.setTimeout(() => setCopied(false), 1200);
     } catch {
       setCopied(false);
@@ -27,7 +34,7 @@ export function CopyCodeBlock({ code }: CopyCodeBlockProps) {
       <button
         type='button'
         onClick={() => void handleCopy()}
-        aria-label={copied ? 'CLI command copied' : 'Copy CLI command'}
+        aria-label={copied ? `${label} copied` : `Copy ${label}`}
         title={copied ? 'Copied' : 'Copy command'}
         className='absolute right-3 top-3 inline-flex h-7 w-7 items-center justify-center rounded-md text-ui-muted transition hover:bg-ui-bg hover:text-ui-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-border/80 focus-visible:ring-offset-2'
       >

@@ -1,5 +1,10 @@
 import { Card } from '../../components/ui/Card';
+import { CopyCodeBlock } from '../../components/ui/CopyCodeBlock';
 import { ToolLayout } from '../../components/layout/ToolLayout';
+import { trackEvent } from '../../lib/analytics/trackEvent';
+
+const HOMEBREW_INSTALL_COMMAND = `brew tap filegap/filegap
+brew install --cask filegap-desktop`;
 
 export function DownloadPage() {
   return (
@@ -26,9 +31,11 @@ export function DownloadPage() {
                 Install with Homebrew
               </h2>
               <p className='text-xs'>Run these commands in your terminal:</p>
-              <pre className='overflow-x-auto rounded-lg border border-ui-border bg-ui-bg-subtle p-3 text-xs text-ui-text'>
-                <code>{`brew tap filegap/filegap\nbrew install --cask filegap-desktop`}</code>
-              </pre>
+              <CopyCodeBlock
+                code={HOMEBREW_INSTALL_COMMAND}
+                label='Homebrew install command'
+                onCopySuccess={() => trackEvent('homebrew_command_copied')}
+              />
             </div>
 
             <div className='space-y-2 rounded-xl border border-brand-primary/30 bg-brand-primary/10 p-4'>
@@ -85,6 +92,7 @@ export function DownloadPage() {
               href='https://github.com/filegap/filegap/releases'
               target='_blank'
               rel='noreferrer'
+              onClick={() => trackEvent('github_release_clicked')}
               className='underline hover:text-ui-text'
             >
               GitHub Releases

@@ -30,6 +30,8 @@ const ALLOWED_EVENTS = new Set([
   'selection_made',
   'download_cli_clicked',
   'download_app_clicked',
+  'homebrew_command_copied',
+  'github_release_clicked',
   'support_lynko_click',
   'support_click',
 ]);
