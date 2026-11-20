@@ -161,6 +161,10 @@ npm run dev
 - Storing user files in cloud buckets, logs, or queues
 - Adding third-party SDKs that inspect file content outside browser runtime
 
+## Simple Analytics Credit
+
+The shared `AppFooter` renders the official Simple Analytics text link with its inline SVG wordmark and inherited footer typography. It links to `https://www.simpleanalytics.com?utm_source=www.filegap.app&utm_content=badge` with `referrerPolicy="origin"`, `target="_blank"`, and `rel="noopener"`. Rendering the credit makes no third-party requests and adds no analytics events or file data. Keep the attribution URL and UTM parameters intact for provider detection.
+
 ## Allowed Network Usage
 
 - Serving static assets (HTML/CSS/JS) via CDN or static hosting

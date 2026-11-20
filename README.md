@@ -288,6 +288,8 @@ npm run dev
 
 Current web app features include browser-local PDF tools, including embedded image extraction for supported JPEG and JPEG 2000 image XObjects.
 
+The shared web footer includes the Simple Analytics text credit, rendered locally without loading external badge assets.
+
 Design foundations for both web and desktop share a common token source in `shared/design/tokens.css`.
 
 ### Quick Start (Desktop MVP)
